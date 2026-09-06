@@ -23,12 +23,32 @@ export class BootScene extends Phaser.Scene {
   private failed: string[] = [];
 
   create(): void {
+    this.collectProcessFailures();
     if (this.failed.length > 0) {
       const id = this.failed[0] as string;
       showService(id, () => { this.failed = []; this.scene.restart(); });
       return;
     }
     this.scene.start('game');
+  }
+
+  /**
+   * A file that loads but fails to decode (e.g. a host returning 200 + HTML for a missing asset — Vite
+   * dev's SPA fallback, and some production SPA hosts) fires no `FILE_LOAD_ERROR` and is not counted in
+   * `totalFailed`. Detect those by absence from the cache after the load queue has finished.
+   */
+  private collectProcessFailures(): void {
+    const expected: AssetEntry[] = [...BootScene.MANIFEST];
+    if (import.meta.env.DEV && new URLSearchParams(location.search).has('failasset')) {
+      expected.push({ key: 'dev-missing', type: 'image', url: '/assets/does-not-exist.png' });
+    }
+    for (const a of expected) {
+      if (!this.assetPresent(a) && !this.failed.includes(a.key)) this.failed.push(a.key);
+    }
+  }
+
+  private assetPresent(a: AssetEntry): boolean {
+    return a.type === 'audio' ? this.cache.audio.exists(a.key) : this.textures.exists(a.key);
   }
 
   private enqueue(a: AssetEntry): void {
