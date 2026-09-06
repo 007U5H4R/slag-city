@@ -1,0 +1,8 @@
+:root { --room: #08070a; --marquee-h: 0px; --panel-h: 0px; }
+html, body { margin: 0; height: 100%; background: var(--room); color: #d9d2c5; overflow: hidden; }
+#room { position: fixed; inset: 0; display: grid; place-items: center; background: var(--room); }
+#cabinet { display: grid; grid-template-rows: var(--marquee-h) auto var(--panel-h); justify-items: center; }
+#bezel { position: relative; line-height: 0; }
+#screen { position: relative; }
+#screen canvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
+#vignette { position: absolute; inset: 0; pointer-events: none; }
