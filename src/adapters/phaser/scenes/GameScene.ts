@@ -9,6 +9,8 @@ import { KeyboardSource } from '../input/keyboard';
 import { GamepadSource } from '../input/gamepad';
 import { composeInput } from '../input/compose';
 import { EntityViews } from '../views/EntityView';
+import { DebugOverlay } from '../views/DebugOverlay';
+import { spawnGang } from '@core/entities/gang';
 import { enableCrt, crtInstance } from '../crt/CrtPipeline';
 
 export class GameScene extends Phaser.Scene {
@@ -20,6 +22,7 @@ export class GameScene extends Phaser.Scene {
   private keyboard!: KeyboardSource;
   private gamepad!: GamepadSource;
   private views!: EntityViews;
+  private debug!: DebugOverlay;
   private pauseText!: Phaser.GameObjects.Text;
 
   constructor() { super('game'); }
@@ -39,6 +42,9 @@ export class GameScene extends Phaser.Scene {
     g.lineStyle(1, 0x333333, 1);
     g.strokeRect(0, WALK_BAND.minY, BASE_W, WALK_BAND.maxY - WALK_BAND.minY);
     this.views = new EntityViews(this, this.add.layer());
+    this.debug = new DebugOverlay(this);
+    if (import.meta.env.DEV) this.input.keyboard?.on('keydown-H', () => this.debug.toggle());
+    spawnGang(this.world, 'brawler', 300, 176);
 
     this.keyboard = new KeyboardSource(this);
     this.gamepad = new GamepadSource();
@@ -67,6 +73,10 @@ export class GameScene extends Phaser.Scene {
     const input = composeInput([this.keyboard, this.gamepad]);
     advanceFixedStep(this.fixed, delta, () => tick(this.world, input));
     this.views.sync(this.world);
+    this.debug.draw(this.world);
+    const s = this.world.shake;
+    const off = s.frames > 0 ? (s.frames % 2 === 0 ? s.px : -s.px) : 0;
+    this.cameras.main.centerOn(BASE_W / 2 + off, BASE_H / 2);
   }
 
   private applyZoom(k: number): void {
