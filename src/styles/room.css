@@ -6,3 +6,4 @@ html, body { margin: 0; height: 100%; background: var(--room); color: #d9d2c5; o
 #screen { position: relative; }
 #screen canvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
 #vignette { position: absolute; inset: 0; pointer-events: none; }
+#notice { position: fixed; left: 0; right: 0; bottom: 0; padding: 4px 8px; font: 12px monospace; color: #d9d2c5; background: #1a1418; text-align: center; }

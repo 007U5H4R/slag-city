@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { BASE_W, BASE_H } from '@shell/scale';
+import { getSetting, setSetting } from '@shell/settings';
 import { createWorld, WALK_BAND } from '@core/sim/state';
 import type { WorldState } from '@core/sim/state';
 import { tick } from '@core/sim/tick';
@@ -8,11 +9,13 @@ import { KeyboardSource } from '../input/keyboard';
 import { GamepadSource } from '../input/gamepad';
 import { composeInput } from '../input/compose';
 import { EntityViews } from '../views/EntityView';
+import { enableCrt, crtInstance } from '../crt/CrtPipeline';
 
 export class GameScene extends Phaser.Scene {
   world!: WorldState;
   paused = false;
   pauseReason: string | null = null;
+  private crtOn = true;
   private fixed = createFixedStep();
   private keyboard!: KeyboardSource;
   private gamepad!: GamepadSource;
@@ -25,6 +28,11 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('#000000');
     this.applyZoom((this.registry.get('scale') as number | undefined) ?? 1);
     this.game.events.on('rescale', (k: number) => this.applyZoom(k));
+
+    this.crtOn = getSetting('crt');
+    enableCrt(this, this.crtOn);
+    this.input.keyboard?.on('keydown-C', () => this.setCrt(!this.crtOn));
+    if (new URLSearchParams(location.search).has('pattern')) this.scene.launch('pattern');
 
     this.world = createWorld(1);
     const g = this.add.graphics();
@@ -44,6 +52,13 @@ export class GameScene extends Phaser.Scene {
     this.game.events.on(Phaser.Core.Events.VISIBLE, () => { if (this.pauseReason === 'PAUSED') this.resume(); });
   }
 
+  setCrt(on: boolean): void {
+    this.crtOn = on;
+    enableCrt(this, on);
+    if (this.scene.isActive('pattern')) enableCrt(this.scene.get('pattern'), on);
+    setSetting('crt', on);
+  }
+
   pause(reason: string): void { this.paused = true; this.pauseReason = reason; this.pauseText.setText(reason).setVisible(true); }
   resume(): void { this.paused = false; this.pauseReason = null; this.pauseText.setVisible(false); resetFixedStep(this.fixed); }
 
@@ -58,5 +73,6 @@ export class GameScene extends Phaser.Scene {
     const cam = this.cameras.main;
     cam.setZoom(k);
     cam.centerOn(BASE_W / 2, BASE_H / 2);
+    crtInstance(this)?.setScale(k);
   }
 }
