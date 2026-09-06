@@ -21,7 +21,11 @@ export const HERO_DATA: ActorData = {
   hp: 100,
   hurtbox: { x: -10, y: 0, w: 20, h: 56 },
   jumpVz: 4.5,
-  moves: {},
+  moves: {
+    attack1: { startup: 3, active: 3, recovery: 8,  hitbox: { x: 8, y: 24, w: 26, h: 16 }, damage: 6,  level: 'light',  pushback: 2 },
+    attack2: { startup: 3, active: 3, recovery: 9,  hitbox: { x: 8, y: 24, w: 28, h: 16 }, damage: 6,  level: 'light',  pushback: 2, chainFrom: 'attack1' },
+    attack3: { startup: 5, active: 4, recovery: 14, hitbox: { x: 8, y: 20, w: 34, h: 24 }, damage: 10, level: 'launch', pushback: 3, chainFrom: 'attack2' },
+  },
 };
 
 const registry: Partial<Record<EntityKind, ActorData>> = { hero: HERO_DATA };
@@ -32,3 +36,8 @@ export function dataFor(kind: EntityKind): ActorData {
   return d;
 }
 export const moveTotal = (m: MoveData): number => m.startup + m.active + m.recovery;
+
+export function nextChain(kind: EntityKind, state: string): string | null {
+  for (const [name, m] of Object.entries(dataFor(kind).moves)) if (m.chainFrom === state) return name;
+  return null;
+}

@@ -3,7 +3,8 @@ import type { InputFrame } from '../types';
 import type { Entity } from '../sim/entity';
 import { setState } from '../sim/entity';
 import type { WorldState } from '../sim/state';
-import { HERO_DATA } from '../combat/frame-data';
+import { HERO_DATA, moveTotal, nextChain } from '../combat/frame-data';
+import { updateStunState } from '../combat/stun';
 
 /** True on the frame a button goes from up to down. */
 export function pressed(state: WorldState, input: InputFrame, key: keyof InputFrame): boolean {
@@ -16,7 +17,19 @@ function readAxis(input: InputFrame): { dx: number; dy: number } {
 
 export function updateHero(state: WorldState, hero: Entity, input: InputFrame): void {
   hero.stateFrame++;
+  if (updateStunState(state, hero)) return;
   const { dx, dy } = readAxis(input);
+  const move = HERO_DATA.moves[hero.state];
+  if (move) {
+    hero.vel.x = 0; hero.vel.y = 0;
+    if (pressed(state, input, 'attack')) hero.chainQueued = true;
+    if (hero.stateFrame >= moveTotal(move)) {
+      const next = hero.chainQueued ? nextChain('hero', hero.state) : null;
+      hero.chainQueued = false;
+      setState(hero, next ?? 'idle');
+    }
+    return;
+  }
   switch (hero.state) {
     case 'idle':
     case 'walk': {
@@ -26,16 +39,13 @@ export function updateHero(state: WorldState, hero: Entity, input: InputFrame): 
       const moving = dx !== 0 || dy !== 0;
       if (moving && hero.state !== 'walk') setState(hero, 'walk');
       if (!moving && hero.state !== 'idle') setState(hero, 'idle');
+      if (pressed(state, input, 'attack')) { setState(hero, 'attack1'); hero.chainQueued = false; hero.vel.x = 0; hero.vel.y = 0; break; }
       if (pressed(state, input, 'jump')) { setState(hero, 'jump'); hero.vel.z = HERO_DATA.jumpVz; hero.vel.y = 0; }
       break;
     }
-    case 'jump': {
-      // velocity frozen at takeoff (classic arcade jump)
-      if (hero.stateFrame > 1 && hero.pos.z === 0) {
-        setState(hero, dx !== 0 || dy !== 0 ? 'walk' : 'idle');
-      }
+    case 'jump':
+      if (hero.stateFrame > 1 && hero.pos.z === 0) setState(hero, dx !== 0 || dy !== 0 ? 'walk' : 'idle');
       break;
-    }
     default:
       break;
   }
