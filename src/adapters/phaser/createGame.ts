@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { BASE_W, BASE_H } from '@shell/scale';
+import { BootScene } from './scenes/BootScene';
 import { GameScene } from './scenes/GameScene';
 import { TestPatternScene } from './scenes/TestPatternScene';
 
@@ -14,7 +15,7 @@ export function createGame(parent: HTMLElement, k: number): Phaser.Game {
     render: { antialias: false, roundPixels: true, powerPreference: 'high-performance' },
     scale: { mode: Phaser.Scale.NONE, autoCenter: Phaser.Scale.NO_CENTER },
     fps: { target: 60, forceSetTimeOut: false },
-    scene: [GameScene, TestPatternScene],
+    scene: [BootScene, GameScene, TestPatternScene],
   });
   game.registry.set('scale', k);
   return game;
