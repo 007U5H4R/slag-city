@@ -3,14 +3,14 @@ import { createGame } from '@adapters/phaser/createGame';
 import { applyScale } from '@adapters/phaser/scale';
 import { computeIntegerScale } from '@shell/scale';
 import { installViewportGate } from '@shell/viewport-gate';
+import { installCabinet } from '@shell/cabinet';
 
 const screen = document.getElementById('screen');
 if (!screen) throw new Error('#screen missing from index.html');
 
-const chromeH = (): number => {
-  const s = getComputedStyle(document.documentElement);
-  return parseInt(s.getPropertyValue('--marquee-h')) + parseInt(s.getPropertyValue('--panel-h'));
-};
+const cabinet = installCabinet();
+
+const chromeH = (): number => cabinet.chromeHeight();
 const currentScale = (): number => computeIntegerScale(window.innerWidth, window.innerHeight, chromeH());
 
 let game: Phaser.Game | null = null;
