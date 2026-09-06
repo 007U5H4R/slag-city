@@ -1186,6 +1186,10 @@ export function rngInt(r: RngState, min: number, max: number): number {
 // src/core/sim/loop.ts
 export const STEP_MS = 1000 / 60;
 export const MAX_STEPS_PER_ADVANCE = 5;
+// DEVIATION (05.1, owner-approved 2026-09-06): STEP_MS=1000/60 isn't representable, so
+// naive `acc >= STEP_MS` drops the final step (repeated-subtraction residue lands just
+// below STEP_MS). Guard with EPSILON. Determinism-safe (pure IEEE-754).
+const EPSILON = 1e-9;
 export interface FixedStep { accumulator: number }
 export function createFixedStep(): FixedStep { return { accumulator: 0 }; }
 export function resetFixedStep(fs: FixedStep): void { fs.accumulator = 0; }
@@ -1193,7 +1197,7 @@ export function resetFixedStep(fs: FixedStep): void { fs.accumulator = 0; }
 export function advanceFixedStep(fs: FixedStep, dtMs: number, step: () => void): number {
   fs.accumulator = Math.min(fs.accumulator + dtMs, STEP_MS * MAX_STEPS_PER_ADVANCE);
   let n = 0;
-  while (fs.accumulator >= STEP_MS && n < MAX_STEPS_PER_ADVANCE) {
+  while (fs.accumulator >= STEP_MS - EPSILON && n < MAX_STEPS_PER_ADVANCE) {
     step(); fs.accumulator -= STEP_MS; n++;
   }
   if (n === MAX_STEPS_PER_ADVANCE) fs.accumulator = fs.accumulator % STEP_MS;
