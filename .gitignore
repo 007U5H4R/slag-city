@@ -17,3 +17,9 @@ dist/
 # Editor
 .vscode/
 .idea/
+
+# Test / tool output
+test-results/
+playwright-report/
+coverage/
+tools/**/out/
