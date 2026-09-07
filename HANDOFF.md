@@ -4,8 +4,10 @@
 Original arcade beat-'em-up (Phaser 3 + Vite + TypeScript). Stages 1–5 approved; executing the
 per-ticket plans via subagent-driven development (one fresh implementer per task, brief/report as
 files, orchestrator review, ledger updates, phase QA gate).
-**▶ Phase A signed off by the owner (`9ce70a3`); Phase B under way — ticket 03 art tracer. Task 3.1 done; next is
-the Higgsfield generation (owner-delegated, tracer-first). See "Your next action".** HEAD = `683e8f2`.
+**▶ Phase A signed off (`9ce70a3`); Phase B — ticket 03 art tracer ✅ COMPLETE + owner-accepted (`ced1d6b`, 2026-09-07).
+Tasks 3.1 ✓ / 3.2 ✓ / 3.3 ✓ / 3.4 ✓ (Seedream legs-only walk) / 3.5 ✓ (in-engine, accepted). NEXT = scale the art
+(hero attack/idle/hit + enemy references/actions) — needs an owner budget/top-up decision first. See "Your next action".**
+HEAD = `ced1d6b`. Higgsfield balance = **66.9 cr** (16 spent across ticket 03: 6 on the 3.3 reference, 10 on 3.4 probes+walk).
 
 ## The resume anchor
 **Read `docs/build/LEDGER.md` first.** It is the source of truth for task status, SHAs, deviations,
@@ -33,27 +35,53 @@ and open threads. This HANDOFF orients you; the LEDGER has the live detail.
 - **QA added 3 regression tests** (`test/core/qa-phase-a.test.ts`): KO score award + full-entity-world
   determinism + input-sensitivity guard. Deliverable: `docs/qa/phase-a-cases.md`.
 
-## Your next action — Phase B / Ticket 03 art tracer (resume in a FRESH session)
-Phase A is signed off (`9ce70a3`) and O-1 is fixed (`a41d1c8`). Phase B is unblocked — owner: "do what is right with
-Higgsfield, if you need extra credit let me know." **Resume ticket 03 in a fresh session** (image-generation +
-visual-acceptance wants clean context, per the build-workflow's fresh-session-per-ticket rule).
+## Your next action — Ticket 03 DONE. Next: scale hero + enemy art (owner budget/top-up first)
 
-**Generation-path decision (owner, 2026-09-07):** the plan's **AutoSprite app is NOT in this account's marketplace**
-(`apps_search` → only "Match Cut + Tracelab"). Use the Higgsfield **character-sheet workflow** instead (confirmed:
-`get_workflow_instructions { workflow: 'character-sheet' }`) as the sprite-frame generator. **Tracer-first:** generate
-ONE hero (reference + one action), measure real cost + AI frame consistency, **flag the owner before credit runs low.**
-Balance at start = **88.9 credits (Pro)**. No Kling-backed model. Record every generation
-(prompt/seed/model/provider/licence/date + balance before/after) in `assets/LICENSES.md` + LEDGER.
+**Ticket 03 (art tracer) is ✅ COMPLETE + owner-accepted, committed `ced1d6b`.** The hero WALK plays in-engine
+(`docs/verification/03-art-tracer.md`). The tracer proved the pipeline end-to-end and the cost model. **Read `docs/build/LEDGER.md`
+Task 3.4/3.5 entries for the full detail before continuing.**
+
+**Working art method (proven, use it to scale):** Higgsfield **Seedream 4.5** (`seedream_v4_5`, **1 cr/frame**, image ref =
+the hero reference job `36273de6-a4b5-483b-9922-9bd42ec4f3e5` = `assets/sources/hero/reference.png`), **upper-body + weapon
+LOCKED to the reference, vary ONLY the legs/action** (this fixed the detached-hammer defect), hard framing locks (fixed camera
+distance, same character height, feet on one ground line), flat `#808080` bg, "no pole/line/objects". ~4 frames/action ≈ **4 cr/action**.
+Then: assemble a horizontal strip → `assets/sources/hero/<action>.png` (compositing was ad-hoc via sharp — script it if scaling) →
+`build-atlas` (`tools/art/manifests/hero.json`, add the action) → in-engine via the already-wired `EntityViews` sprite path.
+**DEAD ENDS (do not retry):** nano_banana_pro image-ref stills POSE-LOCK (identity holds, pose won't change); the `autosprite`
+model is catalog-listed but NON-INVOCABLE (circular error — filed as a bug). Seedance img2video works but is 26 cr/clip (heavy).
+
+**⛔ Before scaling — owner decision needed:** balance is **66.9 cr**. Full hero move-set (attack/idle/hit, maybe run/jump ≈ 4–5
+more actions ≈ ~20 cr) is affordable; the enemy roster (knife, heavy, gang trio — each its own reference + actions) will likely
+need a **credit top-up**. Get the owner's scope + top-up call before the big spend. Log every generation to `assets/LICENSES.md` + LEDGER.
+
+**Reproducibility note:** `assets/sources/hero/walk.png` (11 MB strip) + the probe frames in `docs/art/probes/` are ON DISK but
+NOT committed (per plan Step 6, source sheets stay outside git). The committed atlas `public/assets/atlases/hero.{png,json}` is what ships.
+
+---
+### (superseded) prior next action — Task 3.4 sprite sheets
+Phase A signed off (`9ce70a3`), O-1 fixed (`a41d1c8`). Phase B unblocked — owner: "do what is right with Higgsfield…
+take reasonable decisions and keep moving; flag me before credit runs low." **Higgsfield balance = 82.9 cr.**
+
+**⚠ 3.4 generation-path finding (this session, from actually reading the character-sheet workflow):** the character-sheet
+workflow is a *reference-sheet* generator (split-screen / turnaround / expression sheets = discrete static views), **NOT an
+animation-frame generator** — it does not natively emit an atlasable N-frame walk/attack strip with feet on a common floor
+line. So for 3.4, test the **plan's own fallback (Solution-PRD §1): reference → per-pose stills** via `generate_image`
+(nano_banana_pro, reference.png as an image ref), each frame prompted for one pose on a **hard flat #808080 bg** so
+`build-atlas`'s bgKey knockout works, feet on a common floor line. Generate ONE action first (e.g. a short walk or the
+attack), run it through `build-atlas` → in-engine, **measure real cost + frame consistency, and flag the owner with that
+data before scaling** to the full move set. `get_cost` reports UNIT cost (=2 for nano_banana_pro); true batch = 2×count.
 
 **Ticket 03 task state:**
-- **3.1 palette tool — DONE** (`683e8f2`; `tools/art/palette.ts`; 84 tests; no sharp).
-- **3.2 build-atlas — TODO (zero-spend tooling):** plan ~L3308; uses sharp (SANCTIONED for art tools per Tech Stack;
-  the ticket-20 no-sharp rule was only for trivial placeholder PNGs). Buildable before any generation.
-- **3.3 hero reference — TODO (⛔ spends credit):** `generate_image` Nano Banana Pro, 2–4 candidates → `assets/sources/hero/reference.png` + provenance. Plan ~L3497.
-- **3.4 sprite sheets — TODO (⛔ spends credit):** was "AutoSprite" → now the character-sheet workflow. Load it first;
-  prompt "flat #808080 background, feet on a common floor line" so `build-atlas`'s bgKey knockout works. Plan ~L3544.
+- **3.1 palette tool — DONE** (`683e8f2`; `tools/art/palette.ts`; 84 tests).
+- **3.2 build-atlas — DONE** (`27c2927`; `tools/art/build-atlas.ts` + `manifests/hero.json` + test; sharp devDep; 85 tests).
+  Type-only deviation ratified (dropped redundant `data = knockout(...)` reassignment under @types/node v26 — see LEDGER).
+- **3.3 hero reference — DONE** (`a003fa0`; owner picked candidate **#1 masked exorcist** → `assets/sources/hero/reference.png`;
+  3 candidates in `docs/art/candidates/`; 6 cr; provenance in `assets/LICENSES.md`).
+- **3.4 sprite sheets — TODO (⛔ spends credit, THE tracer risk):** per-pose-stills approach above; feed
+  `tools/art/manifests/hero.json` (expects `assets/sources/hero/walk.png` + `attack.png` strips on #808080). Plan ~L3544.
 - **3.5 palette + atlas + in-engine playback — TODO:** ⛔ owner visual-accept gate; Chrome via headless CDP @≥769px
   (`/Volumes/E Drive/Dev/.scratch/slag-cdp-gate.mjs`), screenshots → `docs/verification/03-art-tracer.md`.
+  NB `anim-table.ts` already EXISTS (Phase A 7.4) — 3.5 MODIFIES it (wire EntityViews to sprites), does not create it.
 
 **⚠ Plan-DAG note (7.4):** `anim-table.ts` already EXISTS — ticket 03 **MODIFIES** it (atlas art + wire `EntityViews`
 to sprites + non-hero kinds), does not create it. `variantAtlasKey` (8.3) is already there, dormant until sprites land.
