@@ -5,9 +5,10 @@ Original arcade beat-'em-up (Phaser 3 + Vite + TypeScript). Stages 1–5 approve
 per-ticket plans via subagent-driven development (one fresh implementer per task, brief/report as
 files, orchestrator review, ledger updates, phase QA gate).
 **▶ Phase A signed off (`9ce70a3`); Phase B — ticket 03 art tracer ✅ COMPLETE + owner-accepted (`ced1d6b`, 2026-09-07).
-Tasks 3.1 ✓ / 3.2 ✓ / 3.3 ✓ / 3.4 ✓ (Seedream legs-only walk) / 3.5 ✓ (in-engine, accepted). NEXT = scale the art
-(hero attack/idle/hit + enemy references/actions) — needs an owner budget/top-up decision first. See "Your next action".**
-HEAD = `ced1d6b`. Higgsfield balance = **66.9 cr** (16 spent across ticket 03: 6 on the 3.3 reference, 10 on 3.4 probes+walk).
+Tasks 3.1 ✓ / 3.2 ✓ / 3.3 ✓ / 3.4 ✓ (Seedream legs-only walk) / 3.5 ✓ (in-engine, accepted). ▶ SCALING PASS started:
+hero ATTACK generated + wired in-engine + verified (`2ee4a9d`). NEXT = hero idle + hit (cheap), then ⛔ enemy roster
+(needs owner budget/top-up). See "Your next action".**
+HEAD = `2ee4a9d`. Higgsfield balance = **60.9 cr** (28 spent so far: 16 across ticket 03 + 6 on the hero attack, scaling pass).
 
 ## The resume anchor
 **Read `docs/build/LEDGER.md` first.** It is the source of truth for task status, SHAs, deviations,
@@ -35,11 +36,18 @@ and open threads. This HANDOFF orients you; the LEDGER has the live detail.
 - **QA added 3 regression tests** (`test/core/qa-phase-a.test.ts`): KO score award + full-entity-world
   determinism + input-sensitivity guard. Deliverable: `docs/qa/phase-a-cases.md`.
 
-## Your next action — Ticket 03 DONE. Next: scale hero + enemy art (owner budget/top-up first)
+## Your next action — Scaling pass: hero idle + hit next (then ⛔ enemies, owner budget/top-up first)
 
-**Ticket 03 (art tracer) is ✅ COMPLETE + owner-accepted, committed `ced1d6b`.** The hero WALK plays in-engine
-(`docs/verification/03-art-tracer.md`). The tracer proved the pipeline end-to-end and the cost model. **Read `docs/build/LEDGER.md`
-Task 3.4/3.5 entries for the full detail before continuing.**
+**Ticket 03 (art tracer) is ✅ COMPLETE + owner-accepted (`ced1d6b`). Hero ATTACK now also wired in-engine + verified (`2ee4a9d`).**
+The hero WALK + ATTACK both play in-engine (`docs/verification/03-art-tracer.md`; attack detail in the LEDGER "Scaling pass" section).
+The tracer + attack proved the pipeline end-to-end and the cost model both ways (lock upper body → vary legs = walk; lock legs → vary
+arms+grip = attack). **Read `docs/build/LEDGER.md` "Scaling pass" + Task 3.4/3.5 entries for the full detail before continuing.**
+
+**Attack wiring recap (proven, zero-credit, resumable pattern for idle/hit):** frames `docs/art/probes/<action>/*.png` → assemble a
+horizontal strip via sharp (see `/Volumes/E Drive/Dev/.scratch/assemble-attack.mjs` — import sharp from the project `node_modules`) →
+`assets/sources/hero/<action>.png` (source stays OUT of git) → add `{name:'<action>',sheet:…,frames:N}` to `tools/art/manifests/hero.json`
+→ `npm run art:atlas tools/art/manifests/hero.json` → CDP gate with `LATEHOLD=<key>` to catch edge-triggered moves on-screen. Attack cell
+grew the atlas union to 52×66 (scale/origin unchanged); idle/hit will likely fit inside that box.
 
 **Working art method (proven, use it to scale):** Higgsfield **Seedream 4.5** (`seedream_v4_5`, **1 cr/frame**, image ref =
 the hero reference job `36273de6-a4b5-483b-9922-9bd42ec4f3e5` = `assets/sources/hero/reference.png`), **upper-body + weapon
@@ -50,12 +58,13 @@ Then: assemble a horizontal strip → `assets/sources/hero/<action>.png` (compos
 **DEAD ENDS (do not retry):** nano_banana_pro image-ref stills POSE-LOCK (identity holds, pose won't change); the `autosprite`
 model is catalog-listed but NON-INVOCABLE (circular error — filed as a bug). Seedance img2video works but is 26 cr/clip (heavy).
 
-**⛔ Before scaling — owner decision needed:** balance is **66.9 cr**. Full hero move-set (attack/idle/hit, maybe run/jump ≈ 4–5
-more actions ≈ ~20 cr) is affordable; the enemy roster (knife, heavy, gang trio — each its own reference + actions) will likely
-need a **credit top-up**. Get the owner's scope + top-up call before the big spend. Log every generation to `assets/LICENSES.md` + LEDGER.
+**⛔ Before the ENEMY roster — owner decision needed:** balance is **60.9 cr**. Remaining hero actions (idle/hit, maybe run/jump ≈ 3–4
+actions ≈ ~15 cr) are affordable and can proceed; the enemy roster (knife, heavy, gang trio — each its own reference + actions) will
+likely need a **credit top-up**. Get the owner's scope + top-up call before that big spend. Log every generation to `assets/LICENSES.md` + LEDGER.
 
-**Reproducibility note:** `assets/sources/hero/walk.png` (11 MB strip) + the probe frames in `docs/art/probes/` are ON DISK but
-NOT committed (per plan Step 6, source sheets stay outside git). The committed atlas `public/assets/atlases/hero.{png,json}` is what ships.
+**Reproducibility note:** `assets/sources/hero/walk.png` + `attack.png` (11 MB strips) + the probe frames in `docs/art/probes/` are ON
+DISK but NOT committed (per plan Step 6, source sheets stay outside git). The committed atlas `public/assets/atlases/hero.{png,json}`
+(now 8 frames, walk + attack) is what ships.
 
 ---
 ### (superseded) prior next action — Task 3.4 sprite sheets
