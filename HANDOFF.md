@@ -1,81 +1,102 @@
-# HANDOFF — SLAG CITY (working title)
+# HANDOFF — SLAG CITY
 
-> Running baton for the build. **Rewrite this file at the end of every stage/task.**
-> Not the notes of record — durable progress also goes to the Obsidian vault + auto-memory.
+**Stage 6 (Execution) — ✅ PHASE A (M1 combat core) COMPLETE, ALL-GATED, QA-PASSED. Model: Opus 4.8 (`claude-opus-4-8`), standard effort.**
+Original arcade beat-'em-up (Phaser 3 + Vite + TypeScript). Stages 1–5 approved; executing the
+per-ticket plans via subagent-driven development (one fresh implementer per task, brief/report as
+files, orchestrator review, ledger updates, phase QA gate).
+**⛔ The build is now PAUSED at the Phase A→B boundary awaiting the owner** (Phase B = ticket 03 art, hard-blocked
+on the Higgsfield credit ceiling). See "Your next action".
 
-## Where we are
+## The resume anchor
+**Read `docs/build/LEDGER.md` first.** It is the source of truth for task status, SHAs, deviations,
+and open threads. This HANDOFF orients you; the LEDGER has the live detail.
 
-- **Stages complete:** 1 Product Discovery → `Discovery-PRD.md`; 2 Solution Design → `Solution-PRD.md`;
-  3 UI/UX Design → `Design.md`; 4 Problem Breakdown → `tickets.md` + `.scratch/slag-city/issues/01–24`;
-  **5 Technical Planning (2026-09-06) → `ImplementationPlan.md` + `ExecutionPlaybook.md` — awaiting sign-off.**
-- **Status:** no code written. Repo is its own git repo at `/Volumes/E Drive/Dev/Code/Claude/Slag City`
-  (confirmed: `git rev-parse --show-toplevel`), branch `main`, **zero commits**, everything untracked.
-- **Toolchain on disk:** Node v26.7.0, npm 11.19.0, npm cache already at `/Volumes/E Drive/Dev/.caches/npm`,
-  pnpm store on the E Drive. Higgsfield, Recraft, Vercel MCP servers are attached to the session.
+## Where we are (as of 2026-09-07)
+- **Branch:** `build/stage-1` (created in place off unborn `main`; `main` is never committed to — see
+  ledger "Worktree deviation"). **HEAD = `a41d1c8`.** Nothing has ever been pushed (no git remote).
+- **✅ PHASE A (M1 combat core) COMPLETE, ALL TICKETS GATED, QA-PASSED.** `npm run check` GREEN — **79 tests /
+  25 files**, typecheck + lint + build clean. Order as executed: **01 ✓ → 05 ✓ → 02 ✓ → 20 ✓ → 06 ✓ → 07 ✓ →
+  08 ✓ → 09 ✓**, then the **Phase A QA-tester gate ✅ PASS** (`6004bb4`). Every per-ticket gate row, SHA, and
+  owner-ratified deviation is in `docs/build/LEDGER.md` (the source of truth) — read it, not this summary,
+  for detail.
+- **Tickets 08 + 09 (this run):** 08 = gang trio (fast/frail knife + super-armoured heavy) + attacker-ticket
+  group AI (≤2 attackers, ring rotation) + variant hook + 5-enemy scene (8.1 `47f679c`, 8.2 `f55c484`,
+  8.3 `099045c`). 09 = HUD strip + rising score pops + breakable crates/walk-over pickups + once-per-type
+  name-cards, on Press Start 2P bitmap fonts (9.1 `2b76a79`, 9.2 `774600a`, 9.3 `8106564`, 9.4 `a2fc2cc`).
+  All browser gates self-certified via headless Chrome + CDP @1024px (owner-AFK-delegated); evidence in
+  `docs/verification/08-gang-trio.png`, `09-hud.png`, `qa-phase-a-*.png`.
+- **Owner-ratified deviations this run (in LEDGER):** 8.1 registered knife/heavy in `ENTITY_UPDATERS` (plan
+  omitted `tick.ts`); 9.1 fonts built **NO-sharp** via `@napi-rs/canvas` (matches the ticket-20 precedent);
+  9.2 name-card float-equality `toBe`→`toBeCloseTo` (1-ULP); 9.3 `CRATE_HURTBOX` z-height 24→40 (hero attacks
+  sit at z 24–44 so punches whiffed over the short crate). `ImplementationPlan.md` patched to match all of the
+  above **and** the two long-deferred §6.2 contradictions.
+- **QA added 3 regression tests** (`test/core/qa-phase-a.test.ts`): KO score award + full-entity-world
+  determinism + input-sensitivity guard. Deliverable: `docs/qa/phase-a-cases.md`.
 
-## Stage 5 output summary
+## Your next action  ⛔ OWNER-GATED — the AFK run stopped here on purpose
+Phase A is done and verified; the build-workflow's per-phase human-in-the-loop gate + the art blocker mean the
+next move needs the owner. Two owner inputs unblock the next session:
+1. **Sign off on Phase A** (the M1 combat core) — or raise changes, which feed a fresh fix loop.
+2. **Provide the Higgsfield credit ceiling** so Phase B can start. **Phase B begins at ticket 03 (art)** and is
+   HARD-BLOCKED: no art generation until the ceiling is recorded in `docs/build/LEDGER.md` + `assets/LICENSES.md`.
+   ⚠ Ticket 03 now **MODIFIES** `src/adapters/phaser/views/anim-table.ts` (adds atlas art + wires `EntityViews`
+   to sprites + non-hero kinds) — it was CREATED in Phase A (7.4), a ratified plan-DAG fix, so 03 does not create it.
+   Ticket 03 also modifies `EntityView.ts` to add the sprite/atlas-key path (the variant-atlas hook `variantAtlasKey`
+   already exists in `anim-table.ts` from 8.3, dormant until sprites land).
 
-`ImplementationPlan.md` (~7,200 lines): header (goal, architecture, stack, Global Constraints copied verbatim from
-the specs), six **plan decisions** to confirm at sign-off, a locked **file structure** (`src/core` pure TS,
-`src/adapters/phaser`, `src/shell`, `tools/art`, `tools/fonts`, `test/`), the **shared core interfaces**
-(`InputFrame`, `Entity`, `WorldState`, `SimEvent`, `tick`, `hashState`, `runReplay`), the **execution order**
-(ticket DAG frontier: 01 → 05 → 02 ∥ 20 → 06 → 03 → 07 ∥ 08 ∥ 09 → 04 → 10 → 11 → 12 ∥ 13 ∥ 21 → 14 → 15 → 16 ∥ 17
-→ 18 → 19 → 22 ∥ 23 → 24), then **one plan per ticket, all 24**, each broken into 2–5-minute TDD steps with exact
-paths, real test code, real implementation code, browser verification steps and a commit per task. Human gates
-(⛔) are marked inside the tickets. Placeholder scan: zero hits.
+**QA observation O-1 — ✅ DONE (`a41d1c8`).** A dead body now stops taking damage (`canHit` rejects the `dead`
+state) and floors at 0 HP; regression test `test/core/combat/hero-death.test.ts`. 80 tests green. No open
+recommendations from Phase A QA remain.
 
-`ExecutionPlaybook.md`: worktree/branch (`build/stage-1`), ledger, brief/report files, one-implementer-per-task
-loop, two-stage review + 5-round fix loop, model tiers per task, seven phases (A–G) with a QA-tester gate each,
-the human checkpoints, budget phasing, close-out into Stages 7–10.
+**Once the owner provides the credit ceiling:** resume with ticket 03 per the per-task loop (lean brief → fresh
+implementer → verify → ledger), running its art gates in Chrome via headless CDP @≥769px. The reusable gate
+driver is `/Volumes/E Drive/Dev/.scratch/slag-cdp-gate.mjs` (env URL/WIDTH/HEIGHT/WAIT/KEYS/PROBE/OUT).
 
-### Plan decisions that need the owner's yes/no at the gate
+## Standing gotchas (learned this session)
+- **`eslint.config.js` is HOOK-PROTECTED** (`config-protection.js` blocks edits) AND bypassing hooks is
+  forbidden. Any lint issue → fix in SOURCE, never the config. The `{x,...rest}` omit-idiom trips
+  no-unused-vars — use a replacer or equivalent instead.
+- **GateGuard fact-forces** on first-touch Edit/Write of non-`docs/build`/`docs/qa` files — answer the
+  4 facts briefly and retry. `docs/build/**` + `docs/qa/**` are exempt (set in `.claude/settings.local.json`).
+- **`src/core` is pure TS** — no Phaser/DOM/`window`/`performance`; eslint boundary rule enforces it.
 
-1. **One OFL font** (*Press Start 2P*) at 8 px and 16 px instead of two licensed pixel faces (`Design.md` §2.2).
-2. **CRT toggle = `C`**, debug hitboxes = `H` (dev only).
-3. `tick` mutates state in place; determinism is proven by `hashState` + replay goldens (not immutability).
-4. Native-resolution framebuffer (`384k × 224k`, camera zoom k) so scanlines are 1 px per k rows.
-5. Walkable band `y ∈ [128, 208]`, HUD band 16 px.
-6. Faction hit rules (hero ↔ gang/boss/feral/crate; gang ↔ hero/feral; feral ↔ everyone but feral).
-   Plus: boss phase-2 recolor is a palette swap of the phase-1 frames (no extra generations; torn socket only in
-   `throw`/`tear-open`); `COIN` is a machine state overlaying ATTRACT.
+## Per-task loop (unchanged)
+Write brief → dispatch fresh implementer (name the model) → implementer does strict TDD
+(red→green→commit, stage explicit paths, no push) → verify report against repo (`git log`, `npm run
+check` green) → for design-judgment tasks run a fresh reviewer; trivial verbatim tasks get
+orchestrator-level verification → update the ledger. Stop at each ticket's verification gate (acceptance
+boxes ticked; `npm run check` green; any golden/screenshots committed) for the human-in-the-loop check.
 
-## What this is
+## Standing rules (do not violate)
+- **Everything on `/Volumes/E Drive`.** Never the internal disk. npm cache + Vite cacheDir already redirected.
+- **Never push** — no remote; local-only until ticket 24. `npm run check` is the gate.
+- **Never bypass safety hooks.** GateGuard fact-forces on new-file Writes/first-touch Edits — answer the
+  4 facts briefly and retry.
+- **Commit trailers, every commit:**
+  ```
+  Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+  Claude-Session: https://claude.ai/code/session_01VXKE9Jw963GEYoCG1AAkNV
+  ```
+- **⛔ Higgsfield credit ceiling** must be provided by the owner **before ticket 03** (Phase B, art gen).
+  Not blocking 02/20. No art generation until recorded in the ledger + `assets/LICENSES.md`.
+- **Phase A order:** 01 ✓ → 05 ✓ → **02 ∥ 20 (current)** → 06 → 07 ∥ 08 ∥ 09. QA-tester gate at the
+  Phase A boundary (after 09), not per ticket.
 
-An **original, publishable arcade beat-'em-up** (one polished stage) replacing the frozen Cadillacs & Dinosaurs
-emulator. Phaser 3 + Vite + TypeScript; all game logic in a framework-free TS core; 384×224 integer-scaled with a
-CRT post-pass; hooks = hit-feel, salvage weapons, neutral feral machines; free browser demo on itch.io + Vercel;
-art via Higgsfield (Nano Banana Pro → AutoSprite) → downscale → 64-colour palette; no Kling-backed model; licence
-manifest from day one.
+## Environment note (this machine, set 2026-09-06 via /doctor — non-project)
+Reversible user-scope changes from a prior session: **auto permission mode is the default**
+(`~/.claude/settings.json` → `permissions.defaultMode="auto"`), and the redundant **`mobbin` + `recraft`
+MCP servers were disabled for this project** (`~/.claude.json` disabledMcpServers). Neither affects the
+build. Auto mode falls back to prompting if the safety classifier is briefly unavailable.
 
-## Reusable inputs from the old project (nothing else)
+## Key files
+- `docs/build/LEDGER.md` — resume anchor (task table, SHAs, deviations, open threads).
+- `ImplementationPlan.md` — the plan-of-record. Ticket 02 at ~line 791 (gate ~1093); ticket 20 at
+  ~line 2136 (gate ~2466); shared core interfaces ~line 132. Read only the section you need.
+- `docs/build/briefs/NN.M.md` — per-task briefs (write 02.1+ from the plan as you reach them).
+- `docs/build/reports/NN.M.md` — implementer reports. `ExecutionPlaybook.md` — full session playbook.
+- Uncommitted on disk (intentional): `docs/build/LEDGER.md` (live working doc) and the untracked
+  briefs/reports/reviews (orchestration scaffolding — only `.gitkeep`s are tracked). These survive `/clear`.
 
-- `../dino-arcade-pwa/js/rom-store.js` `openDB` (30 lines) — ported verbatim in plan Task 19.1 (`src/shell/kv-store.ts`).
-- `../DESIGN.md` cabinet/marquee/bezel/vignette/start-gate spec — already folded into `Design.md`.
-
-## Open questions (carried)
-
-- **Final name** — decided in plan Task 21.1 (⛔ pick from the CLEAR list + USPTO/EUIPO lookup, Classes 9 & 41).
-- **Higgsfield credit ceiling** (a number) — ⛔ required before plan Task 3.3; written into `assets/LICENSES.md`.
-- Hero name, boss final name — `ENEMY_NAMES` working names are in plan Task 9.2; only that table changes.
-- Licensed SFX / music packs — ⛔ plan Task 22.1.
-
-## Next stage — 6, Execution (STOP for sign-off before starting)
-
-- **Gate first:** the user approves Stage 5 (`ImplementationPlan.md` + `ExecutionPlaybook.md`) and answers the six
-  plan decisions above.
-- **Skill:** `superpowers:subagent-driven-development` (load `orchestration-playbook` first). **Model:** Opus 4.8
-  (`claude-opus-4-8`), standard effort — confirm or adjust at the gate; a non-Claude session (`claudex`) is a
-  per-session choice, raise it here if wanted.
-- **Read first:** `ExecutionPlaybook.md` §0–§2, then this file, then `ImplementationPlan.md` header + Global
-  Constraints + shared interfaces, then **ticket 01** only. Do not load the whole plan into context.
-- **First actions:** create the worktree + `build/stage-1`; commit the planning docs; create
-  `docs/build/LEDGER.md`; dispatch ticket 01 task 1.1.
-- Then `/clear` and start Stage 6 in a fresh session, reading this `HANDOFF.md` first.
-
-## Not yet done (open threads)
-
-- Freeze the old emulator project in `../Game/` (commit dangling WIP, tag `freeze/dino-arcade-emulator-2026-09-05`,
-  rewrite `Game/HANDOFF.md` to a FROZEN notice) — planned, not executed.
-- Initial git commit of this repo — happens as the first commit on `build/stage-1` (playbook §0.2), only when the
-  user says go.
-- Obsidian vault note `Slag City/Progress.md` and auto-memory pointer were written at the end of Stage 5 (2026-09-06).
+## Deferred housekeeping (non-blocking)
+- Add `.claude/settings.local.json` to `.gitignore` in a small later commit (stage explicit paths).
+- `eslint-formatter-compact` devDep is owner-approved (commit-quality hook needs it under ESLint 9).

@@ -957,23 +957,36 @@ export function crtInstance(scene: Phaser.Scene): CrtPipeline | undefined {
 
 /** Attach or detach the pass on the scene's main camera. No-op on the Canvas renderer. */
 export function enableCrt(scene: Phaser.Scene, on: boolean): void {
-  if (scene.renderer.type !== Phaser.WEBGL) return;
+  const renderer = scene.renderer;
+  if (!(renderer instanceof Phaser.Renderer.WebGL.WebGLRenderer)) return;
+  // Register the PostFX class once (idempotent). See DEVIATION note below re: why not the config key.
+  renderer.pipelines.addPostPipeline(CRT_KEY, CrtPipeline);
   const cam = scene.cameras.main;
   if (on) {
     if (!crtInstance(scene)) cam.setPostPipeline(CrtPipeline);
     crtInstance(scene)?.setScale((scene.registry.get('scale') as number | undefined) ?? 1);
   } else {
-    cam.removePostPipeline(CrtPipeline);
+    const inst = crtInstance(scene);
+    if (inst) cam.removePostPipeline(inst);
   }
 }
 ```
 
-- [ ] **Step 2: Register the pipeline in `createGame.ts`**
+> **DEVIATION (owner-ratifiable, applied 2026-09-06, commit `505c3fb`):** the original plan
+> registered the pipeline via the Game `pipeline: { [CRT_KEY]: CrtPipeline }` config key and called
+> `removePostPipeline(CrtPipeline)`. Both fail typecheck against Phaser 3.90.0: `PipelineConfig` types
+> only `WebGLPipeline` subclasses (`new(config)`), not a `PostFXPipeline` (`new(game)`); and
+> `removePostPipeline` types `string | PostFXPipeline`. Verified against `PipelineManager.js` that the
+> config path and `addPostPipeline` write the SAME `postPipelineClasses` map at runtime, so the fix
+> above is behavior-identical and cast-free. Registration lives in `enableCrt` (idempotent) so it
+> precedes first use with no READY-vs-create ordering risk.
 
-Add `import { CrtPipeline, CRT_KEY } from './crt/CrtPipeline';` and inside the config object add:
-```ts
-    pipeline: { [CRT_KEY]: CrtPipeline },
-```
+- [ ] **Step 2: Registration — DONE inside `enableCrt`, NOT in `createGame.ts`**
+
+Per the DEVIATION above, the pipeline registers itself lazily via
+`renderer.pipelines.addPostPipeline(CRT_KEY, CrtPipeline)` inside `enableCrt` (idempotent). Do NOT
+add a `pipeline` config key to `createGame.ts` — it fails typecheck against Phaser's `PipelineConfig`
+type. `createGame.ts` is left unchanged by this task.
 
 - [ ] **Step 3: Typecheck** — `npm run typecheck` — Expected: exit 0.
 
@@ -1784,7 +1797,9 @@ describe('determinism', () => {
     expect(runReplay(7, inputs).hash).toBe(runReplay(7, inputs).hash);
   });
   it('different inputs => different hash', () => {
-    const a = syntheticInputs(600), b = syntheticInputs(600); b[10] = 0;
+    // Perturb frame 60 (grounded/walking). NB: frame 10 is airborne — input is
+    // ignored mid-jump so worlds reconverge and hash identically (05.4 fix).
+    const a = syntheticInputs(600), b = syntheticInputs(600); b[60] = 0;
     expect(runReplay(7, a).hash).not.toBe(runReplay(7, b).hash);
   });
   it('matches the committed golden test/replays/locomotion-01.json', () => {
@@ -1964,6 +1979,16 @@ git commit -m "feat(adapter): keyboard and gamepad input sources composed into I
 ```
 
 ### Task 5.6: GameScene drives the sim; box views; pause on hidden tab / gamepad loss
+
+> **⚠ OWNER-APPROVED DEVIATION (executed 2026-09-06, commit `8440707`).** The GameScene
+> code below imports `getSetting/setSetting` from `@shell/settings`, `enableCrt/crtInstance`
+> from `../crt/CrtPipeline`, and launches a `'pattern'` scene — **none of which exist at this
+> point in Phase A** (they are ticket 02 / ticket 20 deliverables; Phase A order is
+> 01→05→02→20). Task 5.6 shipped a **minimal GameScene**: sim-driver + box-views +
+> pause-on-hidden / pause-on-gamepad-loss (what ticket 05 actually gates on). The CRT toggle,
+> settings persistence, and pattern-scene launch are **DEFERRED to tickets 02/20** (not
+> stubbed) — re-add them there. `EntityView.ts` shipped verbatim. See `docs/build/LEDGER.md`
+> (task 5.6) and `docs/build/briefs/05.6.md` for the exact minimal GameScene used.
 
 **Files:**
 - Create: `src/adapters/phaser/views/EntityView.ts`
@@ -2642,7 +2667,7 @@ describe('applyHit', () => {
   });
   it('each move hits a victim once and hp<=0 knocks down', () => {
     const w = createWorld(1); const h = heroOf(w);
-    const v = spawn(w, 'brawler', 130, 168); v.hp = 4;
+    const v = spawn(w, 'brawler', 100, 168); v.hp = 4; // x:100 (was 130) — 130 is outside the hero's hitbox reach; see 6.2 DEVIATION
     registerActorData('hero', { ...HERO_DATA, moves: { attack1: light } });
     setState(h, 'attack1'); h.stateFrame = 4;
     resolveHits(w); resolveHits(w);
@@ -2769,7 +2794,9 @@ export function updateStunState(state: WorldState, e: Entity): boolean {
       if (e.stateFrame >= HIT_FEEL.downFrames) setState(e, 'getup');
       return true;
     case 'getup':
-      if (e.stateFrame >= HIT_FEEL.getupFrames) setState(e, 'idle');
+      // On standing up, grant exactly getupGraceFrames of invulnerability, set EXPLICITLY (the down-entry
+      // budget isn't decremented by updateStunState alone, so it can't be relied on to have decayed). 6.2 DEVIATION.
+      if (e.stateFrame >= HIT_FEEL.getupFrames) { setState(e, 'idle'); e.invulnFrames = HIT_FEEL.getupGraceFrames; }
       return true;
     case 'dead':
       e.vel.x = 0; e.vel.y = 0;
@@ -4395,7 +4422,7 @@ describe('hud rules', () => {
     expect(nameCardX(0, w, cw)).toBe(-cw);
     expect(nameCardX(NAME_CARD.inFrames, w, cw)).toBe(centre);
     const step = nameCardX(1, w, cw)! - nameCardX(0, w, cw)!;
-    expect(nameCardX(2, w, cw)! - nameCardX(1, w, cw)!).toBe(step);
+    expect(nameCardX(2, w, cw)! - nameCardX(1, w, cw)!).toBeCloseTo(step); // toBeCloseTo (was toBe): 292*1/6 vs 292*2/6 differ by 1 ULP — see 9.2 DEVIATION
     expect(nameCardX(NAME_CARD.inFrames + NAME_CARD.holdFrames, w, cw)).toBe(centre);
     expect(nameCardX(NAME_CARD.total, w, cw)).toBeNull();
     expect(nameCardX(NAME_CARD.total - 1, w, cw)!).toBeGreaterThan(centre);
@@ -4537,7 +4564,7 @@ import { SCORE } from '../arcade/score';
 
 export const LUNCHPAIL_HEAL = 40;
 export const PICKUP_RADIUS = { x: 12, y: DEPTH_TOLERANCE } as const;
-export const CRATE_HURTBOX = { x: -12, y: 0, w: 24, h: 24 } as const;
+export const CRATE_HURTBOX = { x: -12, y: 0, w: 24, h: 40 } as const; // h:40 (was 24) — see 9.3 DEVIATION below
 
 export function spawnCrate(state: WorldState, x: number, y: number, contents: PickupKind): Entity {
   const c = spawn(state, 'crate', x, y);
