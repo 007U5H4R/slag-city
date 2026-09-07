@@ -8,6 +8,7 @@ import type { ActorData } from '../combat/frame-data';
 import { registerActorData, moveTotal } from '../combat/frame-data';
 import { updateStunState } from '../combat/stun';
 import { DEPTH_TOLERANCE } from '../combat/hit';
+import { releaseTicket, ringPosition } from '../ai/tickets';
 
 export type GangKind = 'brawler' | 'knife' | 'heavy';
 export interface GangData extends ActorData { reach: number; attackCooldown: number; attackMove: string; superArmour?: boolean }
@@ -57,15 +58,23 @@ export function updateGang(state: WorldState, e: Entity, _input: InputFrame): vo
   const move = d.moves[e.state];
   if (move) {
     e.vel.x = 0; e.vel.y = 0;
-    if (e.stateFrame >= moveTotal(move)) { setState(e, 'idle'); e.cooldown = d.attackCooldown; }
+    if (e.stateFrame >= moveTotal(move)) { setState(e, 'idle'); e.cooldown = d.attackCooldown; releaseTicket(e); }
     return;
   }
   switch (e.state) {
     case 'idle':
       e.vel.x = 0; e.vel.y = 0;
-      if (e.cooldown === 0) setState(e, 'approach');
+      if (e.cooldown === 0) setState(e, e.attackTicket ? 'approach' : 'ring');
       break;
+    case 'ring': {
+      const p = ringPosition(state, e);
+      approach(e, d, p.x, p.y, 6);
+      e.facing = target.pos.x >= e.pos.x ? 1 : -1;
+      if (e.attackTicket) setState(e, 'approach');
+      break;
+    }
     case 'approach': {
+      if (!e.attackTicket) { setState(e, 'ring'); break; }
       const inRange = approach(e, d, target.pos.x, target.pos.y, d.reach);
       if (inRange) { setState(e, d.attackMove); if (d.superArmour) e.armorFrames = d.moves[d.attackMove]!.startup; e.vel.x = 0; e.vel.y = 0; }
       break;

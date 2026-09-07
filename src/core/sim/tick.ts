@@ -7,11 +7,12 @@ import { updateCamera } from './camera';
 import { updateHero } from '../entities/hero';
 import { updateGang } from '../entities/gang';
 import { resolveHits } from '../combat/resolve';
+import { assignAttackTickets } from '../ai/tickets';
 
 export type EntityUpdater = (state: WorldState, e: Entity, input: InputFrame) => void;
 export const ENTITY_UPDATERS: Partial<Record<EntityKind, EntityUpdater>> = { hero: updateHero, brawler: updateGang, knife: updateGang, heavy: updateGang };
 /** Systems that run after entity updates and before physics (hit resolution, AI tickets, hazards). */
-export const POST_UPDATE_SYSTEMS: Array<(state: WorldState) => void> = [resolveHits];
+export const POST_UPDATE_SYSTEMS: Array<(state: WorldState) => void> = [assignAttackTickets, resolveHits];
 
 export function tick(state: WorldState, input: InputFrame): WorldState {
   state.events = [];
