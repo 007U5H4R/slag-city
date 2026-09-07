@@ -339,7 +339,10 @@ image-ref pose-lock; `autosprite` non-invocable (MCP bug filed); Seedance img2vi
 **NEXT (⛔ owner budget/top-up first):** scale hero move-set (attack/idle/hit) + enemy references/actions — enemy roster likely needs a top-up.
 
 ## Scaling pass (post-ticket-03) — hero move-set
-- **Hero ATTACK — 4 frames GENERATED (2026-09-07, owner "go ahead", 6 cr, balance 66.9 → 60.9).** `seedream_v4_5`, image ref = hero
+- **⚠ COST CORRECTION (reconciled vs Higgsfield transaction log): the attack cost 38 cr (19× nano_banana_pro @2, 12:02 UTC), NOT the
+  "6 cr seedream" first logged. Live balance = 22.9 (not 60.9). Total Phase-B spend = 66 cr, not 28. Root cause + scar in `assets/LICENSES.md`.
+  Owner FLAGGED (credit low). Remaining hero actions + the enemy roster now both gated on an owner budget/top-up call.**
+- **Hero ATTACK — 4 frames kept, GENERATED (2026-09-07, owner "go ahead", *actual 38 cr* via 19× nano retries, balance 60.9→22.9).** image ref = hero
   job `36273de6…`, method inverted from the walk: **LEGS planted in a wide stance, vary the arms/hammer/torso, both hands grip the
   haft throughout** (windup overhead → raised swing → ground slam w/ sparks → recover). Jobs `775173be`(0) `bd828542`(1) `09c41ddc`(2)
   `c3b8e7da`(3); frames `docs/art/probes/attack-legsplanted/attack-{0..3}.png` (1664×2496 RGB). **✅ hammer stays attached in all 4
@@ -361,7 +364,11 @@ image-ref pose-lock; `autosprite` non-invocable (MCP bug filed); Seedance img2vi
   `/Volumes/E Drive/Dev/.scratch/03b-attack{,-zoom}.png` — masked hero, legs planted, both hands on the haft (hammer attached), feet on the
   lane line, enemies still placeholder boxes (expected). **`npm run check` GREEN (28 files / 85 tests, typecheck + lint + build).**
   Committed: `tools/art/manifests/hero.json` + `public/assets/atlases/hero.{png,json}` + this ledger + LICENSES. Source strip uncommitted.
-  **NEXT:** hero **idle** + **hit** sheets (cheap, ~4–6 cr each, same locked-part method) — then ⛔ enemy roster needs owner budget/top-up.
+  **⛔ NEXT — ALL further generation gated on owner (credit low + cost model unreliable):** balance is **22.9 cr** and the attack proved a
+  "cheap" action can balloon 6×→38 cr via nano pose-lock retries. Before any more spend the owner must decide **(a)** top-up amount, and
+  **(b)** a per-action model+cost cap (recommend: **seedream_v4_5 only** at ~1 cr/frame — it honours pose text and doesn't need retries;
+  **avoid nano_banana_pro for frames** — its image-ref pose-lock caused the 19-retry overrun). Then hero idle + hit (~4 cr each on seedream),
+  then the enemy roster. **Also: read `balance`/`transactions` right after every batch and log the real figure — never the expected cost.**
 
 _Phases C–G expand here as reached._
 

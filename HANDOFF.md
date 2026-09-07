@@ -6,9 +6,10 @@ per-ticket plans via subagent-driven development (one fresh implementer per task
 files, orchestrator review, ledger updates, phase QA gate).
 **▶ Phase A signed off (`9ce70a3`); Phase B — ticket 03 art tracer ✅ COMPLETE + owner-accepted (`ced1d6b`, 2026-09-07).
 Tasks 3.1 ✓ / 3.2 ✓ / 3.3 ✓ / 3.4 ✓ (Seedream legs-only walk) / 3.5 ✓ (in-engine, accepted). ▶ SCALING PASS started:
-hero ATTACK generated + wired in-engine + verified (`2ee4a9d`). NEXT = hero idle + hit (cheap), then ⛔ enemy roster
-(needs owner budget/top-up). See "Your next action".**
-HEAD = `2ee4a9d`. Higgsfield balance = **60.9 cr** (28 spent so far: 16 across ticket 03 + 6 on the hero attack, scaling pass).
+hero ATTACK generated + wired in-engine + verified (`2ee4a9d`). ⛔ ALL further art generation is now GATED on an owner
+budget/top-up + model-cap decision (balance is low AND the attack over-ran to 38 cr — see the credit alert). See "Your next action".**
+HEAD = `2ee4a9d`. Higgsfield balance = **22.9 cr** (66 spent across Phase B; the attack alone was 38 cr via nano retries — reconciled
+against the transaction log, `assets/LICENSES.md`). Ticket-03 art (walk + attack) is committed and shipping regardless.
 
 ## The resume anchor
 **Read `docs/build/LEDGER.md` first.** It is the source of truth for task status, SHAs, deviations,
@@ -36,7 +37,17 @@ and open threads. This HANDOFF orients you; the LEDGER has the live detail.
 - **QA added 3 regression tests** (`test/core/qa-phase-a.test.ts`): KO score award + full-entity-world
   determinism + input-sensitivity guard. Deliverable: `docs/qa/phase-a-cases.md`.
 
-## Your next action — Scaling pass: hero idle + hit next (then ⛔ enemies, owner budget/top-up first)
+## ⛔ CREDIT ALERT — read first. All art generation paused pending owner decision
+
+**Balance = 22.9 cr (live), not the 60.9 my running log claimed.** Reconciliation vs the Higgsfield `transactions` log (2026-09-07):
+Phase B started at 88.9; total spend = **66 cr**; I had logged only 28. The gap is the **hero attack: it actually cost 38 cr (19×
+nano_banana_pro generations, 12:02 UTC), which I mis-recorded as "6 cr seedream"** — nano's image-ref pose-lock forced ~15 wasted
+retries — plus two small unlogged probe batches (11:30, 11:46 = 6 cr). Full breakdown + scar in `assets/LICENSES.md`.
+**Before ANY further generation the owner must decide: (a) top-up amount, (b) a per-action model + cost cap.** Recommendation:
+**use `seedream_v4_5` only for frames (~1 cr/frame, honours pose text, no retry spiral); do NOT use `nano_banana_pro` for animation
+frames.** New standing habit: call `balance`/`transactions` right after each batch and log the real figure, never the expected cost.
+
+## Your next action — Scaling pass PAUSED: hero idle + hit ready to go once budget is set (then ⛔ enemies)
 
 **Ticket 03 (art tracer) is ✅ COMPLETE + owner-accepted (`ced1d6b`). Hero ATTACK now also wired in-engine + verified (`2ee4a9d`).**
 The hero WALK + ATTACK both play in-engine (`docs/verification/03-art-tracer.md`; attack detail in the LEDGER "Scaling pass" section).
@@ -58,9 +69,10 @@ Then: assemble a horizontal strip → `assets/sources/hero/<action>.png` (compos
 **DEAD ENDS (do not retry):** nano_banana_pro image-ref stills POSE-LOCK (identity holds, pose won't change); the `autosprite`
 model is catalog-listed but NON-INVOCABLE (circular error — filed as a bug). Seedance img2video works but is 26 cr/clip (heavy).
 
-**⛔ Before the ENEMY roster — owner decision needed:** balance is **60.9 cr**. Remaining hero actions (idle/hit, maybe run/jump ≈ 3–4
-actions ≈ ~15 cr) are affordable and can proceed; the enemy roster (knife, heavy, gang trio — each its own reference + actions) will
-likely need a **credit top-up**. Get the owner's scope + top-up call before that big spend. Log every generation to `assets/LICENSES.md` + LEDGER.
+**⛔ Owner decision needed before resuming (see CREDIT ALERT above):** balance is **22.9 cr**. On the *proven-good* path (seedream ≈ 1
+cr/frame) hero idle + hit ≈ ~8 cr and would fit; but the attack just showed a batch can over-run badly, so **do not resume on the current
+budget without an owner top-up + a model/cost cap**. Enemy roster (knife, heavy, gang trio — each its own reference + actions) definitely
+needs a top-up. Log every generation to `assets/LICENSES.md` + LEDGER **from the transaction-log figure**, immediately after each batch.
 
 **Reproducibility note:** `assets/sources/hero/walk.png` + `attack.png` (11 MB strips) + the probe frames in `docs/art/probes/` are ON
 DISK but NOT committed (per plan Step 6, source sheets stay outside git). The committed atlas `public/assets/atlases/hero.{png,json}`
