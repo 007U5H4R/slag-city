@@ -9,6 +9,7 @@ export class BootScene extends Phaser.Scene {
   static readonly MANIFEST: AssetEntry[] = [
     { key: 'hud8', type: 'image', url: '/assets/fonts/hud8.png' },
     { key: 'display16', type: 'image', url: '/assets/fonts/display16.png' },
+    { key: 'hero', type: 'atlas', url: '/assets/atlases/hero.png', atlasJson: '/assets/atlases/hero.json' },
   ];
   constructor() { super('boot'); }
 

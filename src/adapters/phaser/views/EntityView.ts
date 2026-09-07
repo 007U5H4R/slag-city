@@ -1,8 +1,10 @@
 // src/adapters/phaser/views/EntityView.ts
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
+import { isBody } from '@core/sim/entity';
 import type { Entity, EntityKind } from '@core/sim/entity';
 import type { WorldState } from '@core/sim/state';
-import { VARIANT_TINT } from './anim-table';
+import { dataFor, moveTotal } from '@core/combat/frame-data';
+import { animFor, frameIndexFor, VARIANT_TINT } from './anim-table';
 
 export const BOX_SIZE: Record<EntityKind, { w: number; h: number; color: number }> = {
   hero: { w: 20, h: 56, color: 0x4fc3f7 },
@@ -18,7 +20,8 @@ export const BOX_SIZE: Record<EntityKind, { w: number; h: number; color: number 
 };
 
 export class EntityViews {
-  private views = new Map<number, Phaser.GameObjects.Rectangle>();
+  private views = new Map<number, Phaser.GameObjects.Rectangle | Phaser.GameObjects.Sprite>();
+  private frameNames = new Map<string, string[]>();
   constructor(private scene: Phaser.Scene, private layer: Phaser.GameObjects.Layer) {}
 
   sync(state: WorldState): void {
@@ -27,8 +30,13 @@ export class EntityViews {
       alive.add(e.id);
       let v = this.views.get(e.id);
       if (!v) {
-        const s = BOX_SIZE[e.kind];
-        v = this.scene.add.rectangle(0, 0, s.w, s.h, s.color).setOrigin(0.5, 1);
+        const spec = animFor(e);
+        if (spec && this.scene.textures.exists(spec.atlas)) {
+          v = this.scene.add.sprite(0, 0, spec.atlas).setOrigin(0.5, 1);
+        } else {
+          const s = BOX_SIZE[e.kind];
+          v = this.scene.add.rectangle(0, 0, s.w, s.h, s.color).setOrigin(0.5, 1);
+        }
         this.layer.add(v);
         this.views.set(e.id, v);
       }
@@ -38,9 +46,32 @@ export class EntityViews {
     this.layer.sort('depth'); // depth set to pos.y below → draw order = y sort
   }
 
-  private place(v: Phaser.GameObjects.Rectangle, e: Entity, state: WorldState): void {
+  private place(v: Phaser.GameObjects.Rectangle | Phaser.GameObjects.Sprite, e: Entity, state: WorldState): void {
     v.setPosition(Math.round(e.pos.x - state.camera.x), Math.round(e.pos.y - e.pos.z));
     v.setDepth(e.pos.y);
+    if (v instanceof Phaser.GameObjects.Sprite) {
+      const spec = animFor(e);
+      if (!spec) return;
+      const key = `${spec.atlas}/${spec.action}`;
+      let names = this.frameNames.get(key);
+      if (!names) {
+        const tex = this.scene.textures.get(spec.atlas);
+        names = tex.getFrameNames().filter((n) => n.startsWith(`${key}/`));
+        this.frameNames.set(key, names);
+      }
+      // GUARD: only set a frame when this action actually has frames in the atlas.
+      // An action with no frames (e.g. attack* before the attack sheet exists) leaves the
+      // current frame in place — never call setFrame on a non-existent name (Phaser warns/errors).
+      if (names.length > 0) {
+        const move = isBody(e) ? dataFor(e.kind).moves[e.state] : undefined;
+        const i = frameIndexFor(e, names.length, spec, move ? moveTotal(move) : undefined);
+        v.setFrame(`${key}/${i}`);
+        v.setFlipX(e.facing === -1);
+        v.setTintFill(0xffffff); if (e.flashFrames === 0) v.clearTint();
+        v.setAlpha(e.invulnFrames > 0 && state.frame % 4 < 2 ? 0.4 : 1);
+      }
+      return;
+    }
     v.setScale(e.facing, 1);
     v.setFillStyle(e.flashFrames > 0 ? 0xffffff : BOX_SIZE[e.kind].color, e.invulnFrames > 0 && state.frame % 4 < 2 ? 0.4 : 1);
     v.setStrokeStyle(2, VARIANT_TINT[e.variant] ?? 0xffffff);

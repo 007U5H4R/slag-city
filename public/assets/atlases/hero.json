@@ -1,0 +1,102 @@
+{
+ "frames": {
+  "hero/walk/0": {
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 46,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 46,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 46,
+    "h": 64
+   }
+  },
+  "hero/walk/1": {
+   "frame": {
+    "x": 46,
+    "y": 0,
+    "w": 46,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 46,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 46,
+    "h": 64
+   }
+  },
+  "hero/walk/2": {
+   "frame": {
+    "x": 92,
+    "y": 0,
+    "w": 46,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 46,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 46,
+    "h": 64
+   }
+  },
+  "hero/walk/3": {
+   "frame": {
+    "x": 138,
+    "y": 0,
+    "w": 46,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 46,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 46,
+    "h": 64
+   }
+  }
+ },
+ "meta": {
+  "app": "slag-city build-atlas",
+  "image": "hero.png",
+  "size": {
+   "w": 184,
+   "h": 64
+  },
+  "scale": "1",
+  "slagcity": {
+   "origin": [
+    0.5,
+    1
+   ],
+   "scale": 0.030680728667305847,
+   "frameW": 46,
+   "frameH": 64
+  }
+ }
+}

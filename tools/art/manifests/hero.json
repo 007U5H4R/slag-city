@@ -6,7 +6,6 @@
   "bgKey": "#808080",
   "outDir": "public/assets/atlases",
   "actions": [
-    { "name": "walk", "sheet": "assets/sources/hero/walk.png", "frames": 6 },
-    { "name": "attack", "sheet": "assets/sources/hero/attack.png", "frames": 4 }
+    { "name": "walk", "sheet": "assets/sources/hero/walk.png", "frames": 4 }
   ]
 }
