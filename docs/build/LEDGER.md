@@ -205,6 +205,163 @@ AFK run stops for owner input, per the build-workflow's per-phase human-in-the-l
   measure real cost + AI frame consistency before scaling; flag the owner before credit runs low.
 - build-atlas (3.2) is zero-spend tooling and can proceed; sharp is sanctioned for art tools per the Tech Stack
   (the ticket-20 no-sharp rule was for trivial placeholder PNGs only).
+- **Task 3.2 (build-atlas tool) — DONE** (`27c2927`, 2026-09-07, zero spend): `tools/art/build-atlas.ts`
+  (`buildAtlas` — splits per-action sheets, `#808080` bgKey knockout, common-crop so the feet line is identical
+  across frames → origin (0.5,1) never slides, lanczos downscale to targetHeight, palette quantise, emits a Phaser
+  JSON-hash atlas `.png`+`.json` with `meta.slagcity={origin,scale,frameW,frameH}`, frame names `${name}/${action}/${i}`)
+  + `test/tools/build-atlas.test.ts` (synthetic sharp sheets; RED=missing module → GREEN) + `tools/art/manifests/hero.json`
+  (data only; references `assets/…` paths that land in 3.3/3.4) + `package.json` (`sharp` devDep + `art:atlas` script).
+  **Implementer STOPPED correctly** at a plan typecheck failure; **ORCHESTRATOR-RATIFIED type-only deviation:** under
+  `@types/node` v26 sharp's `toBuffer({resolveWithObject:true})` types `data` as the narrow `Buffer<ArrayBuffer>`, so the
+  verbatim `data = knockout(data, bgKey)` reassignment failed TS2322 — dropped the redundant reassignment (`knockout`
+  mutates in place + returns the same ref) and made the destructure `const`. Behaviour-identical, SOURCE-only,
+  eslint.config untouched. `npm run check` GREEN (**85 tests / 28 files**). Test proves: 5 frame names, uniform
+  frameH=64, palette-only pixels, alpha binarised to 0/255. Sharp is a native dep (installed via E-Drive-redirected npm cache).
+
+- **Task 3.3 (hero reference) — DONE, owner picked candidate #1 (masked exorcist)** (2026-09-07): `nano_banana_pro`
+  (backing `nano_banana_2` — **not Kling**, §6.8-compliant), 3 candidates @ 2:3, **real cost 6 cr (2 ea)** measured
+  by balance delta **88.9 → 82.9**. (Note: `get_cost` reports UNIT cost = 2 regardless of `count`; true batch cost =
+  2×count. Budget 3.4 accordingly.) Saved `docs/art/candidates/hero-ref-{1,2,3}.png` (1696×2528 RGBA); prompt-of-record
+  `assets/sources/hero/reference.prompt.txt`; provenance in `assets/LICENSES.md`. **Candidate reads:** #1 masked/helmeted
+  industrial-exorcist, glowing eyes + ring talisman, hammer over shoulder, most distinctive identity + easiest to keep
+  frame-consistent (no face to drift), slight bg vignette; #2 grizzled human, hammer planted, clean apron — **baked-in
+  "INDUSTRIAL EXORCIST" title text (flaw)**; #3 grizzled human, molten hammer held ready across body, clean flat-gray bg,
+  no text. **⛔ Owner-pick gate (plan 3.3 Step 3) + load-bearing (seeds all 3.4 frame gen) → PAUSED for owner.**
+  **Owner picked #1** (2026-09-07, engaged) → chose the masked exorcist (distinctive identity + no face to drift = best
+  frame-consistency for 3.4). Copied to `assets/sources/hero/reference.png`; committed with candidates + provenance.
+- **⚠ 3.4 path finding (from reading the character-sheet workflow):** it is a *reference-sheet* generator (split-screen /
+  turnaround / expression sheets = discrete static views), NOT an animation-frame generator. It fits 3.3 but does NOT
+  natively emit an atlasable N-frame walk/attack strip with feet on a common floor line. Tracer for 3.4 will test the
+  plan's own fallback (Solution-PRD §1): reference → per-pose stills via `generate_image` on flat #808080, then measure
+  frame consistency through build-atlas → in-engine. Flag owner with cost + consistency data before scaling past the tracer.
+
+- **Task 3.4 tracer — RAN (2026-09-07, 8 cr, balance 82.9 → 74.9). ⛔ PAUSED FOR OWNER at the flag point.** Generated a
+  4-frame side-view walk via per-pose stills: `nano_banana_pro`, 2:3, image ref = the chosen hero job `36273de6-a4b5-483b-9922-9bd42ec4f3e5`
+  (= `reference.png`, byte-verified), identical prompt scaffold with only the pose clause changing (contact / recoil / passing / opposite-contact),
+  each on flat #808080. Jobs `9e42a283`(f0) `0d8162b0`(f1) `bb231841`(f2, straggler — still rendering) `6646417b`(f3).
+  Probe frames saved `docs/art/probes/walk-stills/*.png`.
+  **FINDINGS:**
+  1. **Real cost = 8 cr (2 ea × 4)**, confirmed by balance delta. Matches the 3.3 unit-cost model.
+  2. **⛔ Per-pose stills FAIL for animation.** With an `image_references` conditioning image, `nano_banana_pro` reproduces the
+     reference's POSE and largely ignores per-frame pose text — f0/f1/f3 are near-duplicate standing poses (hammer on shoulder,
+     same stance). Identity consistency is *excellent* (mask/coat/apron/hammer/palette rock-stable) but pose variation ≈ zero.
+     Fatal for a walk/attack strip. This kills the Solution-PRD §1 fallback as written.
+  3. **Background is ~[124,124,124] ± 1, not exact #808080 ([128,128,128]).** NON-blocking: `build-atlas` knockout uses `tol=28`
+     so [124] is caught; and the recommended tool (below) removes bg itself. Noted for the record.
+  4. **✅ Purpose-built tool EXISTS: model `autosprite` ("AutoSprite Animation")** — in the `generate_image` catalog (NOT a
+     marketplace app; the old ART note "AutoSprite isn't available, don't chase it" is STALE/WRONG). Params: `kind`
+     (idle/**walk**/run/**attack**/jump/custom + iso_* 8-dir presets), `frame_count` 2–64, `frame_size` 32–512, `video_tier`
+     turbo/pro/max, **`remove_bg` default/ultra (built-in)**, `is_humanoid`. medias = single character image (role `image`, required).
+     This takes ONE reference image → a game-ready sprite sheet for a named action — exactly the escape from finding #2.
+  5. **AutoSprite cost is NOT preflightable** — `get_cost:true` errors ("Something went wrong", req `bbfe665d…`/`64b27437…`,
+     tried ×2). It is video-tier billed, so cost is unknown until a real job is submitted (likely materially > 2 cr/frame).
+  **RECOMMENDATION (put to owner):** pivot 3.4 from per-pose stills to the `autosprite` model, one action first (walk, turbo,
+  low frame_count) to measure real cost, then feed its sheet through `build-atlas` → in-engine. Since cost can't be preflighted
+  and it's a video-tier spend against 74.9 cr, this needs owner authorisation (blast radius = money). **PAUSED here.**
+  `hero.json` manifest still consumes `assets/sources/hero/walk.png`+`attack.png` — AutoSprite output becomes those inputs
+  (or build-atlas is fed AutoSprite's own atlas directly; TBD after we see its output format).
+
+- **Task 3.4 — AutoSprite RULED OUT + Seedream path found (2026-09-07).** Owner authorised an AutoSprite tracer, but
+  **`autosprite` is non-invocable**: `generate_image` → "Job set type not supported: autosprite"; `generate_video` →
+  "autosprite is an image model, use generate_image" (circular); `get_cost` errors; not an app (`apps_search`) nor a workflow
+  (`get_workflow_instructions` catalog). 0 cr spent chasing it. Filed as a Higgsfield MCP bug (SendFeedback). This vindicates
+  the original ART note ("AutoSprite isn't available, don't chase it"); the `models_explore` catalog listing is misleading.
+  **Preflighted fallback costs (zero spend):** Seedream 4.5 image-ref still = **1 cr/frame**; Seedance 2.5 img2video = **26 cr**
+  for a 4s clip (min duration, +per-frame bg removal after). Owner chose the cheap Seedream stills probe.
+- **Task 3.4 — Seedream 4.5 walk probe RAN (2026-09-07, 4 cr, balance 74.9 → 70.9). ⛔ AT OWNER VISUAL-ACCEPT GATE.**
+  4-frame walk, `seedream_v4_5`, 2:3, image ref = hero job `36273de6…`, **pose-FIRST prompts** ("reposition the whole body,
+  do not copy the reference's standing pose"). Jobs `c292fcc3`(0) `9ace0c35`(1) `0a9213a8`(2) `4bc4965e`(3). Frames saved
+  `docs/art/probes/walk-seedream/seedream-walk-{0..3}.png` (1664×2496 RGB, no alpha).
+  **FINDINGS — Seedream decisively beats nano_banana for this job:**
+  1. **✅ Pose variation WORKS** — genuinely distinct dynamic poses (stride / lunge / leap / raised-hammer), unlike nano's
+     pose-lock. AND **✅ identity holds** (mask, coat, apron, ward talisman, hammer, wrapped forearms, boots, palette all stable).
+  2. **⚠ Pose-following is LOOSE** — got dramatic action poses, not a controlled contact/recoil/passing/up walk cycle.
+     **⚠⚠ Owner-spotted defect (frame 1):** when the arms re-pose into a run swing, the **held sledgehammer DETACHES** — both
+     hands become empty fists and the hammer floats behind the shoulder connected to nothing. Prop-attachment is NOT reliable
+     per-frame. Mitigation: explicit repeated grip constraint ("near hand firmly grips the haft every frame") + generate 2–3
+     candidates/frame and keep only correctly-held ones (curation, not one-shot).
+  3. **⚠ Framing/scale/feet-line DRIFT** between frames (character floats/leaps at different heights + sizes) — a problem for
+     `build-atlas`'s common feet-line → origin (0.5,1) assumption. Needs framing-locked prompts (fixed camera distance,
+     identical character height, feet on one ground line).
+  4. **⚠ Artifact:** frame 2 has a vertical black pole — my "straight vertical support right leg" phrase taken literally. bg
+     is ~[124]±2 (knockout tol=28 catches it) but the pole [90,86,83] survives knockout. Drop ambiguous wording; gen 2 cands/frame + pick.
+  5. Real cost = **1 cr/frame** confirmed (balance delta). Seedream RGB has NO alpha → rely on build-atlas bgKey knockout.
+  **STATUS: PAUSED for owner visual-accept** — this is the first real look at the animated hero (the plan's 3.5 ⛔ owner
+  visual gate, arriving early). Before spending more on a framing-locked regen + atlas, owner should confirm the hero art
+  direction/quality is a GO. **Recommended next:** refined framing-locked Seedream walk (+ attack), assemble → build-atlas → in-engine.
+- **Task 3.4 — Owner spotted detached-hammer defect → LEGS-ONLY regen SUCCEEDED (2026-09-07, 4 cr, balance 70.9 → 66.9).**
+  Owner: art direction **GO** (design not objected to; only the execution bug). Owner chose the "Seedream legs-only +
+  gripped hammer" method. Root cause of detachment: prompting "arms swing in opposition" freed both hands. **Fix that worked:**
+  lock the UPPER BODY + hammer to the reference (hammer carried on the right shoulder, right hand gripping the haft, left arm
+  a hanging bandaged fist) and vary ONLY the legs + body bob, with hard framing locks (fixed camera distance, same character
+  height, feet on one ground line) and explicit "NO pole/line/objects". 4-frame loop contact-R / passing / contact-L / passing.
+  Jobs `d6dea1ba`(0) `fa1828bd`(1) `b308a1d7`(2) `6a5dbf32`(3); frames `docs/art/probes/walk-legsonly/walk-{0..3}.png`.
+  **RESULT: ✅ hammer stays gripped in all 4 frames (defect fixed), poses cycle, identity + scale consistent.** Minor: Seedream
+  drew a thin near-black baseline despite "no line" → strip bottom rows in strip-assembly (knockout tol=28 won't catch near-black + it spans full width).
+  **This is the viable hero-walk pipeline.** Total 3.4 Higgsfield spend so far = **16 cr** (8 dead-end nano + 4 seedream probe + 4 legs-only). Balance **66.9**.
+  **Next (zero Higgsfield credit — pure tooling):** assemble the 4 frames into a horizontal strip (uniform cells, baseline stripped) →
+  `assets/sources/hero/walk.png`, run `build-atlas` (`tools/art/manifests/hero.json`) → in-engine playback (3.5, Chrome CDP @≥769px).
+- **Task 3.4 — build-atlas pipeline VALIDATED end-to-end on real art (2026-09-07, zero Higgsfield credit).**
+  Assembled the 4 legs-only frames into a 4-cell strip `assets/sources/hero/walk.png` (6656×2496, gray #808080 bg, native
+  1664 cells — baseline benign: it sits within the char x-extent so it doesn't blow out the union crop, and pins the feet line).
+  **No `palette.provisional.json` existed** (manifest referenced a never-created file) → generated one from the walk strip's
+  character pixels via the 3.1 tool `buildPalette(…, 32)` (bg knocked to alpha 0 first) → `assets/palette.provisional.json`
+  (32 warm foundry tones; no near-#808080 grays; includes tan bandage tones + molten-orange). Ran `build-atlas` (walk-only
+  tracer manifest, frames:4, scaleFrom:walk, bgKey:#808080, targetHeight:64) → **`public/assets/atlases/hero.{png,json}`**,
+  frames `hero/walk/0..3`, **46×64 per frame** (scale 0.0307), origin [0.5,1], meta.slagcity correct.
+  **RESULT (8× preview inspected): ✅ reads at 64px, ✅ feet on a common line (no slide), ✅ legs cycle + hammer stays, ✅ NO
+  knockout holes (bandages survived tol=28), ✅ palette holds.** Full pipeline proven: reference → Seedream legs-only →
+  strip → median-cut palette → build-atlas → Phaser atlas. Minor polish: sprite is dark + sits low (raised hammer eats headroom).
+  **⛔ STILL OPEN:** in-engine playback (3.5) — wire the atlas into Phaser (MODIFY `anim-table.ts`, EntityViews → sprite), play
+  the walk, screenshot via Chrome CDP @≥769px → `docs/verification/03-art-tracer.md`. That is the final tracer/visual-accept step.
+  NB: tracer used a walk-only inline manifest; `tools/art/manifests/hero.json` still lists walk:6 + attack:4 (full set, not yet generated).
+- **Task 3.5 — IN-ENGINE PLAYBACK wired + gate captured (2026-09-07, fresh Opus implementer, zero Higgsfield credit). ⛔ AWAITING OWNER ACCEPT.**
+  Implementer (brief `docs/build/briefs/03.5.md`, report `docs/build/reports/03.5.md`): created `tools/art/make-provisional-palette.ts`
+  (plan-verbatim), regenerated `assets/palette.provisional.json` (64 colours, walk only), updated `tools/art/manifests/hero.json`
+  (walk frames 6→4, attack action removed), rebuilt `public/assets/atlases/hero.{png,json}`, added the `hero` atlas to
+  `BootScene.MANIFEST`, and wired the `EntityViews` sprite path (plan Step 4) with a **missing-frame guard** (frame names cached per
+  `${atlas}/${action}`; the frame/flip/tint/alpha block runs only when `names.length>0`, so the absent `hero/attack` never calls
+  `setFrame`). **Ratified deviation beyond the set:** `anim-table.ts` was NOT recreated — it already exists (ticket 7.4) as a
+  superset with the required `ANIM_TABLE`/`animFor`/`frameIndexFor` PLUS `VARIANT_TINT`/`variantAtlasKey` that `EntityView` imports;
+  recreating verbatim would break that import. `npm run check` GREEN (28 files / 85 tests). Implementer did NOT commit / did NOT open a browser.
+  **Orchestrator browser gate (Chrome CDP @1024×640, ≥769px):** extended the gate driver with a `HOLD` env (keyDown/keyUp span) to
+  drive a walk. Captured idle (walk/0) + walk (HOLD=Right) → `docs/verification/03-art-tracer{,-walk,-idle,-walk-full}.png` +
+  `docs/verification/03-art-tracer.md`. **Result: ✅ hero renders as a SPRITE (enemies still boxes), walk pose reads at 384×224,
+  hammer attached, feet on the lane line, facing right, CONSOLE_ERRORS=[].**
+  ✅ **OWNER ACCEPTED (2026-09-07, "go ahead") + COMMITTED `ced1d6b`** (11 files: palette.provisional.json, make-provisional-palette.ts,
+  hero.json, public/assets/atlases/hero.{png,json}, EntityView.ts, BootScene.ts, docs/verification/03-art-tracer.{md + 3 png}). Baton `2aa85e4`.
+  **NOT committed (plan Step 6 — sources stay outside git):** `assets/sources/hero/walk.png` (11 MB) + `docs/art/probes/*` (on disk, logged in LICENSES).
+
+## ✅ TICKET 03 (art tracer, M0) — COMPLETE + owner-accepted. Phase B continues.
+**Tracer conclusions (for scaling):** working method = Seedream 4.5 image-ref, upper-body/weapon locked, legs-only, framing-locked,
+#808080 bg → ~4 cr/action → strip → build-atlas → in-engine (EntityViews sprite path already wired). Dead ends: nano_banana_pro
+image-ref pose-lock; `autosprite` non-invocable (MCP bug filed); Seedance img2video works but 26 cr/clip. **16 cr spent; balance 66.9.**
+**NEXT (⛔ owner budget/top-up first):** scale hero move-set (attack/idle/hit) + enemy references/actions — enemy roster likely needs a top-up.
+
+## Scaling pass (post-ticket-03) — hero move-set
+- **Hero ATTACK — 4 frames GENERATED (2026-09-07, owner "go ahead", 6 cr, balance 66.9 → 60.9).** `seedream_v4_5`, image ref = hero
+  job `36273de6…`, method inverted from the walk: **LEGS planted in a wide stance, vary the arms/hammer/torso, both hands grip the
+  haft throughout** (windup overhead → raised swing → ground slam w/ sparks → recover). Jobs `775173be`(0) `bd828542`(1) `09c41ddc`(2)
+  `c3b8e7da`(3); frames `docs/art/probes/attack-legsplanted/attack-{0..3}.png` (1664×2496 RGB). **✅ hammer stays attached in all 4
+  (grip constraint works), identity consistent, poses dynamic + read as a hammer attack.** ⚠ frames vary in size (window reaches high
+  overhead, impact crouches low) → build-atlas union box will be tall+wide; for a NON-looping attack that's fine (anticipation/impact),
+  but check feet stay on the common line + that adding attack to the atlas doesn't shrink the walk framing (union is across ALL frames).
+  Note: seedream ran **~1.5 cr/frame** here (not a flat 1) — budget accordingly.
+  **NEXT (zero-credit tooling, resumable):** assemble attack strip → `assets/sources/hero/attack.png` → add `{name:'attack',sheet:…,frames:4}`
+  to `hero.json` → rebuild atlas → in-engine (ANIM_TABLE attack1/2/3 already map to 'attack'; the EntityView guard will now find frames). Then idle/hit.
+- **Hero ATTACK — WIRED IN-ENGINE + VERIFIED (2026-09-07, zero credit).** Assembled `docs/art/probes/attack-legsplanted/attack-{0..3}.png`
+  → `assets/sources/hero/attack.png` (6656×2496, 4×1664 cells, #808080 bg — mirrors walk.png; source stays OUT of git per plan Step 6).
+  Added `{name:'attack',sheet:'assets/sources/hero/attack.png',frames:4}` to `tools/art/manifests/hero.json`; rebuilt atlas via
+  `npm run art:atlas` → `public/assets/atlases/hero.{png,json}` now **416×66, 8 frames** (`hero/walk/0..3` + `hero/attack/0..3`), cell
+  **52×66** (union grew from 46×64 to fit the raised hammer), **scale 0.0307 unchanged, origin [0.5,1]**. Walk framing preserved (content
+  padded, not cropped); feet stay on the common bottom line (origin y=1 anchors to the union bottom).
+  **CDP visual gate @1024×640** (`slag-cdp-gate.mjs`, new `LATEHOLD`/`LATEHOLD_DELAY` env — holds J ~110 ms before capture so the
+  edge-triggered attack (attack1 = 3+3+8 = 14 frames) is on-screen at shot time; a bare tap can fall between game frames and miss the
+  rising edge): **PROBE `heroLiveFrames=["hero/attack/0"]`** (attack sheet renders, not the walk fallback), **CONSOLE_ERRORS=[]**, screenshot
+  `/Volumes/E Drive/Dev/.scratch/03b-attack{,-zoom}.png` — masked hero, legs planted, both hands on the haft (hammer attached), feet on the
+  lane line, enemies still placeholder boxes (expected). **`npm run check` GREEN (28 files / 85 tests, typecheck + lint + build).**
+  Committed: `tools/art/manifests/hero.json` + `public/assets/atlases/hero.{png,json}` + this ledger + LICENSES. Source strip uncommitted.
+  **NEXT:** hero **idle** + **hit** sheets (cheap, ~4–6 cr each, same locked-part method) — then ⛔ enemy roster needs owner budget/top-up.
 
 _Phases C–G expand here as reached._
 
