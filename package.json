@@ -15,6 +15,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "fonts:build": "tsx tools/fonts/build-retro-font.ts",
+    "art:atlas": "tsx tools/art/build-atlas.ts",
     "check": "npm run typecheck && npm run lint && npm run test && npm run build"
   },
   "dependencies": {
@@ -27,6 +28,7 @@
     "eslint": "^9.39.5",
     "eslint-formatter-compact": "^9.0.1",
     "globals": "^17.12.0",
+    "sharp": "^0.35.4",
     "tsx": "^4.23.13",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.69.0",
