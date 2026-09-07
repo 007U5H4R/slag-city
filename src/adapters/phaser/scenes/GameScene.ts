@@ -12,6 +12,7 @@ import { EntityViews } from '../views/EntityView';
 import { DebugOverlay } from '../views/DebugOverlay';
 import { spawnGang } from '@core/entities/gang';
 import { enableCrt, crtInstance } from '../crt/CrtPipeline';
+import { installFonts } from '../views/fonts';
 
 export class GameScene extends Phaser.Scene {
   world!: WorldState;
@@ -23,11 +24,12 @@ export class GameScene extends Phaser.Scene {
   private gamepad!: GamepadSource;
   private views!: EntityViews;
   private debug!: DebugOverlay;
-  private pauseText!: Phaser.GameObjects.Text;
+  private pauseText!: Phaser.GameObjects.BitmapText;
 
   constructor() { super('game'); }
 
   create(): void {
+    installFonts(this);
     this.cameras.main.setBackgroundColor('#000000');
     this.applyZoom((this.registry.get('scale') as number | undefined) ?? 1);
     this.game.events.on('rescale', (k: number) => this.applyZoom(k));
@@ -56,7 +58,7 @@ export class GameScene extends Phaser.Scene {
     this.gamepad.onConnect(() => this.resume());
     this.input.keyboard?.on('keydown', () => { if (this.pauseReason === 'CONTROLLER DISCONNECTED') this.resume(); });
 
-    this.pauseText = this.add.text(BASE_W / 2, BASE_H / 2, '', { fontFamily: 'monospace', fontSize: '12px', color: '#ffffff' })
+    this.pauseText = this.add.bitmapText(BASE_W / 2, BASE_H / 2, 'display16', '')
       .setOrigin(0.5).setDepth(1000).setVisible(false);
     this.game.events.on(Phaser.Core.Events.HIDDEN, () => this.pause('PAUSED'));
     this.game.events.on(Phaser.Core.Events.VISIBLE, () => { if (this.pauseReason === 'PAUSED') this.resume(); });

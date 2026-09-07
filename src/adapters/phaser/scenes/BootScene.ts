@@ -6,7 +6,10 @@ export interface AssetEntry { key: string; type: 'image' | 'atlas' | 'audio'; ur
 
 export class BootScene extends Phaser.Scene {
   /** Later tickets push entries here (atlases in 03/12/13/16, backgrounds in 04/17, fonts in 09, audio in 22). */
-  static readonly MANIFEST: AssetEntry[] = [];
+  static readonly MANIFEST: AssetEntry[] = [
+    { key: 'hud8', type: 'image', url: '/assets/fonts/hud8.png' },
+    { key: 'display16', type: 'image', url: '/assets/fonts/display16.png' },
+  ];
   constructor() { super('boot'); }
 
   preload(): void {
