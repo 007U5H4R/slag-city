@@ -9,6 +9,7 @@ import { dataFor, THROW } from './frame-data';
 import { hitConnects } from './hit';
 import { HIT_FEEL } from './hit-feel';
 import { SCORE } from '../arcade/score';
+import { CRATE_HURTBOX } from '../entities/items';
 
 export function activeMove(e: Entity): MoveData | null {
   if (!isBody(e)) return null;
@@ -71,7 +72,7 @@ export function resolveHits(state: WorldState): void {
     for (const vic of state.entities) {
       const allowed = thrown ? (vic.id !== att.id && isBody(vic) && faction(vic) !== 'hero' && vic.state !== 'thrown') : canHit(att, vic);
       if (!allowed || att.hitIds.includes(vic.id) || vic.invulnFrames > 0) continue;
-      const hurt = vic.kind === 'crate' ? { x: -12, y: 0, w: 24, h: 24 } : dataFor(vic.kind).hurtbox;
+      const hurt = vic.kind === 'crate' ? CRATE_HURTBOX : dataFor(vic.kind).hurtbox;
       if (!hitConnects(att, move.hitbox, vic, hurt)) continue;
       att.hitIds.push(vic.id);
       applyHit(state, att, vic, move);
