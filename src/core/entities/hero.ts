@@ -3,7 +3,8 @@ import type { InputFrame } from '../types';
 import type { Entity } from '../sim/entity';
 import { setState } from '../sim/entity';
 import type { WorldState } from '../sim/state';
-import { HERO_DATA, moveTotal, nextChain } from '../combat/frame-data';
+import { emit } from '../sim/state';
+import { HERO_DATA, moveTotal, nextChain, SPECIAL_COST } from '../combat/frame-data';
 import { updateStunState } from '../combat/stun';
 
 /** True on the frame a button goes from up to down. */
@@ -19,6 +20,10 @@ export function updateHero(state: WorldState, hero: Entity, input: InputFrame): 
   hero.stateFrame++;
   if (updateStunState(state, hero)) return;
   const { dx, dy } = readAxis(input);
+  if (hero.state === 'jumpAttack') {
+    if (hero.stateFrame > 1 && hero.pos.z === 0) { hero.vel.x = 0; setState(hero, 'idle'); }
+    return;
+  }
   const move = HERO_DATA.moves[hero.state];
   if (move) {
     hero.vel.x = 0; hero.vel.y = 0;
@@ -39,11 +44,18 @@ export function updateHero(state: WorldState, hero: Entity, input: InputFrame): 
       const moving = dx !== 0 || dy !== 0;
       if (moving && hero.state !== 'walk') setState(hero, 'walk');
       if (!moving && hero.state !== 'idle') setState(hero, 'idle');
+      if (pressed(state, input, 'special') && hero.hp > SPECIAL_COST) {
+        hero.hp -= SPECIAL_COST; setState(hero, 'special'); hero.vel.x = 0; hero.vel.y = 0;
+        hero.invulnFrames = HERO_DATA.moves.special!.startup + HERO_DATA.moves.special!.active;
+        emit(state, { type: 'sfx', id: 'special' });
+        break;
+      }
       if (pressed(state, input, 'attack')) { setState(hero, 'attack1'); hero.chainQueued = false; hero.vel.x = 0; hero.vel.y = 0; break; }
       if (pressed(state, input, 'jump')) { setState(hero, 'jump'); hero.vel.z = HERO_DATA.jumpVz; hero.vel.y = 0; }
       break;
     }
     case 'jump':
+      if (pressed(state, input, 'attack')) { setState(hero, 'jumpAttack'); break; }
       if (hero.stateFrame > 1 && hero.pos.z === 0) setState(hero, dx !== 0 || dy !== 0 ? 'walk' : 'idle');
       break;
     default:

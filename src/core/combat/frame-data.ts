@@ -25,8 +25,12 @@ export const HERO_DATA: ActorData = {
     attack1: { startup: 3, active: 3, recovery: 8,  hitbox: { x: 8, y: 24, w: 26, h: 16 }, damage: 6,  level: 'light',  pushback: 2 },
     attack2: { startup: 3, active: 3, recovery: 9,  hitbox: { x: 8, y: 24, w: 28, h: 16 }, damage: 6,  level: 'light',  pushback: 2, chainFrom: 'attack1' },
     attack3: { startup: 5, active: 4, recovery: 14, hitbox: { x: 8, y: 20, w: 34, h: 24 }, damage: 10, level: 'launch', pushback: 3, chainFrom: 'attack2' },
+    jumpAttack: { startup: 2, active: 14, recovery: 0, hitbox: { x: 4, y: 12, w: 32, h: 28 }, damage: 8, level: 'heavy', pushback: 3 },
+    special:    { startup: 6, active: 6, recovery: 20, hitbox: { x: -44, y: 0, w: 88, h: 60 }, damage: 20, level: 'launch', pushback: 4 },
   },
 };
+
+export const SPECIAL_COST = 10;
 
 const registry: Partial<Record<EntityKind, ActorData>> = { hero: HERO_DATA };
 export function registerActorData(kind: EntityKind, data: ActorData): void { registry[kind] = data; }
