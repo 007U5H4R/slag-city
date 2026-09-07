@@ -1,4 +1,5 @@
 // src/core/combat/stun.ts
+import type { Facing } from '../types';
 import type { Entity } from '../sim/entity';
 import { setState } from '../sim/entity';
 import type { WorldState } from '../sim/state';
@@ -36,6 +37,16 @@ export function updateStunState(state: WorldState, e: Entity): boolean {
       return true;
     case 'dead':
       e.vel.x = 0; e.vel.y = 0;
+      return true;
+    case 'grabbed': {
+      const holder = state.entities.find((h) => h.grabbedId === e.id);
+      if (!holder) { setState(e, 'hurt'); e.hitstun = 8; return true; }
+      e.vel.x = 0; e.vel.y = 0;
+      e.pos.x = holder.pos.x + holder.facing * 14; e.pos.y = holder.pos.y; e.facing = (holder.facing * -1) as Facing;
+      return true;
+    }
+    case 'thrown':
+      if (e.stateFrame > 1 && e.pos.z === 0) { setState(e, 'knockdown'); e.stateFrame = 2; e.vel.x = 0; updateStunState(state, e); }
       return true;
     default:
       return false;

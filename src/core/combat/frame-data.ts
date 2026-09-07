@@ -27,10 +27,16 @@ export const HERO_DATA: ActorData = {
     attack3: { startup: 5, active: 4, recovery: 14, hitbox: { x: 8, y: 20, w: 34, h: 24 }, damage: 10, level: 'launch', pushback: 3, chainFrom: 'attack2' },
     jumpAttack: { startup: 2, active: 14, recovery: 0, hitbox: { x: 4, y: 12, w: 32, h: 28 }, damage: 8, level: 'heavy', pushback: 3 },
     special:    { startup: 6, active: 6, recovery: 20, hitbox: { x: -44, y: 0, w: 88, h: 60 }, damage: 20, level: 'launch', pushback: 4 },
+    throw:      { startup: 6, active: 1, recovery: 14, hitbox: { x: 0, y: 0, w: 0, h: 0 }, damage: 0, level: 'light', pushback: 0 },
   },
 };
 
 export const SPECIAL_COST = 10;
+
+/** Grab reach box (in front of the hero) and hold timeout; throw launches the grabbed body as a projectile. */
+export const GRAB_BOX: Rect = { x: 2, y: 0, w: 18, h: 56 };
+export const GRAB_TIMEOUT = 120;
+export const THROW = { vx: 5, vz: 3, damage: 10 } as const;
 
 const registry: Partial<Record<EntityKind, ActorData>> = { hero: HERO_DATA };
 export function registerActorData(kind: EntityKind, data: ActorData): void { registry[kind] = data; }

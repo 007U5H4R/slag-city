@@ -5,7 +5,7 @@ import { faction, setState, isBody } from '../sim/entity';
 import type { WorldState } from '../sim/state';
 import { emit } from '../sim/state';
 import type { MoveData } from './frame-data';
-import { dataFor } from './frame-data';
+import { dataFor, THROW } from './frame-data';
 import { hitConnects } from './hit';
 import { HIT_FEEL } from './hit-feel';
 import { SCORE } from '../arcade/score';
@@ -60,12 +60,17 @@ export function applyHit(state: WorldState, att: Entity, vic: Entity, move: Move
   vic.vel.x = move.pushback * dir; vic.vel.y = 0;
 }
 
+/** A thrown body is itself a launch-level projectile while airborne. */
+export const THROWN_MOVE: MoveData = { startup: 0, active: 1, recovery: 0, hitbox: { x: -12, y: 0, w: 24, h: 40 }, damage: THROW.damage, level: 'launch', pushback: 2 };
+
 export function resolveHits(state: WorldState): void {
   for (const att of state.entities) {
-    const move = activeMove(att);
+    const thrown = att.state === 'thrown' && att.pos.z > 0;
+    const move = thrown ? THROWN_MOVE : activeMove(att);
     if (!move) continue;
     for (const vic of state.entities) {
-      if (!canHit(att, vic) || att.hitIds.includes(vic.id) || vic.invulnFrames > 0) continue;
+      const allowed = thrown ? (vic.id !== att.id && isBody(vic) && faction(vic) !== 'hero' && vic.state !== 'thrown') : canHit(att, vic);
+      if (!allowed || att.hitIds.includes(vic.id) || vic.invulnFrames > 0) continue;
       const hurt = vic.kind === 'crate' ? { x: -12, y: 0, w: 24, h: 24 } : dataFor(vic.kind).hurtbox;
       if (!hitConnects(att, move.hitbox, vic, hurt)) continue;
       att.hitIds.push(vic.id);
