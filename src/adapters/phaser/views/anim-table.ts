@@ -29,6 +29,12 @@ export const ANIM_TABLE: Partial<Record<EntityKind, Record<string, AnimSpec>>> =
 
 export function animFor(e: Entity): AnimSpec | null { return ANIM_TABLE[e.kind]?.[e.state] ?? null; }
 
+// Palette-swap variant hook. VARIANT_TINT strokes box views so variants are visible; variantAtlasKey is
+// exported for ticket 03's sprite pipeline to resolve variant textures (base for 0, `${base}-v${variant}`
+// otherwise) with a fallback to the base atlas — nothing calls variantAtlasKey yet, which is expected.
+export const VARIANT_TINT = [0xffffff, 0xffd0d0, 0xd0ffd0, 0xd0d0ff] as const;
+export const variantAtlasKey = (base: string, variant: number): string => (variant === 0 ? base : `${base}-v${variant}`);
+
 /** Looping: advance by fps at 60Hz. Non-looping: spread the frames over the move's total length. */
 export function frameIndexFor(e: Entity, frameCount: number, spec: AnimSpec, totalFrames?: number): number {
   if (frameCount <= 1) return 0;

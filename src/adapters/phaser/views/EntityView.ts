@@ -2,6 +2,7 @@
 import type Phaser from 'phaser';
 import type { Entity, EntityKind } from '@core/sim/entity';
 import type { WorldState } from '@core/sim/state';
+import { VARIANT_TINT } from './anim-table';
 
 export const BOX_SIZE: Record<EntityKind, { w: number; h: number; color: number }> = {
   hero: { w: 20, h: 56, color: 0x4fc3f7 },
@@ -42,5 +43,6 @@ export class EntityViews {
     v.setDepth(e.pos.y);
     v.setScale(e.facing, 1);
     v.setFillStyle(e.flashFrames > 0 ? 0xffffff : BOX_SIZE[e.kind].color, e.invulnFrames > 0 && state.frame % 4 < 2 ? 0.4 : 1);
+    v.setStrokeStyle(2, VARIANT_TINT[e.variant] ?? 0xffffff);
   }
 }

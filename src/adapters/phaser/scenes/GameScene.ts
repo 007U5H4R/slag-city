@@ -44,7 +44,11 @@ export class GameScene extends Phaser.Scene {
     this.views = new EntityViews(this, this.add.layer());
     this.debug = new DebugOverlay(this);
     if (import.meta.env.DEV) this.input.keyboard?.on('keydown-H', () => this.debug.toggle());
-    spawnGang(this.world, 'brawler', 300, 176);
+    spawnGang(this.world, 'brawler', 300, 176, 0);
+    spawnGang(this.world, 'knife', 340, 150, 1);
+    spawnGang(this.world, 'heavy', 360, 200, 2);
+    spawnGang(this.world, 'brawler', 380, 168, 1);
+    spawnGang(this.world, 'knife', 250, 190, 0);
 
     this.keyboard = new KeyboardSource(this);
     this.gamepad = new GamepadSource();
