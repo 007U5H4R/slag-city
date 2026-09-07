@@ -20,7 +20,9 @@ export function activeMove(e: Entity): MoveData | null {
 }
 
 export function canHit(att: Entity, vic: Entity): boolean {
-  if (att.id === vic.id || vic.dead) return false;
+  // `vic.dead` is the removal FLAG; `state === 'dead'` is the KO'd state a body sits in before removal
+  // (the hero has no removal flag at all — it stays in the world). Neither may be hit again. (QA O-1)
+  if (att.id === vic.id || vic.dead || vic.state === 'dead') return false;
   const fa = faction(att), fv = faction(vic);
   if (vic.kind === 'crate') return fa === 'hero';
   if (!isBody(vic)) return false;

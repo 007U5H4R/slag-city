@@ -18,6 +18,7 @@ export function updateStunState(state: WorldState, e: Entity): boolean {
       if (e.stateFrame > 1 && e.pos.z === 0) {
         e.vel.x = 0;
         if (e.hp <= 0) {
+          e.hp = 0; // floor at death: a killing blow overshoots 0; a corpse reads exactly 0 HP (QA O-1)
           setState(e, 'dead');
           if (e.kind === 'hero') { if (!state.stage.heroDead) { state.stage.heroDead = true; emit(state, { type: 'heroDead' }); } }
           else { e.removeIn = 40; state.score += SCORE.ko; emit(state, { type: 'score', amount: SCORE.ko, x: e.pos.x, y: e.pos.y - 40 }); }
