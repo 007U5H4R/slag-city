@@ -186,7 +186,27 @@ Run SEQUENTIAL (shared tick.ts/GameScene; 9.4 depends on 9.1+9.2+9.3).
 Higgsfield credit ceiling (record it here + in `assets/LICENSES.md` before any art generation). This is where the
 AFK run stops for owner input, per the build-workflow's per-phase human-in-the-loop gate.
 
-_Phases B–G expand here as reached._
+## Phase B — Art (ticket 03 art tracer onward)
+
+- **Higgsfield balance at Phase B start: 88.9 credits (Pro plan)** (checked 2026-09-07 via `mcp__higgsfield__balance`).
+- **⚠ BLOCKER DISCOVERED (2026-09-07) — plan's "AutoSprite" app is NOT available in this account's marketplace.**
+  `mcp__higgsfield__apps_search` returns exactly ONE app (Match Cut + Tracelab); no AutoSprite / sprite / pixel app.
+  The plan's Task 3.4 (`apps_search "AutoSprite"` → `apps_invoke` preset `walk`/`attack`, `frame_count`, `is_humanoid`)
+  cannot run as written. The plan anticipated this ("fallback: the per-pose-stills route from Solution-PRD §1").
+  Candidate substitutes to evaluate (read-only, before spend): the Higgsfield **character-sheet workflow**
+  (`get_workflow_instructions { workflow: 'character-sheet' }`) for consistent multi-frame/multi-pose generation;
+  or per-pose stills via `generate_image` (Nano Banana Pro) assembled into sheets by `build-atlas` (bgKey knockout).
+  **Raised with owner — awaiting a decision on the generation path before spending credit on Task 3.3+.**
+- **Task 3.1 (palette tool) — DONE** (`683e8f2`): `tools/art/palette.ts` (`buildPalette` median-cut, `nearest`,
+  `quantise` no-dither/alpha-binarise, `loadPaletteFile`) + test 4/4, verbatim. **No sharp installed** (palette.ts
+  is `node:fs`-only; owner precedent). `npm run check` GREEN (84 tests). Zero spend.
+- **Owner decision (2026-09-07): generation path = Higgsfield CHARACTER-SHEET WORKFLOW** (the AutoSprite substitute),
+  used with judgment: verify the workflow free/read-only, then tracer-bullet ONE hero (reference + one action) to
+  measure real cost + AI frame consistency before scaling; flag the owner before credit runs low.
+- build-atlas (3.2) is zero-spend tooling and can proceed; sharp is sanctioned for art tools per the Tech Stack
+  (the ticket-20 no-sharp rule was for trivial placeholder PNGs only).
+
+_Phases C–G expand here as reached._
 
 ## Open threads / parked items
 
