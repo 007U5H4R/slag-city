@@ -10,7 +10,7 @@ import { updateStunState } from '../combat/stun';
 import { DEPTH_TOLERANCE } from '../combat/hit';
 
 export type GangKind = 'brawler' | 'knife' | 'heavy';
-export interface GangData extends ActorData { reach: number; attackCooldown: number; attackMove: string }
+export interface GangData extends ActorData { reach: number; attackCooldown: number; attackMove: string; superArmour?: boolean }
 
 export const GANG_DATA: Record<GangKind, GangData> = {
   brawler: {
@@ -18,14 +18,24 @@ export const GANG_DATA: Record<GangKind, GangData> = {
     reach: 30, attackCooldown: 40, attackMove: 'punch',
     moves: { punch: { startup: 10, active: 4, recovery: 16, hitbox: { x: 6, y: 28, w: 24, h: 16 }, damage: 8, level: 'light', pushback: 2 } },
   },
-  // knife and heavy are added in ticket 08
-} as unknown as Record<GangKind, GangData>;
+  knife: {
+    walkSpeed: { x: 1.8, y: 1.1 }, hp: 18, hurtbox: { x: -8, y: 0, w: 16, h: 52 }, jumpVz: 0,
+    reach: 26, attackCooldown: 30, attackMove: 'stab',
+    moves: { stab: { startup: 6, active: 3, recovery: 12, hitbox: { x: 4, y: 24, w: 22, h: 12 }, damage: 6, level: 'light', pushback: 1 } },
+  },
+  heavy: {
+    walkSpeed: { x: 0.7, y: 0.5 }, hp: 60, hurtbox: { x: -15, y: 0, w: 30, h: 60 }, jumpVz: 0,
+    reach: 34, attackCooldown: 60, attackMove: 'slam', superArmour: true,
+    moves: { slam: { startup: 22, active: 5, recovery: 24, hitbox: { x: 6, y: 8, w: 34, h: 32 }, damage: 14, level: 'heavy', pushback: 4 } },
+  },
+};
 for (const k of Object.keys(GANG_DATA) as GangKind[]) registerActorData(k, GANG_DATA[k]);
 
-export function spawnGang(state: WorldState, kind: GangKind, x: number, y: number): Entity {
+export function spawnGang(state: WorldState, kind: GangKind, x: number, y: number, variant = 0): Entity {
   const e = spawn(state, kind, x, y);
   const d = GANG_DATA[kind];
   e.hp = d.hp; e.maxHp = d.hp; e.targetId = state.heroId;
+  e.variant = variant;
   return e;
 }
 
@@ -57,7 +67,7 @@ export function updateGang(state: WorldState, e: Entity, _input: InputFrame): vo
       break;
     case 'approach': {
       const inRange = approach(e, d, target.pos.x, target.pos.y, d.reach);
-      if (inRange) { setState(e, d.attackMove); e.vel.x = 0; e.vel.y = 0; }
+      if (inRange) { setState(e, d.attackMove); if (d.superArmour) e.armorFrames = d.moves[d.attackMove]!.startup; e.vel.x = 0; e.vel.y = 0; }
       break;
     }
     default:

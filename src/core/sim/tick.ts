@@ -9,7 +9,7 @@ import { updateGang } from '../entities/gang';
 import { resolveHits } from '../combat/resolve';
 
 export type EntityUpdater = (state: WorldState, e: Entity, input: InputFrame) => void;
-export const ENTITY_UPDATERS: Partial<Record<EntityKind, EntityUpdater>> = { hero: updateHero, brawler: updateGang };
+export const ENTITY_UPDATERS: Partial<Record<EntityKind, EntityUpdater>> = { hero: updateHero, brawler: updateGang, knife: updateGang, heavy: updateGang };
 /** Systems that run after entity updates and before physics (hit resolution, AI tickets, hazards). */
 export const POST_UPDATE_SYSTEMS: Array<(state: WorldState) => void> = [resolveHits];
 
