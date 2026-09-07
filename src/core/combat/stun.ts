@@ -19,7 +19,8 @@ export function updateStunState(state: WorldState, e: Entity): boolean {
         e.vel.x = 0;
         if (e.hp <= 0) {
           setState(e, 'dead');
-          if (e.kind !== 'hero') { e.removeIn = 40; state.score += SCORE.ko; emit(state, { type: 'score', amount: SCORE.ko, x: e.pos.x, y: e.pos.y - 40 }); }
+          if (e.kind === 'hero') { if (!state.stage.heroDead) { state.stage.heroDead = true; emit(state, { type: 'heroDead' }); } }
+          else { e.removeIn = 40; state.score += SCORE.ko; emit(state, { type: 'score', amount: SCORE.ko, x: e.pos.x, y: e.pos.y - 40 }); }
         } else {
           setState(e, 'down');
           e.invulnFrames = HIT_FEEL.downFrames + HIT_FEEL.getupFrames + HIT_FEEL.getupGraceFrames;
