@@ -395,16 +395,21 @@ image-ref pose-lock; `autosprite` non-invocable (MCP bug filed); Seedance img2vi
     seedream). Budget is ample (503.9 cr). Reconcile `transactions` after every batch.
   - **Stale git lock cleared:** a week-old empty `.git/index.lock` (Sep 7 21:48, interrupted session) blocked the commit; removed after
     confirming no live git process. Harmless.
-- **⛔ ENEMY ROSTER BLOCKED + CREDIT ANOMALY (2026-09-14, ~09:33 UTC) — owner flag.** Tried to generate enemy reference candidates
-  (brawler/knife/heavy, 3 each) on **seedream_v4_5** → every submission returned **429 rate_limit_reached, "submitted 0"** (9-batch, then
-  3-batch, then a single). BUT the balance fell **503.9 → 469.9 (−34 cr)** with no successful seedream submission. The `transactions` log shows
-  **17× "Nano Banana Pro" (−2 each = 34 cr)** at **09:18 (×3)** and **09:32:49–09:33:03 (×14)** — a model I NEVER invoked this session (all my
-  calls were seedream). The 14-spend nano cluster coincides exactly with my failed seedream enemy batches. **Strong hypothesis: the Higgsfield
-  backend/MCP is silently falling back to `nano_banana_pro` when seedream is 429-throttled — charging ~2 cr/request while reporting 429/"submitted 0"
-  to the caller.** My confirmed spend this session is only the 7 seedream cr (idle 4 + hurt 3). **STOPPED all generation** — each retry may burn
-  ~2 cr on the hidden fallback. **Do NOT resume enemy generation until (a) the seedream throttle clears AND (b) the nano fallback is understood/ruled out.**
-  New live balance = **469.9 cr**. Scar reinforced: the 429 "submitted 0" response is NOT proof nothing was charged — always reconcile `transactions`
-  after a failed batch too, not just a successful one.
+- **⛔ ENEMY ROSTER BLOCKED (2026-09-14) — seedream 429 throttle.** Tried to generate enemy reference candidates (brawler/knife/heavy,
+  3 each) on **seedream_v4_5** → every submission returned **429 rate_limit_reached, "submitted 0"** (9-batch, then 3-batch, then a single).
+  Those failed submissions created **no jobs and cost nothing** (verified: no seedream enemy jobs in `show_generations`; my only seedream spend
+  today is the 7 cr idle+hurt). **The enemy roster is blocked solely by the seedream provider throttle** — retry once it clears (a concurrent
+  session on the shared account was adding load; see below).
+- **CREDIT ANOMALY — INVESTIGATED + RESOLVED (2026-09-14): benign, a concurrent unrelated session.** Balance fell **503.9 → 469.9 (−34 cr)**
+  with no successful seedream submission of mine, and `transactions` showed **17× "Nano Banana Pro" (−2 = 34 cr)** at 09:18 (×3) + 09:32–09:33 (×14).
+  My *first* hypothesis — a silent seedream→nano fallback charging on 429 — was **WRONG**. `show_generations` proves those 17 are **lucky-charm
+  sticker illustrations** (wishbone, rubber duck, nazar bead, four-leaf clover, maneki-neko, daruma, horseshoe…) from a single shared input ref —
+  i.e. the concurrent **`campfire-dangle-charm`** peer session (a *different project*) spending on the shared Higgsfield account. The timing
+  coincidence with my failed batch was just that. **No fallback bug; no Slag City credits wasted; my game spend today = 7 cr.** New live balance
+  **469.9 cr** (34 of the drop belongs to the Campfire charms project, not this build). **Scar still reinforced:** a 429 "submitted 0" is not
+  automatically proof nothing was charged — reconcile `transactions` after failed batches too — but here the charge belonged to another session,
+  found by matching the nano prompts in `show_generations`. **Lesson: on a shared Higgsfield account, attribute spend by the generation prompt/model
+  in `show_generations`, not by wall-clock proximity.**
 
 _Phases C–G expand here as reached._
 
