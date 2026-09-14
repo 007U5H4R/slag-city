@@ -1,0 +1,182 @@
+{
+ "frames": {
+  "brawler/walk/0": {
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 54,
+    "h": 65
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 54,
+    "h": 65
+   },
+   "sourceSize": {
+    "w": 54,
+    "h": 65
+   }
+  },
+  "brawler/walk/1": {
+   "frame": {
+    "x": 54,
+    "y": 0,
+    "w": 54,
+    "h": 65
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 54,
+    "h": 65
+   },
+   "sourceSize": {
+    "w": 54,
+    "h": 65
+   }
+  },
+  "brawler/walk/2": {
+   "frame": {
+    "x": 108,
+    "y": 0,
+    "w": 54,
+    "h": 65
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 54,
+    "h": 65
+   },
+   "sourceSize": {
+    "w": 54,
+    "h": 65
+   }
+  },
+  "brawler/walk/3": {
+   "frame": {
+    "x": 162,
+    "y": 0,
+    "w": 54,
+    "h": 65
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 54,
+    "h": 65
+   },
+   "sourceSize": {
+    "w": 54,
+    "h": 65
+   }
+  },
+  "brawler/attack/0": {
+   "frame": {
+    "x": 216,
+    "y": 0,
+    "w": 54,
+    "h": 65
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 54,
+    "h": 65
+   },
+   "sourceSize": {
+    "w": 54,
+    "h": 65
+   }
+  },
+  "brawler/attack/1": {
+   "frame": {
+    "x": 270,
+    "y": 0,
+    "w": 54,
+    "h": 65
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 54,
+    "h": 65
+   },
+   "sourceSize": {
+    "w": 54,
+    "h": 65
+   }
+  },
+  "brawler/attack/2": {
+   "frame": {
+    "x": 324,
+    "y": 0,
+    "w": 54,
+    "h": 65
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 54,
+    "h": 65
+   },
+   "sourceSize": {
+    "w": 54,
+    "h": 65
+   }
+  },
+  "brawler/attack/3": {
+   "frame": {
+    "x": 378,
+    "y": 0,
+    "w": 54,
+    "h": 65
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 54,
+    "h": 65
+   },
+   "sourceSize": {
+    "w": 54,
+    "h": 65
+   }
+  }
+ },
+ "meta": {
+  "app": "slag-city build-atlas",
+  "image": "brawler.png",
+  "size": {
+   "w": 432,
+   "h": 65
+  },
+  "scale": "1",
+  "slagcity": {
+   "origin": [
+    0.5,
+    1
+   ],
+   "scale": 0.031936127744510975,
+   "frameW": 54,
+   "frameH": 65
+  }
+ }
+}

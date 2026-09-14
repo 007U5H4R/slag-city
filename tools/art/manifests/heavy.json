@@ -1,0 +1,12 @@
+{
+  "name": "heavy",
+  "targetHeight": 68,
+  "palette": "assets/palette.heavy.json",
+  "scaleFrom": "walk",
+  "bgKey": "#808080",
+  "outDir": "public/assets/atlases",
+  "actions": [
+    { "name": "walk", "sheet": "assets/sources/enemies/heavy/walk.png", "frames": 4 },
+    { "name": "attack", "sheet": "assets/sources/enemies/heavy/attack.png", "frames": 4 }
+  ]
+}

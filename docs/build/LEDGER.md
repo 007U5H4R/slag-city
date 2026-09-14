@@ -410,6 +410,57 @@ image-ref pose-lock; `autosprite` non-invocable (MCP bug filed); Seedance img2vi
   automatically proof nothing was charged — reconcile `transactions` after failed batches too — but here the charge belonged to another session,
   found by matching the nano prompts in `show_generations`. **Lesson: on a shared Higgsfield account, attribute spend by the generation prompt/model
   in `show_generations`, not by wall-clock proximity.**
+- **✅ ENEMY ROSTER — REFERENCE CANDIDATES GENERATED (2026-09-14, 18 cr, balance 469.9 → 451.9). ⛔ AT OWNER-PICK GATE.** The seedream 429
+  throttle above was for *animation frames*; **references are stills, so generated on `nano_banana_pro`** (backing `nano_banana_2` — not Kling,
+  §6.8-compliant, same model as the hero reference 3.3) at **2 cr each** per Design.md §3.6 template. 3 candidates each for brawler / knife / heavy
+  = **9 stills**, all 2:3, 1696×2528 RGBA, flat #808080 bg. **Reconciled vs `transactions`:** top 9 entries at 09:57:49–52Z all `Nano Banana Pro`
+  −2 = exactly 18 cr; balance delta confirms (no overrun, no fallback). Jobs: brawler `c12d863c`/`eaf0959f`/`5fc7546a`, knife `fdb12740`/`65308882`/`5e426ab0`,
+  heavy `187bcafe`/`d1b50af7`/`20b742e8`. Saved `docs/art/candidates/enemies/{brawler,knife,heavy}-{1,2,3}.png` (uncommitted, per plan Step 6 sources-out-of-git).
+  **DEVIATION vs Design.md §3.6 (owner-ratifiable, logged):** did NOT pass the hero reference as `image_references` — this project's ledger repeatedly
+  proves nano_banana_2's image-ref reproduces the *conditioning image's identity* strongly (that's the pose-lock), which would defeat §3.5's silhouette-variety
+  requirement and risk 9 masked-exorcist clones. Instead relied on the shared **text scaffold** (same style clauses as the hero prompt-of-record) for style
+  consistency. **Result: worked — all 9 are stylistically coherent (soot-dirtied tones + molten-orange accents, cartoon-arcade proportions) AND clearly distinct
+  from the hero (no mask/hammer/talisman bleed).** Two defects noted for the owner: **knife-2** has a busy furnace background (not flat gray — bad for knockout);
+  **heavy-3** has a tiny gear logo watermark bottom-right. Heavy tradeoff flagged: **heavy-1** reads mechanical/robotic (may collide with the feral-machine/boss
+  visual lane); **heavy-2/3** read human but both wield a hammer (hero-adjacent silhouette risk at 64px). **9 previews sent to owner (SendUserFile) grouped by role.**
+  **NEXT (after owner picks 1 per role):** copy the pick to `assets/sources/enemies/<kind>/reference.png`, then generate walk + attack frames per kind on
+  `seedream_v4_5` (~1 cr/frame, the proven hero recipe: lock costume/identity, vary action, framing locks, #808080) once its 429 clears → strip → build-atlas
+  → wire non-hero kinds in EntityViews. Reconcile `transactions` after every batch.
+- **✅ ENEMY ROSTER — owner picked refs + ALL WALK/ATTACK FRAMES GENERATED (2026-09-14, 24 cr, balance 451.9 → 427.9). ⛔ NEXT = zero-credit engine wiring.**
+  **Owner pick (AskUserQuestion):** brawler-1, knife-1, heavy-2 → copied to `assets/sources/enemies/{brawler,knife,heavy}/reference.png` (uncommitted, sources-out-of-git).
+  Chosen ref job IDs (image-ref seeds): brawler `c12d863c`, knife `fdb12740`, heavy `d1b50af7`. Owner knowingly accepted heavy-2's hammer-adjacency to the hero.
+  **Frames — all `seedream_v4_5`, 2:3, image-ref = the picked reference job, proven hero recipe (lock costume/identity, vary action, framing locks: fixed camera
+  distance + identical height + feet on one ground line + flat #808080 + "no pole/line/objects"), 1 cr/frame, reconciled vs `transactions` after each batch:**
+  - **Brawler WALK** (tracer, 4 cr, 451.9→447.9): jobs `eb1c3531`/`8a5c08be`/`35de6ce6`/`aceb1d41` → `docs/art/probes/brawler-walk-seedream/walk-{0..3}.png`.
+    ✅ identity rock-stable, framing consistent (locks work far better than the early hero probes), poses cycle, faces right. Minor bandana-colour drift only. Sent to owner as progress.
+  - **Knife + Heavy WALK** (8 cr, 447.9→439.9): knife jobs `58d30241`/`47c18417`/`21a2e974`/`c93806ab` → `docs/art/probes/knife-walk-seedream/walk-{0..3}.png`;
+    heavy jobs `3a41af2b`/`2f9870ea`/`a66dd187`/`e3feb586` → `docs/art/probes/heavy-walk-seedream/walk-{0..3}.png`. ✅ knife stays GRIPPED, heavy hammer stays ATTACHED (grip
+    constraint reliable), identity + framing hold. ⚠ **seedream 429 is intermittent:** the 8-frame batch had 1 item rejected on submission (heavy walk f3) — rejects create
+    NO job + cost NOTHING; a single-frame retry also 429'd once, then succeeded (job `e3feb586`). Lesson: on a "submission_failed 429", just retry the rejected item; verify spend from `transactions`.
+  - **All 3 ATTACKS** (12 cr, 439.9→427.9, one clean 12-batch): brawler `91bd42ff`/`6a10bd56`/`5282c0db`/`75194e70`, knife `85f0c574`/`d9cb7b92`/`4483b9af`/`d1ce5603`,
+    heavy `c5ddc8cf`/`a1f0ff7c`/`03146748`/`fedf0171` → `docs/art/probes/{brawler,knife,heavy}-attack-seedream/attack-{0..3}.png`. Recipe = LEGS PLANTED, vary arms/torso,
+    weapon gripped throughout (windup→strike→recover; heavy = overhead slam w/ ground sparks). ✅ criticals verified: brawler punch extended, knife blade gripped+glowing, heavy hammer
+    striking ground both-handed — **zero weapon detachment across all 24 frames.**
+  **All frames are 1664×2496 RGB (no alpha) — rely on build-atlas #808080 bgKey knockout, same as the hero.** Enemy-roster spend to date = **42 cr** (18 refs + 24 frames); balance **427.9**.
+  **⛔ NEXT (zero Higgsfield credit — pure tooling + engine, hand off / do fresh):** per kind, assemble walk+attack strips → `assets/sources/enemies/<kind>/{walk,attack}.png` (script the
+  strip assembly + strip any near-black baseline, per the hero note) → build a per-kind atlas (extend `tools/art/manifests/` with brawler/knife/heavy manifests; `build-atlas` +
+  `art:atlas`) → add each atlas to `BootScene.MANIFEST` → wire the **non-hero sprite path in `EntityView.ts`** (currently enemies render as boxes; 8.3's `variantAtlasKey` is dormant
+  awaiting exactly this — pick atlas by entity kind, apply `VARIANT_TINT` for palette-swaps) → `ANIM_TABLE` non-hero entries (walk/attack per kind) → CDP verify @1024px (enemies render
+  as sprites, walk + attack play, zero console errors) → `npm run check` green → commit atlases (sources stay uncommitted). This is the ticket-03 "non-hero kinds" work.
+- **✅ ENEMY ROSTER — WIRED IN-ENGINE + CDP-VERIFIED (2026-09-14, zero Higgsfield credit). Committed (this commit).** Pipeline (all zero-spend tooling):
+  assembled 6 strips (`/Volumes/E Drive/Dev/.scratch/assemble-enemies.mjs`, mirrors the hero script) → `assets/sources/enemies/<kind>/{walk,attack}.png` (uncommitted, sources-out-of-git);
+  per-kind 64-colour palettes via `make-provisional-palette.ts` → `assets/palette.{brawler,knife,heavy}.json`; new manifests `tools/art/manifests/{brawler,knife,heavy}.json`
+  (targetHeight **64** brawler/knife, **68** heavy for its bigger presence; scaleFrom walk; bgKey #808080; walk:4 + attack:4) → `npm run art:atlas` → `public/assets/atlases/{brawler,knife,heavy}.{png,json}`
+  (brawler **8 frames 54×65** scale 0.032, knife **8 frames 71×65** scale 0.042 — wide from the thrust reach, heavy **8 frames 48×71** scale 0.028). 8× previews inspected: clean knockout, feet on a
+  common line, weapons attached, colours preserved. **Engine wiring:** added the 3 atlases to `BootScene.MANIFEST`; added `gangAnims(atlas, attackMove)` + brawler/knife/heavy entries to
+  `ANIM_TABLE` (states idle/ring/approach→walk, `punch`/`stab`/`slam`→attack non-looping, hurt/knockdown/down/getup/dead→walk-frame-0 fallback like the hero's extra states); completed the
+  8.3 variant hook for the **sprite path** in `EntityView.ts` (flash = white `setTintFill`; otherwise `setTint(VARIANT_TINT[variant])`, 0xffffff neutral for variant 0/hero — the box path was already
+  variant-stroked). The EntityView sprite-creation path was already generic (sprite when `animFor` returns a spec whose atlas texture exists) so no structural change needed. **`npm run check` GREEN
+  (28 files / 85 tests, typecheck+lint+build).** **CDP gate @1024×640** (`slag-cdp-gate.mjs`): PROBE `spriteTexCounts={heavy:1,hero:1,brawler:2,knife:2}` (all 5 gang + hero render as SPRITES, not
+  rectangles), frames cycling (`heavy/walk/1`,`brawler/walk/0`,`knife/walk/0`…), all 5 enemies in valid states (idle/ring/approach), **CONSOLE_ERRORS=[]**; screenshots `/Volumes/E Drive/Dev/.scratch/enemies-{ingame,spread}.png`
+  show the roster in-cabinet (knife-fighter/brawlers/heavy-with-shouldered-hammer), the **"PIT BRAWLER" name-card slams over the sprite** (name-card system integrates), crates stay boxes (correct — only
+  characters are sprited). **Committed:** the 3 code files + 3 atlas png/json + 3 palettes + 3 manifests + baton/ledger/LICENSES. **Sources uncommitted** (plan Step 6). Enemy-roster total spend **42 cr**, balance **427.9**.
+  **NEXT (optional polish, not blocking):** dedicated hurt/knockdown/down/dead sheets per enemy (currently walk-0 fallback); real recolored variant atlases (currently a tint); size/scale tuning; feral machine + boss art.
 
 _Phases C–G expand here as reached._
 

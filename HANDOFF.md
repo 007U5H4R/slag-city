@@ -8,9 +8,17 @@ files, orchestrator review, ledger updates, phase QA gate).
 ▶ SCALING PASS (hero move-set): ATTACK (`2ee4a9d`) + IDLE + HURT (`2fa9411`, 2026-09-14) all generated, wired in-engine, and CDP-verified.
 ✅ BUDGET UNBLOCKED — owner topped up +500 cr (2026-09-14) and said "go ahead with the remaining implementation". Standing cap: seedream_v4_5
 only (~1 cr/frame), reconcile `transactions` after every batch, no nano_banana_pro for frames.**
-HEAD = `2fa9411`. Higgsfield balance = **503.9 cr** (idle+hurt cost 7 cr this session on seedream, no overrun — see `assets/LICENSES.md`).
-Hero atlas now ships **10 frames** (walk×4, attack×4, idle×1, hurt×1), cell 52×66. **NEXT = ENEMY ROSTER art** (brawler/knife/heavy — each its
-own reference + walk/attack on seedream). Hero jump/grab/throw/special still fall back to walk/attack (acceptable for M0; optional later polish).
+HEAD = `2fa9411` (no new commits this session — enemy art is uncommitted probes + doc edits). Higgsfield balance = **427.9 cr**.
+Hero atlas ships **10 frames** (walk×4, attack×4, idle×1, hurt×1), cell 52×66.
+**✅ ENEMY ROSTER ART COMPLETE (2026-09-14):** owner picked references **brawler-1 / knife-1 / heavy-2** (`assets/sources/enemies/<kind>/reference.png`);
+**walk×4 + attack×4 per kind = 24 frames** generated on `seedream_v4_5` (proven hero recipe, weapon gripped, zero detachment) → probes in
+`docs/art/probes/{brawler,knife,heavy}-{walk,attack}-seedream/`. Refs 18 cr + frames 24 cr = **42 cr this session; reconciled every batch, no overrun.**
+Full job IDs + recipe in `docs/build/LEDGER.md` enemy-roster entry.
+**✅ ENEMY ROSTER WIRED IN-ENGINE + CDP-VERIFIED (2026-09-14, committed this session):** 3 per-kind atlases (`public/assets/atlases/{brawler,knife,heavy}.{png,json}`,
+8 frames ea = walk×4+attack×4) + palettes + manifests; `BootScene.MANIFEST` + `ANIM_TABLE` (gangAnims) + `EntityView.ts` sprite-path variant tint. CDP probe:
+all 5 gang + hero render as SPRITES, frames cycling, zero console errors; name-cards + crates intact. `npm run check` GREEN (28 files/85 tests).
+**⛔ NEXT (optional polish, non-blocking):** dedicated enemy hurt/KO/down/dead sheets (now walk-0 fallback), real recolored variant atlases (now a tint), feral + boss art.
+Hero jump/grab/throw/special still fall back to walk/attack (fine for M0).
 
 ## The resume anchor
 **Read `docs/build/LEDGER.md` first.** It is the source of truth for task status, SHAs, deviations,

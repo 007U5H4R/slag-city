@@ -3,6 +3,21 @@ import type { Entity, EntityKind } from '@core/sim/entity';
 
 export interface AnimSpec { atlas: string; action: string; fps: number; loop: boolean }
 
+// Gang enemies (brawler/knife/heavy) each ship a walk (4) + attack (4) atlas. Their FSM states
+// (idle/ring/approach/<attackMove>/hurt/knockdown/down/getup/dead) map onto those two actions the same
+// way the hero's extra states fall back to walk/attack until dedicated sheets exist (ticket 12): the
+// attack move plays the attack sheet (non-looping, spread over the move length), everything else uses
+// walk (moving states loop at 10fps; static states hold frame 0). `attackMove` is the kind's GANG_DATA
+// attackMove name (brawler 'punch', knife 'stab', heavy 'slam'); `atlas` is the BootScene atlas key.
+function gangAnims(atlas: string, attackMove: string): Record<string, AnimSpec> {
+  const walk = (fps: number): AnimSpec => ({ atlas, action: 'walk', fps, loop: true });
+  return {
+    idle: walk(0), ring: walk(10), approach: walk(10),
+    [attackMove]: { atlas, action: 'attack', fps: 0, loop: false },
+    hurt: walk(0), knockdown: walk(0), down: walk(0), getup: walk(0), dead: walk(0),
+  };
+}
+
 // Base hero entries + the full M0 hero state set. Maps every hero state onto the M0 atlas actions
 // (walk/attack) as a box/sprite fallback; ticket 12 swaps in dedicated action sheets. Created here in
 // ticket 7.4 (self-contained data — no art dependency); ticket 03 provides the hero atlas art and wires
@@ -25,6 +40,9 @@ export const ANIM_TABLE: Partial<Record<EntityKind, Record<string, AnimSpec>>> =
     getup: { atlas: 'hero', action: 'walk', fps: 0, loop: true },
     dead: { atlas: 'hero', action: 'walk', fps: 0, loop: true },
   },
+  brawler: gangAnims('brawler', 'punch'),
+  knife: gangAnims('knife', 'stab'),
+  heavy: gangAnims('heavy', 'slam'),
 };
 
 export function animFor(e: Entity): AnimSpec | null { return ANIM_TABLE[e.kind]?.[e.state] ?? null; }

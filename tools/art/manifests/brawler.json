@@ -1,0 +1,12 @@
+{
+  "name": "brawler",
+  "targetHeight": 64,
+  "palette": "assets/palette.brawler.json",
+  "scaleFrom": "walk",
+  "bgKey": "#808080",
+  "outDir": "public/assets/atlases",
+  "actions": [
+    { "name": "walk", "sheet": "assets/sources/enemies/brawler/walk.png", "frames": 4 },
+    { "name": "attack", "sheet": "assets/sources/enemies/brawler/attack.png", "frames": 4 }
+  ]
+}

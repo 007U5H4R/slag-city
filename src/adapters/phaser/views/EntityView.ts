@@ -67,7 +67,10 @@ export class EntityViews {
         const i = frameIndexFor(e, names.length, spec, move ? moveTotal(move) : undefined);
         v.setFrame(`${key}/${i}`);
         v.setFlipX(e.facing === -1);
-        v.setTintFill(0xffffff); if (e.flashFrames === 0) v.clearTint();
+        // Flash = solid white silhouette (hit feedback); otherwise apply the palette-swap variant tint
+        // (VARIANT_TINT[0] = 0xffffff = neutral, so variant-0 entities and the hero are untinted).
+        if (e.flashFrames > 0) v.setTintFill(0xffffff);
+        else v.setTint(VARIANT_TINT[e.variant] ?? 0xffffff);
         v.setAlpha(e.invulnFrames > 0 && state.frame % 4 < 2 ? 0.4 : 1);
       }
       return;
