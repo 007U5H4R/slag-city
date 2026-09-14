@@ -5,6 +5,7 @@ import type { Entity, EntityKind, PickupKind, WeaponKind } from './entity';
 import { createEntity } from './entity';
 import type { RngState } from './rng';
 import { createRng } from './rng';
+import type { StageData } from '../stage/stage1';
 
 export const WALK_BAND = { minY: 128, maxY: 208 } as const;
 export const HUD_BAND = 16;
@@ -18,6 +19,7 @@ export type SimEvent =
   | { type: 'weaponBreak'; kind: WeaponKind; x: number; y: number }
   | { type: 'pickup'; kind: PickupKind | WeaponKind; x: number; y: number }
   | { type: 'lockRelease'; index: number }
+  | { type: 'bossDoor' }
   | { type: 'heroDead' } | { type: 'bossDefeated' } | { type: 'bossPhase2' };
 
 export interface WorldState {
@@ -26,20 +28,23 @@ export interface WorldState {
   camera: { x: number; lockX: number | null; lockIndex: number };
   hitstop: number; shake: { frames: number; px: number };
   score: number; events: SimEvent[]; seenNameCards: string[];
-  stage: { sectionIndex: number; bossDefeated: boolean; heroDead: boolean; lockCleared: boolean[] };
+  stage: { sectionIndex: number; bossDefeated: boolean; heroDead: boolean; lockCleared: boolean[];
+    stageData: StageData | null; lockFrame: number; bossDoorReached: boolean };
   stageWidth: number;
   prevInput: InputFrame;
 }
 
-export function createWorld(seed: number, stageWidth = SCREEN.w * 3): WorldState {
+export function createWorld(seed: number, stageWidth = SCREEN.w * 3, stage: StageData | null = null): WorldState {
   const state: WorldState = {
     frame: 0, rng: createRng(seed), nextId: 1,
     entities: [], heroId: 0,
     camera: { x: 0, lockX: null, lockIndex: 0 },
     hitstop: 0, shake: { frames: 0, px: 0 },
     score: 0, events: [], seenNameCards: [],
-    stage: { sectionIndex: 0, bossDefeated: false, heroDead: false, lockCleared: [] },
-    stageWidth,
+    stage: { sectionIndex: 0, bossDefeated: false, heroDead: false,
+      lockCleared: stage ? stage.locks.map(() => false) : [],
+      stageData: stage, lockFrame: -1, bossDoorReached: false },
+    stageWidth: stage?.width ?? stageWidth,
     prevInput: { ...EMPTY_INPUT },
   };
   const hero = spawn(state, 'hero', 64, 168);

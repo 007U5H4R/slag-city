@@ -10,11 +10,12 @@ import { updateCrate, updatePickup } from '../entities/items';
 import { resolveHits } from '../combat/resolve';
 import { assignAttackTickets } from '../ai/tickets';
 import { nameCardSystem } from '../arcade/namecards';
+import { lockSystem } from '../stage/locks';
 
 export type EntityUpdater = (state: WorldState, e: Entity, input: InputFrame) => void;
 export const ENTITY_UPDATERS: Partial<Record<EntityKind, EntityUpdater>> = { hero: updateHero, brawler: updateGang, knife: updateGang, heavy: updateGang, crate: updateCrate, pickup: updatePickup };
 /** Systems that run after entity updates and before physics (hit resolution, AI tickets, hazards). */
-export const POST_UPDATE_SYSTEMS: Array<(state: WorldState) => void> = [assignAttackTickets, resolveHits, nameCardSystem];
+export const POST_UPDATE_SYSTEMS: Array<(state: WorldState) => void> = [lockSystem, assignAttackTickets, resolveHits, nameCardSystem];
 
 export function tick(state: WorldState, input: InputFrame): WorldState {
   state.events = [];
