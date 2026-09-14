@@ -43,6 +43,21 @@ export const ANIM_TABLE: Partial<Record<EntityKind, Record<string, AnimSpec>>> =
   brawler: gangAnims('brawler', 'punch'),
   knife: gangAnims('knife', 'stab'),
   heavy: gangAnims('heavy', 'slam'),
+  // Feral machine — every FSM state mapped now (the 'feral' atlas arrives in a later art pass, so boxes
+  // render via EntityView's fallback until then; pounce is one-shot, the rest loop/hold).
+  feral: {
+    emerge: { atlas: 'feral', action: 'emerge', fps: 8, loop: true },
+    idle: { atlas: 'feral', action: 'idle', fps: 0, loop: true },
+    stalk: { atlas: 'feral', action: 'move', fps: 8, loop: true },
+    pounce: { atlas: 'feral', action: 'pounce', fps: 8, loop: false },
+    hurt: { atlas: 'feral', action: 'hurt', fps: 0, loop: true },
+    knockdown: { atlas: 'feral', action: 'knockdown', fps: 0, loop: true },
+    down: { atlas: 'feral', action: 'down', fps: 0, loop: true },
+    getup: { atlas: 'feral', action: 'getup', fps: 0, loop: true },
+    dead: { atlas: 'feral', action: 'dead', fps: 0, loop: true },
+  },
+  // The dropped arm-cannon pickup — static; box renders until an item atlas exists.
+  weaponPickup: { idle: { atlas: 'weaponPickup', action: 'idle', fps: 0, loop: true } },
 };
 
 export function animFor(e: Entity): AnimSpec | null { return ANIM_TABLE[e.kind]?.[e.state] ?? null; }

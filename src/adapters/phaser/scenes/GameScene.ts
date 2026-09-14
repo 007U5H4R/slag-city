@@ -6,6 +6,7 @@ import type { WorldState } from '@core/sim/state';
 import { ENEMY_NAMES } from '@core/arcade/hud';
 import { tick } from '@core/sim/tick';
 import { STAGE1 } from '@core/stage/stage1';
+import { spawnFeral } from '@core/entities/feral';
 import { createFixedStep, advanceFixedStep, resetFixedStep } from '@core/sim/loop';
 import { KeyboardSource } from '../input/keyboard';
 import { GamepadSource } from '../input/gamepad';
@@ -63,6 +64,7 @@ export class GameScene extends Phaser.Scene {
     this.pops = new ScorePops(this);
     this.nameCard = new NameCardView(this);
     if (import.meta.env.DEV) this.input.keyboard?.on('keydown-H', () => this.debug.toggle());
+    if (import.meta.env.DEV) this.input.keyboard?.on('keydown-F', () => spawnFeral(this.world, this.world.camera.x + 360, 150));
 
     this.keyboard = new KeyboardSource(this);
     this.gamepad = new GamepadSource();
