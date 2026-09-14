@@ -447,7 +447,7 @@ image-ref pose-lock; `autosprite` non-invocable (MCP bug filed); Seedance img2vi
   `art:atlas`) → add each atlas to `BootScene.MANIFEST` → wire the **non-hero sprite path in `EntityView.ts`** (currently enemies render as boxes; 8.3's `variantAtlasKey` is dormant
   awaiting exactly this — pick atlas by entity kind, apply `VARIANT_TINT` for palette-swaps) → `ANIM_TABLE` non-hero entries (walk/attack per kind) → CDP verify @1024px (enemies render
   as sprites, walk + attack play, zero console errors) → `npm run check` green → commit atlases (sources stay uncommitted). This is the ticket-03 "non-hero kinds" work.
-- **✅ ENEMY ROSTER — WIRED IN-ENGINE + CDP-VERIFIED (2026-09-14, zero Higgsfield credit). Committed (this commit).** Pipeline (all zero-spend tooling):
+- **✅ ENEMY ROSTER — WIRED IN-ENGINE + CDP-VERIFIED (2026-09-14, zero Higgsfield credit). Committed `a7c4cb3`.** Pipeline (all zero-spend tooling):
   assembled 6 strips (`/Volumes/E Drive/Dev/.scratch/assemble-enemies.mjs`, mirrors the hero script) → `assets/sources/enemies/<kind>/{walk,attack}.png` (uncommitted, sources-out-of-git);
   per-kind 64-colour palettes via `make-provisional-palette.ts` → `assets/palette.{brawler,knife,heavy}.json`; new manifests `tools/art/manifests/{brawler,knife,heavy}.json`
   (targetHeight **64** brawler/knife, **68** heavy for its bigger presence; scaleFrom walk; bgKey #808080; walk:4 + attack:4) → `npm run art:atlas` → `public/assets/atlases/{brawler,knife,heavy}.{png,json}`
@@ -461,6 +461,17 @@ image-ref pose-lock; `autosprite` non-invocable (MCP bug filed); Seedance img2vi
   show the roster in-cabinet (knife-fighter/brawlers/heavy-with-shouldered-hammer), the **"PIT BRAWLER" name-card slams over the sprite** (name-card system integrates), crates stay boxes (correct — only
   characters are sprited). **Committed:** the 3 code files + 3 atlas png/json + 3 palettes + 3 manifests + baton/ledger/LICENSES. **Sources uncommitted** (plan Step 6). Enemy-roster total spend **42 cr**, balance **427.9**.
   **NEXT (optional polish, not blocking):** dedicated hurt/knockdown/down/dead sheets per enemy (currently walk-0 fallback); real recolored variant atlases (currently a tint); size/scale tuning; feral machine + boss art.
+
+## Ticket 14 — Stage 1 layout (three sections, scroll-locks, spawn tables, hazards, camera)
+
+| Task | Status | Model | Commit | Notes |
+|------|--------|-------|--------|-------|
+| 14.1 Stage data + spawn-table test | done | opus | `f7afdc6` | `src/core/stage/stage1.ts` (STAGE1: 3 sections, 7 scroll-locks w/ delayed spawn tables, belt/channel/ladle hazards, boss door 4000) + `sectionIndexAt`; verbatim from plan; 5 PRD-§4 assertions green. |
+| 14.2 Scroll-lock engine — lock/spawn/release/boss door | done | opus | `d75e3ef` | `src/core/stage/{spawn,locks}.ts` + `state.ts`/`tick.ts` mods; `lockSystem` first in POST_UPDATE_SYSTEMS. **4 owner-ratifiable deviations:** (1) **feral spawns DEFERRED to ticket 10** (feral machine not built — `spawnEntry` skips feral, stage plays on gang roster; STAGE1 data keeps the entries); (2) plan-internal contradiction — engage frame now spawns its `delay:0` entries same-frame (plan returned early); (3) `locks.test` keeps the hero alive+invuln while isolating lock progression (plan test left it undefended → it died at ~f1762 and stalled the camera on the corpse — engine correct, verified via probe); (4) determinism golden regenerated `ef2cac66`→`084e1111` (added constant stage fields shift the state hash; determinism intact — reproducibility+divergence pass). `npm run check` GREEN (30 files/92 tests). |
+| 14.3 Hazards — belts, molten channel, ladle pours | **todo** | — | — | Pure core. Plan ~L6119. Belt push, channel knockdown, telegraphed ladle pour (tell→damage windows). |
+| 14.4 Adapter — real stage in the scene, hazard placeholders, section backgrounds, ⛔ timed run | **todo** | — | — | Wires STAGE1 into GameScene (replaces the 5-enemy debug scene), scrolling bg placeholders per section, hazard visuals, boss-door stop. **This is what makes the stage visibly PLAYABLE in-browser** (currently the engine only runs in tests). CDP verify + owner playtest gate. Plan ~L6246. |
+
+**Ticket 14 state:** engine core done + tested (data + scroll-locks + spawn + boss door). ⛔ NOT yet wired into the scene — in-browser the game still shows the old 5-enemy debug block; 14.4 replaces it. Feral (ticket 10) is the one deferred dependency. Backgrounds are ticket 04/17 (placeholders in 14.4).
 
 _Phases C–G expand here as reached._
 
