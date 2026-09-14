@@ -9,7 +9,7 @@ export interface AnimSpec { atlas: string; action: string; fps: number; loop: bo
 // EntityViews to read this table (and adds non-hero kinds).
 export const ANIM_TABLE: Partial<Record<EntityKind, Record<string, AnimSpec>>> = {
   hero: {
-    idle: { atlas: 'hero', action: 'walk', fps: 0, loop: true },      // frame 0 of walk until ticket 12's idle sheet
+    idle: { atlas: 'hero', action: 'idle', fps: 0, loop: true },      // dedicated idle sheet (scaling pass); ticket 12 may add a breathing loop
     walk: { atlas: 'hero', action: 'walk', fps: 10, loop: true },
     attack1: { atlas: 'hero', action: 'attack', fps: 0, loop: false },
     attack2: { atlas: 'hero', action: 'attack', fps: 0, loop: false },
@@ -19,7 +19,7 @@ export const ANIM_TABLE: Partial<Record<EntityKind, Record<string, AnimSpec>>> =
     grab: { atlas: 'hero', action: 'walk', fps: 0, loop: true },
     throw: { atlas: 'hero', action: 'attack', fps: 0, loop: false },
     special: { atlas: 'hero', action: 'attack', fps: 0, loop: false },
-    hurt: { atlas: 'hero', action: 'walk', fps: 0, loop: true },
+    hurt: { atlas: 'hero', action: 'hurt', fps: 0, loop: true },
     knockdown: { atlas: 'hero', action: 'walk', fps: 0, loop: true },
     down: { atlas: 'hero', action: 'walk', fps: 0, loop: true },
     getup: { atlas: 'hero', action: 'walk', fps: 0, loop: true },

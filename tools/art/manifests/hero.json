@@ -7,6 +7,8 @@
   "outDir": "public/assets/atlases",
   "actions": [
     { "name": "walk", "sheet": "assets/sources/hero/walk.png", "frames": 4 },
-    { "name": "attack", "sheet": "assets/sources/hero/attack.png", "frames": 4 }
+    { "name": "attack", "sheet": "assets/sources/hero/attack.png", "frames": 4 },
+    { "name": "idle", "sheet": "assets/sources/hero/idle.png", "frames": 1 },
+    { "name": "hurt", "sheet": "assets/sources/hero/hurt.png", "frames": 1 }
   ]
 }
