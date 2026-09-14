@@ -19,6 +19,7 @@ export type SimEvent =
   | { type: 'weaponBreak'; kind: WeaponKind; x: number; y: number }
   | { type: 'pickup'; kind: PickupKind | WeaponKind; x: number; y: number }
   | { type: 'lockRelease'; index: number }
+  | { type: 'hazardTell'; x: number; y: number; frames: number }
   | { type: 'bossDoor' }
   | { type: 'heroDead' } | { type: 'bossDefeated' } | { type: 'bossPhase2' };
 

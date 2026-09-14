@@ -1,5 +1,5 @@
 // src/core/combat/resolve.ts
-import type { Facing } from '../types';
+import type { Facing, HitLevel } from '../types';
 import type { Entity } from '../sim/entity';
 import { faction, setState, isBody } from '../sim/entity';
 import type { WorldState } from '../sim/state';
@@ -40,6 +40,16 @@ export function applyKnockdown(state: WorldState, vic: Entity, dir: Facing): voi
   vic.hitstun = 0;
   vic.facing = (dir * -1) as Facing; // face the attacker
   emit(state, { type: 'sfx', id: 'knockdown' });
+}
+
+/** Damage from a stage hazard (belt/channel/ladle): no attacker, no score, ignores super-armour. */
+export function applyHazardHit(state: WorldState, vic: Entity, damage: number, level: HitLevel, dir: Facing): void {
+  vic.hp -= damage; vic.flashFrames = HIT_FEEL.flashFrames;
+  state.hitstop = Math.max(state.hitstop, HIT_FEEL.hitstop[level]);
+  if (HIT_FEEL.shakePx[level] > 0) state.shake = { frames: HIT_FEEL.shakeFrames, px: HIT_FEEL.shakePx[level] };
+  emit(state, { type: 'sfx', id: `hit_${level}` });
+  if (level === 'launch' || vic.hp <= 0) { applyKnockdown(state, vic, dir); return; }
+  setState(vic, 'hurt'); vic.hitstun = HIT_FEEL.hitstun[level === 'heavy' ? 'heavy' : 'light']; vic.vel.x = 3 * dir; vic.vel.y = 0;
 }
 
 export function applyHit(state: WorldState, att: Entity, vic: Entity, move: MoveData): void {
