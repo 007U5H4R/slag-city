@@ -5,11 +5,12 @@ Original arcade beat-'em-up (Phaser 3 + Vite + TypeScript). Stages 1–5 approve
 per-ticket plans via subagent-driven development (one fresh implementer per task, brief/report as
 files, orchestrator review, ledger updates, phase QA gate).
 **▶ Phase A signed off (`9ce70a3`); Phase B — ticket 03 art tracer ✅ COMPLETE + owner-accepted (`ced1d6b`, 2026-09-07).
-Tasks 3.1 ✓ / 3.2 ✓ / 3.3 ✓ / 3.4 ✓ (Seedream legs-only walk) / 3.5 ✓ (in-engine, accepted). ▶ SCALING PASS started:
-hero ATTACK generated + wired in-engine + verified (`2ee4a9d`). ⛔ ALL further art generation is now GATED on an owner
-budget/top-up + model-cap decision (balance is low AND the attack over-ran to 38 cr — see the credit alert). See "Your next action".**
-HEAD = `2ee4a9d`. Higgsfield balance = **22.9 cr** (66 spent across Phase B; the attack alone was 38 cr via nano retries — reconciled
-against the transaction log, `assets/LICENSES.md`). Ticket-03 art (walk + attack) is committed and shipping regardless.
+▶ SCALING PASS (hero move-set): ATTACK (`2ee4a9d`) + IDLE + HURT (`2fa9411`, 2026-09-14) all generated, wired in-engine, and CDP-verified.
+✅ BUDGET UNBLOCKED — owner topped up +500 cr (2026-09-14) and said "go ahead with the remaining implementation". Standing cap: seedream_v4_5
+only (~1 cr/frame), reconcile `transactions` after every batch, no nano_banana_pro for frames.**
+HEAD = `2fa9411`. Higgsfield balance = **503.9 cr** (idle+hurt cost 7 cr this session on seedream, no overrun — see `assets/LICENSES.md`).
+Hero atlas now ships **10 frames** (walk×4, attack×4, idle×1, hurt×1), cell 52×66. **NEXT = ENEMY ROSTER art** (brawler/knife/heavy — each its
+own reference + walk/attack on seedream). Hero jump/grab/throw/special still fall back to walk/attack (acceptable for M0; optional later polish).
 
 ## The resume anchor
 **Read `docs/build/LEDGER.md` first.** It is the source of truth for task status, SHAs, deviations,

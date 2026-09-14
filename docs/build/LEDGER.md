@@ -369,6 +369,32 @@ image-ref pose-lock; `autosprite` non-invocable (MCP bug filed); Seedance img2vi
   **(b)** a per-action model+cost cap (recommend: **seedream_v4_5 only** at ~1 cr/frame — it honours pose text and doesn't need retries;
   **avoid nano_banana_pro for frames** — its image-ref pose-lock caused the 19-retry overrun). Then hero idle + hit (~4 cr each on seedream),
   then the enemy roster. **Also: read `balance`/`transactions` right after every batch and log the real figure — never the expected cost.**
+- **BUDGET UNBLOCKED (2026-09-14): owner topped up +500 cr (Credit Package grant 08:48 UTC). Live balance = 510.9 → now 503.9.** Owner:
+  "check the live balance and go ahead with the remaining implementation." Standing cap honoured: **seedream_v4_5 only, ~1 cr/frame**,
+  reconcile against `transactions` after every batch. No nano_banana_pro for frames.
+- **Hero IDLE + HURT — GENERATED + WIRED IN-ENGINE + VERIFIED (2026-09-14, seedream_v4_5, actual 7 cr, balance 510.9→503.9).** Method =
+  the proven walk/attack recipe: image ref = hero reference job `36273de6…`, lock costume/identity, vary only the action; framing locks
+  (fixed camera distance, identical height, feet on one ground line, flat #808080 bg, "no pole/line/objects"), aspect `2:3`.
+  - **IDLE** (4 frames generated @1 cr = 4 cr; jobs `9c7ce924`/`669407b3`/`0072948e`/`556121af`, probes `docs/art/probes/idle-seedream/idle-{0..3}.png`).
+    seedream produced 4 *distinct* stances (not a tight breathing loop) and the facing flipped between frames — but ANIM_TABLE renders `idle`
+    at **fps:0 (single static frame)**, so only one canonical frame is needed. Picked **idle-3** (hammer shouldered, planted, FACING RIGHT to
+    match walk/attack) → `assets/sources/hero/idle.png`. idle-2 is a right-facing backup.
+  - **HURT** (3 candidates @1 cr = 3 cr; jobs `a876dc39`/`decf7523`/`2aabd3b5`, probes `docs/art/probes/hurt-seedream/hurt-{0..2}.png`).
+    hurt-0 read as an attack windup, hurt-1's deep hunch shrank the silhouette; picked **hurt-2** (head-back staggered recoil, right-facing,
+    preserves height) → `assets/sources/hero/hurt.png`.
+  - **Wiring:** added `{idle,1}` + `{hurt,1}` to `tools/art/manifests/hero.json`; `npm run art:atlas` → atlas **520×66, 10 frames**, cell
+    **52×66 unchanged** (idle+hurt fit the attack's existing union box; scale 0.0307 + origin [0.5,1] unchanged, walk framing preserved).
+    `ANIM_TABLE` hero.idle → action `idle`, hero.hurt → action `hurt` (were both the `walk`-frame-0 fallback). EntityView frame-exists guard
+    already handles them.
+  - **CDP verification @1024×640** (`slag-cdp-gate.mjs`, PROBE forces `paused=true`, sets `hero.state`, re-syncs, reads the live hero sprite
+    frame): idle → **`heroFrame=hero/idle/0`**, hurt → **`heroFrame=hero/hurt/0`**, both `textureKey=hero`, **CONSOLE_ERRORS=[]**. Screenshots
+    `/Volumes/E Drive/Dev/.scratch/gate-idle.png` + `gate-hurt-clean.png` (flash/invuln cleared) — both render on-screen in-cabinet correctly.
+    `npm run check` GREEN (28 files / 85 tests). **Committed `2fa9411`** (manifest + atlas png/json + anim-table.ts). Source sheets uncommitted (plan Step 6).
+  - **NEXT:** hero remaining move-set is optional polish (jump/grab/throw/special still fall back to walk/attack, which is acceptable for M0);
+    the real next milestone is the **ENEMY ROSTER** art (brawler/knife/heavy each need their own reference + walk/attack, ~a few cr each on
+    seedream). Budget is ample (503.9 cr). Reconcile `transactions` after every batch.
+  - **Stale git lock cleared:** a week-old empty `.git/index.lock` (Sep 7 21:48, interrupted session) blocked the commit; removed after
+    confirming no live git process. Harmless.
 
 _Phases C–G expand here as reached._
 
