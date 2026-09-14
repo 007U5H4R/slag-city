@@ -4,8 +4,8 @@ import { getSetting, setSetting } from '@shell/settings';
 import { createWorld, WALK_BAND, heroOf } from '@core/sim/state';
 import type { WorldState } from '@core/sim/state';
 import { ENEMY_NAMES } from '@core/arcade/hud';
-import { spawnCrate } from '@core/entities/items';
 import { tick } from '@core/sim/tick';
+import { STAGE1 } from '@core/stage/stage1';
 import { createFixedStep, advanceFixedStep, resetFixedStep } from '@core/sim/loop';
 import { KeyboardSource } from '../input/keyboard';
 import { GamepadSource } from '../input/gamepad';
@@ -15,7 +15,8 @@ import { DebugOverlay } from '../views/DebugOverlay';
 import { Hud } from '../views/Hud';
 import { ScorePops } from '../views/ScorePop';
 import { NameCardView } from '../views/NameCard';
-import { spawnGang } from '@core/entities/gang';
+import { Parallax } from '../views/Parallax';
+import { HazardView } from '../views/HazardView';
 import { enableCrt, crtInstance } from '../crt/CrtPipeline';
 import { installFonts } from '../views/fonts';
 
@@ -28,6 +29,8 @@ export class GameScene extends Phaser.Scene {
   private keyboard!: KeyboardSource;
   private gamepad!: GamepadSource;
   private views!: EntityViews;
+  private parallax!: Parallax;
+  private hazards!: HazardView;
   private debug!: DebugOverlay;
   private hud!: Hud;
   private pops!: ScorePops;
@@ -48,7 +51,9 @@ export class GameScene extends Phaser.Scene {
     this.input.keyboard?.on('keydown-C', () => this.setCrt(!this.crtOn));
     if (new URLSearchParams(location.search).has('pattern')) this.scene.launch('pattern');
 
-    this.world = createWorld(1);
+    this.world = createWorld(1, undefined, STAGE1);
+    this.parallax = new Parallax(this);
+    this.hazards = new HazardView(this, STAGE1.sections.flatMap((s) => s.hazards));
     const g = this.add.graphics();
     g.lineStyle(1, 0x333333, 1);
     g.strokeRect(0, WALK_BAND.minY, BASE_W, WALK_BAND.maxY - WALK_BAND.minY);
@@ -58,13 +63,6 @@ export class GameScene extends Phaser.Scene {
     this.pops = new ScorePops(this);
     this.nameCard = new NameCardView(this);
     if (import.meta.env.DEV) this.input.keyboard?.on('keydown-H', () => this.debug.toggle());
-    spawnCrate(this.world, 200, 190, 'lunchpail');
-    spawnCrate(this.world, 240, 150, 'gear');
-    spawnGang(this.world, 'brawler', 300, 176, 0);
-    spawnGang(this.world, 'knife', 340, 150, 1);
-    spawnGang(this.world, 'heavy', 360, 200, 2);
-    spawnGang(this.world, 'brawler', 380, 168, 1);
-    spawnGang(this.world, 'knife', 250, 190, 0);
 
     this.keyboard = new KeyboardSource(this);
     this.gamepad = new GamepadSource();
@@ -98,6 +96,8 @@ export class GameScene extends Phaser.Scene {
         else if (ev.type === 'namecard') this.nameCard.show(ENEMY_NAMES[ev.kind] ?? ev.kind.toUpperCase());
       }
     });
+    this.parallax.sync(this.world.camera.x, this.world.stage.sectionIndex);
+    this.hazards.draw(this.world);
     this.views.sync(this.world);
     this.pops.step(steps, this.world.camera.x);
     this.nameCard.step(steps);
