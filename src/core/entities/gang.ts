@@ -9,6 +9,7 @@ import { registerActorData, moveTotal } from '../combat/frame-data';
 import { updateStunState } from '../combat/stun';
 import { DEPTH_TOLERANCE } from '../combat/hit';
 import { releaseTicket, ringPosition } from '../ai/tickets';
+import { nearestBody } from '../ai/targeting';
 
 export type GangKind = 'brawler' | 'knife' | 'heavy';
 export interface GangData extends ActorData { reach: number; attackCooldown: number; attackMove: string; superArmour?: boolean }
@@ -50,11 +51,18 @@ export function approach(e: Entity, d: ActorData, tx: number, ty: number, reach:
   return inX && inY;
 }
 
+/** A feral within 60px (x) and 24px (y) that this gang member should turn on in self-defence. */
+export function nearestFeralThreat(state: WorldState, e: Entity): Entity | undefined {
+  return nearestBody(state, e, (o) => o.kind === 'feral' && Math.abs(o.pos.x - e.pos.x) <= 60 && Math.abs(o.pos.y - e.pos.y) <= 24);
+}
+
 export function updateGang(state: WorldState, e: Entity, _input: InputFrame): void {
   e.stateFrame++;
   if (updateStunState(state, e)) return;
   const d = GANG_DATA[e.kind as GangKind];
-  const target = byId(state, e.targetId) ?? heroOf(state);
+  const threat = nearestFeralThreat(state, e);
+  const target = threat ?? byId(state, e.targetId) ?? heroOf(state);
+  const mayAttack = e.attackTicket || threat !== undefined;
   const move = d.moves[e.state];
   if (move) {
     e.vel.x = 0; e.vel.y = 0;
@@ -64,7 +72,7 @@ export function updateGang(state: WorldState, e: Entity, _input: InputFrame): vo
   switch (e.state) {
     case 'idle':
       e.vel.x = 0; e.vel.y = 0;
-      if (e.cooldown === 0) setState(e, e.attackTicket ? 'approach' : 'ring');
+      if (e.cooldown === 0) setState(e, mayAttack ? 'approach' : 'ring');
       break;
     case 'ring': {
       const p = ringPosition(state, e);
@@ -74,7 +82,7 @@ export function updateGang(state: WorldState, e: Entity, _input: InputFrame): vo
       break;
     }
     case 'approach': {
-      if (!e.attackTicket) { setState(e, 'ring'); break; }
+      if (!mayAttack) { setState(e, 'ring'); break; }
       const inRange = approach(e, d, target.pos.x, target.pos.y, d.reach);
       if (inRange) { setState(e, d.attackMove); if (d.superArmour) e.armorFrames = d.moves[d.attackMove]!.startup; e.vel.x = 0; e.vel.y = 0; }
       break;
