@@ -1,6 +1,6 @@
 // src/core/entities/items.ts
 import type { InputFrame } from '../types';
-import type { Entity, PickupKind } from '../sim/entity';
+import type { Entity, PickupKind, WeaponKind } from '../sim/entity';
 import type { WorldState } from '../sim/state';
 import { emit, heroOf, spawn } from '../sim/state';
 import { DEPTH_TOLERANCE } from '../combat/hit';
@@ -22,6 +22,11 @@ export function spawnCrate(state: WorldState, x: number, y: number, contents: Pi
 export function spawnPickup(state: WorldState, kind: PickupKind, x: number, y: number): Entity {
   const p = spawn(state, 'pickup', x, y);
   p.pickupKind = kind;
+  return p;
+}
+export function spawnWeaponPickup(state: WorldState, kind: WeaponKind, x: number, y: number, heat: number): Entity {
+  const p = spawn(state, 'weaponPickup', x, y);
+  p.weapon = { kind, heat }; p.weaponKind = kind;
   return p;
 }
 
