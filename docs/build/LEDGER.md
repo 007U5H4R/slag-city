@@ -395,6 +395,16 @@ image-ref pose-lock; `autosprite` non-invocable (MCP bug filed); Seedance img2vi
     seedream). Budget is ample (503.9 cr). Reconcile `transactions` after every batch.
   - **Stale git lock cleared:** a week-old empty `.git/index.lock` (Sep 7 21:48, interrupted session) blocked the commit; removed after
     confirming no live git process. Harmless.
+- **⛔ ENEMY ROSTER BLOCKED + CREDIT ANOMALY (2026-09-14, ~09:33 UTC) — owner flag.** Tried to generate enemy reference candidates
+  (brawler/knife/heavy, 3 each) on **seedream_v4_5** → every submission returned **429 rate_limit_reached, "submitted 0"** (9-batch, then
+  3-batch, then a single). BUT the balance fell **503.9 → 469.9 (−34 cr)** with no successful seedream submission. The `transactions` log shows
+  **17× "Nano Banana Pro" (−2 each = 34 cr)** at **09:18 (×3)** and **09:32:49–09:33:03 (×14)** — a model I NEVER invoked this session (all my
+  calls were seedream). The 14-spend nano cluster coincides exactly with my failed seedream enemy batches. **Strong hypothesis: the Higgsfield
+  backend/MCP is silently falling back to `nano_banana_pro` when seedream is 429-throttled — charging ~2 cr/request while reporting 429/"submitted 0"
+  to the caller.** My confirmed spend this session is only the 7 seedream cr (idle 4 + hurt 3). **STOPPED all generation** — each retry may burn
+  ~2 cr on the hidden fallback. **Do NOT resume enemy generation until (a) the seedream throttle clears AND (b) the nano fallback is understood/ruled out.**
+  New live balance = **469.9 cr**. Scar reinforced: the 429 "submitted 0" response is NOT proof nothing was charged — always reconcile `transactions`
+  after a failed batch too, not just a successful one.
 
 _Phases C–G expand here as reached._
 
