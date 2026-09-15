@@ -68,7 +68,8 @@ export function applyHit(state: WorldState, att: Entity, vic: Entity, move: Move
   emit(state, { type: 'sfx', id: `hit_${move.level}` });
   if (vic.kind === 'crate') { if (vic.hp <= 0) setState(vic, 'break'); return; }
   if (vic.armorFrames > 0 && vic.hp > 0) return;          // super-armour: damage only
-  if (move.level === 'launch' || vic.hp <= 0 || vic.pos.z > 0) { applyKnockdown(state, vic, dir); return; }
+  if (vic.kind === 'boss' && vic.hp <= 0) return;         // boss death is handled by its FSM (updateBoss)
+  if (vic.kind !== 'boss' && (move.level === 'launch' || vic.hp <= 0 || vic.pos.z > 0)) { applyKnockdown(state, vic, dir); return; }
   setState(vic, 'hurt');
   vic.hitstun = HIT_FEEL.hitstun[move.level === 'heavy' ? 'heavy' : 'light'];
   vic.vel.x = move.pushback * dir; vic.vel.y = 0;

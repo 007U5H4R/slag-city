@@ -3,6 +3,7 @@ import type { WorldState } from '../sim/state';
 import { emit, SCREEN } from '../sim/state';
 import { spawnEntry } from './spawn';
 import { isBody } from '../sim/entity';
+import { spawnBoss } from '../entities/boss';
 
 // Scroll-lock engine: as the camera reaches each lock's camX it stops, spawns the lock's delayed spawn
 // table, and releases (camera free again) once every body from that lock is down. After the last lock,
@@ -18,6 +19,7 @@ export function lockSystem(state: WorldState): void {
     } else if (i >= stage.locks.length && !state.stage.bossDoorReached && state.camera.x >= stage.bossDoorX - SCREEN.w) {
       state.stage.bossDoorReached = true; state.camera.lockX = stage.bossDoorX - SCREEN.w; state.camera.x = state.camera.lockX;
       emit(state, { type: 'bossDoor' });
+      spawnBoss(state, state.camera.x + 300, 176);
     }
     // DEVIATION (owner-ratifiable — plan-internal contradiction): the plan returned unconditionally here,
     // deferring a lock's `delay: 0` spawns to the frame AFTER it engages — but locks.test asserts the
@@ -26,7 +28,7 @@ export function lockSystem(state: WorldState): void {
     // branch also sets lockX, but `bossDoorReached` short-circuits the spawn block just below.
     if (state.camera.lockX === null) return;
   }
-  if (state.stage.bossDoorReached) return;            // the boss (ticket 15) releases this lock
+  if (state.stage.bossDoorReached) { if (state.stage.bossDefeated) state.camera.lockX = null; return; }            // the boss (ticket 15) releases this lock on defeat
   const lock = stage.locks[i]!;
   for (const entry of lock.entries) if (entry.delay === state.stage.lockFrame) spawnEntry(state, entry, i);
   state.stage.lockFrame++;
