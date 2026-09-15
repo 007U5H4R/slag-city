@@ -31,8 +31,16 @@ import type { InputFrame } from '@core/types';
 import { Attract } from '../screens/Attract';
 import { Continue } from '../screens/Continue';
 import { GameOver } from '../screens/GameOver';
+import { HiScoreTable } from '../screens/HiScoreTable';
+import { HiScoreEntry } from '../screens/HiScoreEntry';
 import { encodeInput } from '@core/input-codec';
 import { hashState } from '@core/sim/hash';
+import { ATTRACT } from '@core/arcade/attract';
+import { DEFAULT_TABLE, insertScore, qualifies } from '@core/arcade/hiscores';
+import type { HiScoreRow } from '@core/arcade/hiscores';
+import { createEntry, reduceEntry, entryText } from '@core/arcade/initials';
+import type { EntryState } from '@core/arcade/initials';
+import { loadTable, saveTable } from '@shell/hiscore-store';
 
 export class GameScene extends Phaser.Scene {
   world!: WorldState;
@@ -57,6 +65,18 @@ export class GameScene extends Phaser.Scene {
   private attract!: Attract;
   private continueScreen!: Continue;
   private gameOver!: GameOver;
+  private hiTable!: HiScoreTable;
+  private hiEntry!: HiScoreEntry;
+  // Hi-scores (ticket 19.4): the live table, loaded from the kv at boot and re-saved on a qualifying entry.
+  private table: HiScoreRow[] = DEFAULT_TABLE;
+  // HISCORE_ENTRY sub-phase (adapter-only; the machine just parks on HISCORE_ENTRY): enter initials, then show
+  // the table for ATTRACT.tableFrames, then dispatch `entryDone`. Non-qualifying scores skip straight to `table`.
+  private entryPhase: 'idle' | 'entry' | 'table' = 'idle';
+  private entry: EntryState | null = null;
+  private entryHighlight: number | null = null;
+  private entryTableTimer = 0;
+  // Which world the shared views last rendered — switching (attract demo <-> play) resets the view cache.
+  private lastWorld: WorldState | null = null;
   // DEV attract-demo recorder (ticket 19.3): seed of the current PLAY world + the encoded input log.
   private worldSeed = 1;
   private recording: number[] | null = null;
@@ -90,6 +110,9 @@ export class GameScene extends Phaser.Scene {
     this.attract = new Attract(this);
     this.continueScreen = new Continue(this);
     this.gameOver = new GameOver(this);
+    this.hiTable = new HiScoreTable(this);
+    this.hiEntry = new HiScoreEntry(this);
+    void loadTable().then((t) => { this.table = t; });
     if (import.meta.env.DEV) this.input.keyboard?.on('keydown-H', () => this.debug.toggle());
     if (import.meta.env.DEV) this.input.keyboard?.on('keydown-F', () => spawnFeral(this.world, this.world.camera.x + 360, 150));
     if (import.meta.env.DEV) this.input.keyboard?.on('keydown-B', () => spawnBoss(this.world, this.world.camera.x + 300, 176));
@@ -122,6 +145,10 @@ export class GameScene extends Phaser.Scene {
     const input = composeInput([this.keyboard, this.gamepad]);
     const coin = input.coin && !this.prevInput.coin;
     const start = input.start && !this.prevInput.start;
+    // Edge-triggered initials-entry controls (HISCORE_ENTRY): up/down cycle the active letter, attack confirms.
+    const up = input.up && !this.prevInput.up;
+    const down = input.down && !this.prevInput.down;
+    const confirm = input.attack && !this.prevInput.attack;
     this.prevInput = input;
     // Coin/start edges reach the machine before the sim sees the frame.
     if (coin) { this.arcade = reduceArcade(this.arcade, { type: 'coin' }); this.sfx('coin'); }
@@ -146,7 +173,34 @@ export class GameScene extends Phaser.Scene {
         else this.routeEvent(ev);
       }
     });
+    this.updateHiScoreEntry({ up, down, confirm }, steps);
     this.renderScreens(steps);
+  }
+
+  // Drives the HISCORE_ENTRY sub-phase: decide entry-vs-skip once, run the initials reducer on input edges,
+  // persist a qualifying score, then hold the table for ATTRACT.tableFrames before releasing the machine.
+  private updateHiScoreEntry(edges: { up: boolean; down: boolean; confirm: boolean }, steps: number): void {
+    if (this.arcade.screen !== 'HISCORE_ENTRY') { this.entryPhase = 'idle'; this.entry = null; return; }
+    if (this.entryPhase === 'idle') {
+      if (qualifies(this.table, this.arcade.finalScore)) { this.entryPhase = 'entry'; this.entry = createEntry(); this.entryHighlight = null; }
+      else { this.entryPhase = 'table'; this.entryHighlight = null; this.entryTableTimer = ATTRACT.tableFrames; }
+    }
+    if (this.entryPhase === 'entry' && this.entry) {
+      if (edges.up) this.entry = reduceEntry(this.entry, 'up');
+      if (edges.down) this.entry = reduceEntry(this.entry, 'down');
+      if (edges.confirm) this.entry = reduceEntry(this.entry, 'confirm');
+      if (this.entry.done) {
+        const row: HiScoreRow = { initials: entryText(this.entry), score: this.arcade.finalScore, credits: Math.max(1, this.arcade.usedThisGame), stage: this.arcade.stageReached, date: new Date().toISOString() };
+        const { table, index } = insertScore(this.table, row);
+        this.table = table; this.entryHighlight = index;
+        void saveTable(table);
+        this.sfx('hiscore_confirm');
+        this.entryPhase = 'table'; this.entryTableTimer = ATTRACT.tableFrames;
+      }
+    } else if (this.entryPhase === 'table') {
+      this.entryTableTimer -= steps;
+      if (this.entryTableTimer <= 0) { this.arcade = reduceArcade(this.arcade, { type: 'entryDone' }); this.entryPhase = 'idle'; this.entry = null; }
+    }
   }
 
   // Cosmetic sim events (score pops, name-cards, weapon-break sparks); death/defeat are handled by the machine above.
@@ -175,15 +229,25 @@ export class GameScene extends Phaser.Scene {
   }
 
   private renderScreens(steps: number): void {
-    this.parallax.sync(this.world.camera.x, this.world.stage.sectionIndex);
-    this.hazards.draw(this.world);
-    this.views.sync(this.world);
-    this.pops.step(steps, this.world.camera.x);
-    this.nameCard.step(steps);
-    this.sparks.step(steps, this.world.camera.x);
-    this.debug.draw(this.world);
-
     const scr = this.arcade.screen;
+    const attractActive = scr === 'ATTRACT' || scr === 'COIN';
+
+    // Attract owns its own loop + demo world; step it first so `segment`/`demoWorld` are current for the render.
+    if (attractActive) this.attract.show(); else this.attract.hide();
+    this.attract.step(this.arcade, steps);
+
+    // Render whichever world is current: the attract demo during its segment, otherwise the play world.
+    const world = (attractActive && this.attract.segment === 'demo' && this.attract.demoWorld) ? this.attract.demoWorld : this.world;
+    if (world !== this.lastWorld) { this.views.reset(); this.lastWorld = world; }
+
+    this.parallax.sync(world.camera.x, world.stage.sectionIndex);
+    this.hazards.draw(world);
+    this.views.sync(world);
+    this.pops.step(steps, world.camera.x);
+    this.nameCard.step(steps);
+    this.sparks.step(steps, world.camera.x);
+    this.debug.draw(world);
+
     const inGame = scr === 'PLAY' || scr === 'CONTINUE';
     this.hud.setVisible(inGame);
     if (inGame) {
@@ -191,18 +255,25 @@ export class GameScene extends Phaser.Scene {
       this.hud.render({ hp: hero.hp, maxHp: hero.maxHp, score: this.world.score, credits: this.arcade.credits, weapon: hero.weapon ? { kind: hero.weapon.kind, heat: hero.weapon.heat, max: WEAPON_HEAT[hero.weapon.kind] } : null, creditFlash: this.arcade.creditFlash });
     }
 
-    if (scr === 'ATTRACT' || scr === 'COIN') this.attract.show(); else this.attract.hide();
-    this.attract.step(this.arcade, steps);
     if (scr === 'CONTINUE') this.continueScreen.show(); else this.continueScreen.hide();
     this.continueScreen.step(this.arcade, steps);
     this.gameOver.stageClear = this.world.stage.bossDefeated;
     if (scr === 'GAME_OVER') this.gameOver.show(); else this.gameOver.hide();
     this.gameOver.step(this.arcade, steps);
 
-    // HISCORE_ENTRY is a pass-through until ticket 19 registers an entry component.
-    if (scr === 'HISCORE_ENTRY') this.arcade = reduceArcade(this.arcade, { type: 'entryDone' });
+    // Hi-score entry (ticket 19.4): blinking initials during the HISCORE_ENTRY entry phase.
+    if (scr === 'HISCORE_ENTRY' && this.entryPhase === 'entry' && this.entry) {
+      this.hiEntry.setState(this.entry, this.arcade.screenFrame, this.arcade.finalScore); this.hiEntry.show();
+    } else this.hiEntry.hide();
+    this.hiEntry.step(steps);
 
-    const s = this.world.shake;
+    // Hi-score table: the attract `table` segment (no highlight) and the HISCORE_ENTRY table phase (new row gold).
+    if (attractActive && this.attract.segment === 'table') { this.hiTable.setTable(this.table, null); this.hiTable.show(); }
+    else if (scr === 'HISCORE_ENTRY' && this.entryPhase === 'table') { this.hiTable.setTable(this.table, this.entryHighlight); this.hiTable.show(); }
+    else this.hiTable.hide();
+    this.hiTable.step(steps);
+
+    const s = world.shake;
     const off = s.frames > 0 ? (s.frames % 2 === 0 ? s.px : -s.px) : 0;
     this.cameras.main.centerOn(BASE_W / 2 + off, BASE_H / 2);
   }

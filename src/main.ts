@@ -5,9 +5,13 @@ import { computeIntegerScale } from '@shell/scale';
 import { installViewportGate } from '@shell/viewport-gate';
 import { installCabinet } from '@shell/cabinet';
 import { installAudioUnlock } from '@adapters/phaser/audio/unlock';
+import { openHiScores } from '@shell/hiscore-store';
 
 const screen = document.getElementById('screen');
 if (!screen) throw new Error('#screen missing from index.html');
+
+// Warm the hi-score kv once at boot (IndexedDB, silent memory fallback); GameScene reads the table from it.
+void openHiScores();
 
 const cabinet = installCabinet();
 

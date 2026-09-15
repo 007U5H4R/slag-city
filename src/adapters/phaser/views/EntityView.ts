@@ -24,6 +24,13 @@ export class EntityViews {
   private frameNames = new Map<string, string[]>();
   constructor(private scene: Phaser.Scene, private layer: Phaser.GameObjects.Layer) {}
 
+  // Drop every cached view. Called when the rendered world is swapped (attract demo <-> play) so a reused
+  // entity id from the new world never inherits the previous world's box/sprite of a different kind.
+  reset(): void {
+    for (const v of this.views.values()) v.destroy();
+    this.views.clear();
+  }
+
   sync(state: WorldState): void {
     const alive = new Set<number>();
     for (const e of state.entities) {

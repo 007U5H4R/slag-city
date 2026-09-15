@@ -2,7 +2,7 @@
 import Phaser from 'phaser';
 import { showService } from '@shell/service-screen';
 
-export interface AssetEntry { key: string; type: 'image' | 'atlas' | 'audio'; url: string; atlasJson?: string }
+export interface AssetEntry { key: string; type: 'image' | 'atlas' | 'audio' | 'json'; url: string; atlasJson?: string }
 
 export class BootScene extends Phaser.Scene {
   /** Later tickets push entries here (atlases in 03/12/13/16, backgrounds in 04/17, fonts in 09, audio in 22). */
@@ -13,6 +13,7 @@ export class BootScene extends Phaser.Scene {
     { key: 'brawler', type: 'atlas', url: '/assets/atlases/brawler.png', atlasJson: '/assets/atlases/brawler.json' },
     { key: 'knife', type: 'atlas', url: '/assets/atlases/knife.png', atlasJson: '/assets/atlases/knife.json' },
     { key: 'heavy', type: 'atlas', url: '/assets/atlases/heavy.png', atlasJson: '/assets/atlases/heavy.json' },
+    { key: 'attract-demo', type: 'json', url: '/assets/replays/attract-demo.json' },
   ];
   constructor() { super('boot'); }
 
@@ -55,12 +56,15 @@ export class BootScene extends Phaser.Scene {
   }
 
   private assetPresent(a: AssetEntry): boolean {
-    return a.type === 'audio' ? this.cache.audio.exists(a.key) : this.textures.exists(a.key);
+    if (a.type === 'audio') return this.cache.audio.exists(a.key);
+    if (a.type === 'json') return this.cache.json.exists(a.key);
+    return this.textures.exists(a.key);
   }
 
   private enqueue(a: AssetEntry): void {
     if (a.type === 'image') this.load.image(a.key, a.url);
     else if (a.type === 'atlas') this.load.atlas(a.key, a.url, a.atlasJson);
+    else if (a.type === 'json') this.load.json(a.key, a.url);
     else this.load.audio(a.key, a.url);
   }
 }
