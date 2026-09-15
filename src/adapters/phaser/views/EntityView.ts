@@ -31,6 +31,9 @@ export class EntityViews {
     this.views.clear();
   }
 
+  // Whether an entity currently has a visible view (the e2e smoke hook reads this for the hero).
+  has(id: number): boolean { const v = this.views.get(id); return !!v && v.visible; }
+
   sync(state: WorldState): void {
     const alive = new Set<number>();
     for (const e of state.entities) {

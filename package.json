@@ -16,6 +16,8 @@
     "test:watch": "vitest",
     "fonts:build": "tsx tools/fonts/build-retro-font.ts",
     "art:atlas": "tsx tools/art/build-atlas.ts",
+    "e2e": "PLAYWRIGHT_BROWSERS_PATH='/Volumes/E Drive/Dev/.caches/ms-playwright' TMPDIR='/Volumes/E Drive/Dev/.scratch/tmp' playwright test",
+    "e2e:prod": "BASE_URL=$PROD_URL npm run e2e -- --project=chromium",
     "check": "npm run typecheck && npm run lint && npm run test && npm run build"
   },
   "dependencies": {
@@ -24,6 +26,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.5",
     "@napi-rs/canvas": "^1.0.8",
+    "@playwright/test": "^1.63.0",
     "@types/node": "^26.4.1",
     "eslint": "^9.39.5",
     "eslint-formatter-compact": "^9.0.1",

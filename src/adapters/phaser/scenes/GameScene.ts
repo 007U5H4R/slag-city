@@ -50,7 +50,7 @@ export class GameScene extends Phaser.Scene {
   private fixed = createFixedStep();
   private keyboard!: KeyboardSource;
   private gamepad!: GamepadSource;
-  private views!: EntityViews;
+  views!: EntityViews;
   private parallax!: Parallax;
   private hazards!: HazardView;
   private debug!: DebugOverlay;

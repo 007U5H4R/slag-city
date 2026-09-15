@@ -6,6 +6,7 @@ import { installViewportGate } from '@shell/viewport-gate';
 import { installCabinet } from '@shell/cabinet';
 import { installAudioUnlock } from '@adapters/phaser/audio/unlock';
 import { openHiScores } from '@shell/hiscore-store';
+import type { GameScene } from '@adapters/phaser/scenes/GameScene';
 
 const screen = document.getElementById('screen');
 if (!screen) throw new Error('#screen missing from index.html');
@@ -26,6 +27,7 @@ const isGated = installViewportGate((gated) => {
     game = createGame(screen, lastK);
     installAudioUnlock(game);
     if (import.meta.env.DEV) (window as unknown as { game: Phaser.Game }).game = game;
+    installTestHook();
     game.events.once(Phaser.Core.Events.READY, () => {
       if (game && game.renderer.type === Phaser.CANVAS) {
         const n = document.createElement('div');
@@ -36,6 +38,19 @@ const isGated = installViewportGate((gated) => {
     });
   }
 });
+// Read-only test hook for the Playwright smoke (always present; harmless, no data leaves the page).
+function installTestHook(): void {
+  const scene = (): GameScene | undefined => game?.scene.getScene('game') as GameScene | undefined;
+  Object.defineProperty(window, '__slag', {
+    value: {
+      screen: () => scene()?.arcade.screen ?? 'BOOT',
+      heroVisible: () => { const s = scene(); return !!s && s.arcade.screen === 'PLAY' && s.views.has(s.world.heroId); },
+      scale: () => lastK,
+    },
+    writable: false,
+  });
+}
+
 window.addEventListener('resize', () => {
   if (isGated() || !game) return;
   const k = currentScale();
