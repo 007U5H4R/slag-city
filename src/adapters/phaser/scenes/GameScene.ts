@@ -31,6 +31,8 @@ import type { InputFrame } from '@core/types';
 import { Attract } from '../screens/Attract';
 import { Continue } from '../screens/Continue';
 import { GameOver } from '../screens/GameOver';
+import { encodeInput } from '@core/input-codec';
+import { hashState } from '@core/sim/hash';
 
 export class GameScene extends Phaser.Scene {
   world!: WorldState;
@@ -55,6 +57,9 @@ export class GameScene extends Phaser.Scene {
   private attract!: Attract;
   private continueScreen!: Continue;
   private gameOver!: GameOver;
+  // DEV attract-demo recorder (ticket 19.3): seed of the current PLAY world + the encoded input log.
+  private worldSeed = 1;
+  private recording: number[] | null = null;
 
   constructor() { super('game'); }
 
@@ -88,6 +93,7 @@ export class GameScene extends Phaser.Scene {
     if (import.meta.env.DEV) this.input.keyboard?.on('keydown-H', () => this.debug.toggle());
     if (import.meta.env.DEV) this.input.keyboard?.on('keydown-F', () => spawnFeral(this.world, this.world.camera.x + 360, 150));
     if (import.meta.env.DEV) this.input.keyboard?.on('keydown-B', () => spawnBoss(this.world, this.world.camera.x + 300, 176));
+    if (import.meta.env.DEV) this.input.keyboard?.on('keydown-R', () => this.toggleRecording());
 
     this.keyboard = new KeyboardSource(this);
     this.gamepad = new GamepadSource();
@@ -123,7 +129,7 @@ export class GameScene extends Phaser.Scene {
       const before = this.arcade.screen;
       this.arcade = reduceArcade(this.arcade, { type: 'start' });
       if (this.arcade.screen === 'PLAY' && before !== 'PLAY') {
-        if (before === 'CONTINUE') reviveHero(this.world); else this.world = newGameWorld(Date.now() >>> 0);
+        if (before === 'CONTINUE') reviveHero(this.world); else { this.worldSeed = Date.now() >>> 0; this.world = newGameWorld(this.worldSeed); }
         this.sfx('start');
       }
     }
@@ -132,6 +138,7 @@ export class GameScene extends Phaser.Scene {
       this.arcade = reduceArcade(this.arcade, { type: 'tick' });
       if (this.arcade.screen !== 'PLAY') return;
       tick(this.world, input);
+      if (this.recording) this.recording.push(encodeInput(input)); // DEV attract-demo capture (19.3)
       this.arcade = reduceArcade(this.arcade, { type: 'score', score: this.world.score });
       for (const ev of this.world.events) {
         if (ev.type === 'heroDead') this.arcade = reduceArcade(this.arcade, { type: 'heroDead' });
@@ -151,6 +158,21 @@ export class GameScene extends Phaser.Scene {
 
   // Audio lands in a later ticket; the machine already emits the cues so sound can hook in without touching this flow.
   private sfx(_name: string): void { /* no-op until the audio pass */ }
+
+  // DEV attract-demo recorder (ticket 19.3): arm before pressing Start so capture begins at world frame 0.
+  // On stop, JSON.stringify({ seed, inputs, hash }) lands on window.__replay for the engineer to save to
+  // public/assets/replays/attract-demo.json (shipped) + test/replays/attract-demo.json (golden).
+  private toggleRecording(): void {
+    if (this.recording) {
+      const json = JSON.stringify({ seed: this.worldSeed, inputs: this.recording, hash: hashState(this.world) });
+      (window as unknown as { __replay?: string }).__replay = json;
+      console.log(`[GameScene] attract demo recorded: ${this.recording.length} frames, seed ${this.worldSeed}`);
+      this.recording = null;
+    } else {
+      this.recording = [];
+      console.log('[GameScene] attract demo recording armed — press Start to capture from frame 0');
+    }
+  }
 
   private renderScreens(steps: number): void {
     this.parallax.sync(this.world.camera.x, this.world.stage.sectionIndex);
