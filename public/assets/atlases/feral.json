@@ -1,0 +1,162 @@
+{
+ "frames": {
+  "feral/idle/0": {
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 83,
+    "h": 46
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 83,
+    "h": 46
+   },
+   "sourceSize": {
+    "w": 83,
+    "h": 46
+   }
+  },
+  "feral/move/0": {
+   "frame": {
+    "x": 83,
+    "y": 0,
+    "w": 83,
+    "h": 46
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 83,
+    "h": 46
+   },
+   "sourceSize": {
+    "w": 83,
+    "h": 46
+   }
+  },
+  "feral/move/1": {
+   "frame": {
+    "x": 166,
+    "y": 0,
+    "w": 83,
+    "h": 46
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 83,
+    "h": 46
+   },
+   "sourceSize": {
+    "w": 83,
+    "h": 46
+   }
+  },
+  "feral/move/2": {
+   "frame": {
+    "x": 249,
+    "y": 0,
+    "w": 83,
+    "h": 46
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 83,
+    "h": 46
+   },
+   "sourceSize": {
+    "w": 83,
+    "h": 46
+   }
+  },
+  "feral/move/3": {
+   "frame": {
+    "x": 332,
+    "y": 0,
+    "w": 83,
+    "h": 46
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 83,
+    "h": 46
+   },
+   "sourceSize": {
+    "w": 83,
+    "h": 46
+   }
+  },
+  "feral/pounce/0": {
+   "frame": {
+    "x": 415,
+    "y": 0,
+    "w": 83,
+    "h": 46
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 83,
+    "h": 46
+   },
+   "sourceSize": {
+    "w": 83,
+    "h": 46
+   }
+  },
+  "feral/pounce/1": {
+   "frame": {
+    "x": 498,
+    "y": 0,
+    "w": 83,
+    "h": 46
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 83,
+    "h": 46
+   },
+   "sourceSize": {
+    "w": 83,
+    "h": 46
+   }
+  }
+ },
+ "meta": {
+  "app": "slag-city build-atlas",
+  "image": "feral.png",
+  "size": {
+   "w": 581,
+   "h": 46
+  },
+  "scale": "1",
+  "slagcity": {
+   "origin": [
+    0.5,
+    1
+   ],
+   "scale": 0.038394415357766144,
+   "frameW": 83,
+   "frameH": 46
+  }
+ }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "feral",
+  "targetHeight": 44,
+  "palette": "assets/palette.provisional.json",
+  "scaleFrom": "move",
+  "bgKey": "#808080",
+  "outDir": "public/assets/atlases",
+  "actions": [
+    { "name": "idle", "sheet": "assets/sources/feral/idle.png", "frames": 1 },
+    { "name": "move", "sheet": "assets/sources/feral/move.png", "frames": 4 },
+    { "name": "pounce", "sheet": "assets/sources/feral/pounce.png", "frames": 2 }
+  ]
+}
