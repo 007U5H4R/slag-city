@@ -19,6 +19,9 @@ export class Hud {
     this.score = scene.add.bitmapText(SCORE_X, TEXT_Y, 'hud8', 'SCORE 000000').setDepth(2001).setTint(HUD_COLOURS.text);
     this.credits = scene.add.bitmapText(CREDITS_X, TEXT_Y, 'hud8', 'CREDIT 0').setDepth(2001).setTint(HUD_COLOURS.text);
   }
+  // Hidden outside PLAY/CONTINUE by the coin-op machine (ticket 18); re-shown a frame before the next render.
+  setVisible(v: boolean): void { this.g.setVisible(v); this.score.setVisible(v); this.credits.setVisible(v); }
+
   render(m: HudModel): void {
     const g = this.g; g.clear();
     // plates: one shared style (dark plate + brass border) so the three elements read as one group (Design §3.2)
