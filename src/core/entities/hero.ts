@@ -8,6 +8,8 @@ import { HERO_DATA, moveTotal, nextChain, SPECIAL_COST, dataFor, GRAB_BOX, GRAB_
 import { updateStunState } from '../combat/stun';
 import { hitConnects } from '../combat/hit';
 import { HIT_FEEL } from '../combat/hit-feel';
+import { PICKUP_RADIUS, spawnProjectile } from './items';
+import { useWeapon } from '../weapons/heat';
 
 /** True on the frame a button goes from up to down. */
 export function pressed(state: WorldState, input: InputFrame, key: keyof InputFrame): boolean {
@@ -68,7 +70,12 @@ export function updateHero(state: WorldState, hero: Entity, input: InputFrame): 
   if (move) {
     hero.vel.x = 0; hero.vel.y = 0;
     if (pressed(state, input, 'attack')) hero.chainQueued = true;
+    if ((hero.state === 'cannonFire' || hero.state === 'bladeSwing') && hero.stateFrame === move.startup + 1) {
+      if (hero.state === 'cannonFire') { spawnProjectile(state, 'cannon', hero.pos.x + hero.facing * 16, hero.pos.y, 28, hero.facing, 'hero'); emit(state, { type: 'sfx', id: 'cannon' }); }
+      hero.weaponUsePending = true;
+    }
     if (hero.stateFrame >= moveTotal(move)) {
+      if (hero.weaponUsePending) { hero.weaponUsePending = false; useWeapon(state, hero); }
       const next = hero.chainQueued ? nextChain('hero', hero.state) : null;
       hero.chainQueued = false;
       setState(hero, next ?? 'idle');
@@ -94,7 +101,17 @@ export function updateHero(state: WorldState, hero: Entity, input: InputFrame): 
         const g = findGrabbable(state, hero);
         if (g) { setState(hero, 'grab'); hero.grabbedId = g.id; setState(g, 'grabbed'); g.hitstun = 0; hero.vel.x = 0; hero.vel.y = 0; emit(state, { type: 'sfx', id: 'grab' }); break; }
       }
-      if (pressed(state, input, 'attack')) { setState(hero, 'attack1'); hero.chainQueued = false; hero.vel.x = 0; hero.vel.y = 0; break; }
+      if (pressed(state, input, 'attack')) {
+        const over = state.entities.find((p) => p.kind === 'weaponPickup' && Math.abs(p.pos.x - hero.pos.x) <= PICKUP_RADIUS.x && Math.abs(p.pos.y - hero.pos.y) <= PICKUP_RADIUS.y);
+        if (over && over.weapon && !hero.weapon) {
+          hero.weapon = { ...over.weapon }; over.dead = true;
+          emit(state, { type: 'pickup', kind: over.weapon.kind, x: over.pos.x, y: over.pos.y }); emit(state, { type: 'sfx', id: 'weapon_pickup' });
+          break;
+        }
+        setState(hero, hero.weapon ? (hero.weapon.kind === 'blade' ? 'bladeSwing' : 'cannonFire') : 'attack1');
+        hero.chainQueued = false; hero.vel.x = 0; hero.vel.y = 0;
+        break;
+      }
       if (pressed(state, input, 'jump')) { setState(hero, 'jump'); hero.vel.z = HERO_DATA.jumpVz; hero.vel.y = 0; }
       break;
     }

@@ -9,7 +9,7 @@ import { dataFor, THROW } from './frame-data';
 import { hitConnects } from './hit';
 import { HIT_FEEL } from './hit-feel';
 import { SCORE } from '../arcade/score';
-import { CRATE_HURTBOX } from '../entities/items';
+import { CRATE_HURTBOX, PROJECTILE_MOVES, spawnWeaponPickup } from '../entities/items';
 
 export function activeMove(e: Entity): MoveData | null {
   if (!isBody(e)) return null;
@@ -33,6 +33,7 @@ export function canHit(att: Entity, vic: Entity): boolean {
 }
 
 export function applyKnockdown(state: WorldState, vic: Entity, dir: Facing): void {
+  if (vic.kind === 'hero' && vic.weapon) { spawnWeaponPickup(state, vic.weapon.kind, vic.pos.x, vic.pos.y, vic.weapon.heat); vic.weapon = null; emit(state, { type: 'sfx', id: 'weapon_drop' }); }
   setState(vic, 'knockdown');
   vic.vel.z = HIT_FEEL.launch.vz;
   vic.vel.x = HIT_FEEL.launch.vx * dir;
@@ -76,11 +77,17 @@ export function applyHit(state: WorldState, att: Entity, vic: Entity, move: Move
 /** A thrown body is itself a launch-level projectile while airborne. */
 export const THROWN_MOVE: MoveData = { startup: 0, active: 1, recovery: 0, hitbox: { x: -12, y: 0, w: 24, h: 40 }, damage: THROW.damage, level: 'launch', pushback: 2 };
 
+export function attackMoveFor(att: Entity): MoveData | null {
+  if (att.state === 'thrown' && att.pos.z > 0) return THROWN_MOVE;
+  if (att.kind === 'projectile') return PROJECTILE_MOVES[att.state as 'cannon' | 'glob'] ?? null;
+  return activeMove(att);
+}
+
 export function resolveHits(state: WorldState): void {
   for (const att of state.entities) {
-    const thrown = att.state === 'thrown' && att.pos.z > 0;
-    const move = thrown ? THROWN_MOVE : activeMove(att);
+    const move = attackMoveFor(att);
     if (!move) continue;
+    const thrown = att.state === 'thrown';
     for (const vic of state.entities) {
       const allowed = thrown ? (vic.id !== att.id && isBody(vic) && faction(vic) !== 'hero' && vic.state !== 'thrown') : canHit(att, vic);
       if (!allowed || att.hitIds.includes(vic.id) || vic.invulnFrames > 0) continue;

@@ -6,7 +6,7 @@ export const GRAVITY = 0.25;
 
 export function applyPhysics(state: WorldState): void {
   for (const e of state.entities) {
-    if (e.pos.z > 0 || e.vel.z > 0) {
+    if ((e.pos.z > 0 || e.vel.z > 0) && !(e.kind === 'projectile' && e.state === 'cannon')) {
       e.vel.z -= GRAVITY;
       e.pos.z += e.vel.z;
       if (e.pos.z <= 0) { e.pos.z = 0; e.vel.z = 0; }

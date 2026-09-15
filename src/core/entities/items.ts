@@ -1,8 +1,9 @@
 // src/core/entities/items.ts
-import type { InputFrame } from '../types';
-import type { Entity, PickupKind, WeaponKind } from '../sim/entity';
+import type { Facing, InputFrame } from '../types';
+import type { Entity, Faction, PickupKind, WeaponKind } from '../sim/entity';
 import type { WorldState } from '../sim/state';
 import { emit, heroOf, spawn } from '../sim/state';
+import type { MoveData } from '../combat/frame-data';
 import { DEPTH_TOLERANCE } from '../combat/hit';
 import { SCORE } from '../arcade/score';
 
@@ -39,6 +40,24 @@ export function updateCrate(state: WorldState, c: Entity, _input: InputFrame): v
     spawnPickup(state, c.pickupKind ?? 'gear', c.pos.x, c.pos.y);
     c.dead = true;
   }
+}
+
+export const PROJECTILE_SPEED = { cannon: 6, glob: 3 } as const;
+export const PROJECTILE_LIFE = 60;
+export const PROJECTILE_MOVES: Record<'cannon' | 'glob', MoveData> = {
+  cannon: { startup: 0, active: 1, recovery: 0, hitbox: { x: -4, y: -4, w: 8, h: 8 }, damage: 14, level: 'heavy', pushback: 4 },
+  glob:   { startup: 0, active: 1, recovery: 0, hitbox: { x: -6, y: -6, w: 12, h: 12 }, damage: 10, level: 'heavy', pushback: 3 },
+};
+export function spawnProjectile(state: WorldState, kind: 'cannon' | 'glob', x: number, y: number, z: number, dir: Facing, owner: Faction): Entity {
+  const p = spawn(state, 'projectile', x, y);
+  p.state = kind; p.pos.z = z; p.vel.x = PROJECTILE_SPEED[kind] * dir; p.facing = dir; p.ownerFaction = owner; p.removeIn = PROJECTILE_LIFE;
+  return p;
+}
+export function updateProjectile(state: WorldState, p: Entity, _input: InputFrame): void {
+  p.stateFrame++;
+  if (p.state === 'glob') { if (p.pos.z > 0) { /* gravity handled by physics */ } else p.dead = true; }
+  if (p.hitIds.length > 0) p.dead = true;   // one hit per projectile
+  if (p.pos.x < state.camera.x - 16 || p.pos.x > state.camera.x + 400) p.dead = true;
 }
 
 export function updatePickup(state: WorldState, p: Entity, _input: InputFrame): void {

@@ -28,6 +28,8 @@ export const HERO_DATA: ActorData = {
     jumpAttack: { startup: 2, active: 14, recovery: 0, hitbox: { x: 4, y: 12, w: 32, h: 28 }, damage: 8, level: 'heavy', pushback: 3 },
     special:    { startup: 6, active: 6, recovery: 20, hitbox: { x: -44, y: 0, w: 88, h: 60 }, damage: 20, level: 'launch', pushback: 4 },
     throw:      { startup: 6, active: 1, recovery: 14, hitbox: { x: 0, y: 0, w: 0, h: 0 }, damage: 0, level: 'light', pushback: 0 },
+    bladeSwing: { startup: 4, active: 4, recovery: 12, hitbox: { x: 8, y: 12, w: 46, h: 32 }, damage: 12, level: 'heavy', pushback: 4 },
+    cannonFire: { startup: 4, active: 1, recovery: 16, hitbox: { x: 0, y: 0, w: 0, h: 0 }, damage: 0, level: 'light', pushback: 0 },
   },
 };
 

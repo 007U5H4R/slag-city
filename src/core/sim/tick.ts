@@ -7,7 +7,7 @@ import { updateCamera } from './camera';
 import { updateHero } from '../entities/hero';
 import { updateGang } from '../entities/gang';
 import { updateFeral } from '../entities/feral';
-import { updateCrate, updatePickup } from '../entities/items';
+import { updateCrate, updatePickup, updateProjectile } from '../entities/items';
 import { resolveHits } from '../combat/resolve';
 import { assignAttackTickets } from '../ai/tickets';
 import { nameCardSystem } from '../arcade/namecards';
@@ -15,7 +15,7 @@ import { lockSystem } from '../stage/locks';
 import { hazardSystem } from '../stage/hazards';
 
 export type EntityUpdater = (state: WorldState, e: Entity, input: InputFrame) => void;
-export const ENTITY_UPDATERS: Partial<Record<EntityKind, EntityUpdater>> = { hero: updateHero, brawler: updateGang, knife: updateGang, heavy: updateGang, feral: updateFeral, crate: updateCrate, pickup: updatePickup };
+export const ENTITY_UPDATERS: Partial<Record<EntityKind, EntityUpdater>> = { hero: updateHero, brawler: updateGang, knife: updateGang, heavy: updateGang, feral: updateFeral, crate: updateCrate, pickup: updatePickup, projectile: updateProjectile };
 /** Systems that run after entity updates and before physics (hit resolution, AI tickets, hazards). */
 export const POST_UPDATE_SYSTEMS: Array<(state: WorldState) => void> = [lockSystem, hazardSystem, assignAttackTickets, resolveHits, nameCardSystem];
 
