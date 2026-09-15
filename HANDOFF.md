@@ -8,12 +8,13 @@ files, orchestrator review, ledger updates, phase QA gate).
 ▶ SCALING PASS (hero move-set): ATTACK (`2ee4a9d`) + IDLE + HURT (`2fa9411`, 2026-09-14) all generated, wired in-engine, and CDP-verified.
 ✅ BUDGET UNBLOCKED — owner topped up +500 cr (2026-09-14) and said "go ahead with the remaining implementation". Standing cap: seedream_v4_5
 only (~1 cr/frame), reconcile `transactions` after every batch, no nano_banana_pro for frames.**
-HEAD = `d75e3ef` (ticket 14.1+14.2 stage engine; enemy sprites `a7c4cb3`; hero art `2fa9411`). Higgsfield balance = **427.9 cr**.
-**▶ TICKET 14 (Stage 1 layout) IN PROGRESS:** 14.1 stage data (`f7afdc6`) + 14.2 scroll-lock engine (`d75e3ef`) DONE + tested (92 tests green).
-Engine works in tests (data + scroll-locks + delayed spawns + boss door). **⛔ NEXT: 14.3 hazards (belts/channel/ladle, pure core, plan ~L6119)
-then 14.4 adapter (wire STAGE1 into GameScene — replaces the 5-enemy debug scene, section bg placeholders, hazard visuals, CDP+playtest gate,
-plan ~L6246) — 14.4 is what makes the stage visibly PLAYABLE in-browser.** Deferred dependency: **feral (ticket 10)** — `spawnEntry` skips feral
-for now (documented deviation); build ticket 10 to populate sections 2–3's ferals. See LEDGER "Ticket 14" table for all deviations + the golden regen.
+HEAD = `d757465` (ticket 10 feral: 10.1 `535fc13` + 10.2 `0a87432` + 10.3 `d757465`; 14.3 hazards `926f6f7`; 14.4 Steps 1-2 `443ebb7`; 14.1+14.2 stage engine; enemy sprites `a7c4cb3`; hero art `2fa9411`). Higgsfield balance = **427.9 cr** (ticket 10 spent ZERO — pure code).
+**▶ TICKET 14 (Stage 1 layout) — engine COMPLETE + stage PLAYABLE + fully populated; ⏸ ONE owner gate left. TICKET 10 (feral) COMPLETE.** 14.1 `f7afdc6` + 14.2 `d75e3ef` + 14.3 `926f6f7` + 14.4 Steps 1-2 `443ebb7`; ticket 10 `535fc13`/`0a87432`/`d757465`. `npm run check` GREEN (**33 files / 100 tests**).
+**CDP-verified @1024px** (`docs/verification/14-stage.md` + `14-feral-spawn.png` + 6 shots): STAGE1 boots (no debug block), scroll-locks engage live + spawn waves incl. **ferals** (sections 2-3 populate via the un-deferred `spawn.ts`), 3 sections render distinct (slate/blue-grey/molten-red), belt/channel/ladle draw, boss door holds camera at 3616, **zero console errors**.
+**⛔ ONLY GATE LEFT to close ticket 14 — needs the OWNER (inherently manual):**
+  **14.4 Step-3 timed-run playtest** — `npm run dev`, play start→boss door ×2 with a stopwatch, target **6-8 min**; record both times/deaths/pacing sags in `docs/verification/14-timed-runs.md`. Then the orchestrator tunes ONLY STAGE1 (counts/delays/lock positions — never enemy stats; each change re-runs `npm test`) until two runs land in range. Ferals now populate, so this tunes against the full roster.
+**Deferred (non-blocking):** feral SPRITE art (renders as green box now, like the gang pre-sprites) — a later dedicated art pass; hero jump/grab/throw/special still fall back to walk/attack (fine for M0).
+See LEDGER "Ticket 14" + "Ticket 10" tables for all deviations + the ratified 10.2 tuning fixes.
 Hero atlas ships **10 frames** (walk×4, attack×4, idle×1, hurt×1), cell 52×66.
 **✅ ENEMY ROSTER ART COMPLETE (2026-09-14):** owner picked references **brawler-1 / knife-1 / heavy-2** (`assets/sources/enemies/<kind>/reference.png`);
 **walk×4 + attack×4 per kind = 24 frames** generated on `seedream_v4_5` (proven hero recipe, weapon gripped, zero detachment) → probes in
