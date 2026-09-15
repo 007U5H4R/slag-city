@@ -1,0 +1,202 @@
+{
+ "frames": {
+  "boss/idle/0": {
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 106,
+    "h": 121
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 106,
+    "h": 121
+   },
+   "sourceSize": {
+    "w": 106,
+    "h": 121
+   }
+  },
+  "boss/walk/0": {
+   "frame": {
+    "x": 106,
+    "y": 0,
+    "w": 106,
+    "h": 121
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 106,
+    "h": 121
+   },
+   "sourceSize": {
+    "w": 106,
+    "h": 121
+   }
+  },
+  "boss/walk/1": {
+   "frame": {
+    "x": 212,
+    "y": 0,
+    "w": 106,
+    "h": 121
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 106,
+    "h": 121
+   },
+   "sourceSize": {
+    "w": 106,
+    "h": 121
+   }
+  },
+  "boss/walk/2": {
+   "frame": {
+    "x": 318,
+    "y": 0,
+    "w": 106,
+    "h": 121
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 106,
+    "h": 121
+   },
+   "sourceSize": {
+    "w": 106,
+    "h": 121
+   }
+  },
+  "boss/walk/3": {
+   "frame": {
+    "x": 424,
+    "y": 0,
+    "w": 106,
+    "h": 121
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 106,
+    "h": 121
+   },
+   "sourceSize": {
+    "w": 106,
+    "h": 121
+   }
+  },
+  "boss/swing/0": {
+   "frame": {
+    "x": 530,
+    "y": 0,
+    "w": 106,
+    "h": 121
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 106,
+    "h": 121
+   },
+   "sourceSize": {
+    "w": 106,
+    "h": 121
+   }
+  },
+  "boss/swing/1": {
+   "frame": {
+    "x": 636,
+    "y": 0,
+    "w": 106,
+    "h": 121
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 106,
+    "h": 121
+   },
+   "sourceSize": {
+    "w": 106,
+    "h": 121
+   }
+  },
+  "boss/swing/2": {
+   "frame": {
+    "x": 742,
+    "y": 0,
+    "w": 106,
+    "h": 121
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 106,
+    "h": 121
+   },
+   "sourceSize": {
+    "w": 106,
+    "h": 121
+   }
+  },
+  "boss/swing/3": {
+   "frame": {
+    "x": 848,
+    "y": 0,
+    "w": 106,
+    "h": 121
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 106,
+    "h": 121
+   },
+   "sourceSize": {
+    "w": 106,
+    "h": 121
+   }
+  }
+ },
+ "meta": {
+  "app": "slag-city build-atlas",
+  "image": "boss.png",
+  "size": {
+   "w": 954,
+   "h": 121
+  },
+  "scale": "1",
+  "slagcity": {
+   "origin": [
+    0.5,
+    1
+   ],
+   "scale": 0.06868918145392101,
+   "frameW": 106,
+   "frameH": 121
+  }
+ }
+}
