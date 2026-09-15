@@ -58,6 +58,20 @@ export const ANIM_TABLE: Partial<Record<EntityKind, Record<string, AnimSpec>>> =
     getup: { atlas: 'feral', action: 'getup', fps: 0, loop: true },
     dead: { atlas: 'feral', action: 'dead', fps: 0, loop: true },
   },
+  // The Foreman boss — every FSM state mapped to boss-atlas actions now; the 'boss' atlas arrives in
+  // ticket 16, so boxes render via EntityView's fallback until then (phase 2 adds a magenta box stroke
+  // through EntityView's e.tint branch). Phase-2 states reuse the phase-1 actions (recolor is ticket 16).
+  boss: {
+    idle: { atlas: 'boss', action: 'idle', fps: 0, loop: true },
+    approach: { atlas: 'boss', action: 'walk', fps: 8, loop: true },
+    swing: { atlas: 'boss', action: 'swing', fps: 0, loop: false },
+    pound: { atlas: 'boss', action: 'ground-pound', fps: 0, loop: false },
+    tearOpen: { atlas: 'boss', action: 'tear-open', fps: 8, loop: false },
+    throwGlob: { atlas: 'boss', action: 'throw', fps: 0, loop: false },
+    hurt: { atlas: 'boss', action: 'hurt', fps: 0, loop: true },
+    dying: { atlas: 'boss', action: 'death', fps: 8, loop: false },
+    dead: { atlas: 'boss', action: 'death', fps: 0, loop: false },
+  },
   // The dropped arm-cannon pickup — static; box renders until an item atlas exists.
   weaponPickup: { idle: { atlas: 'weaponPickup', action: 'idle', fps: 0, loop: true } },
 };

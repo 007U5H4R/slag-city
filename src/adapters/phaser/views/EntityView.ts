@@ -77,6 +77,8 @@ export class EntityViews {
     }
     v.setScale(e.facing, 1);
     v.setFillStyle(e.flashFrames > 0 ? 0xffffff : BOX_SIZE[e.kind].color, e.invulnFrames > 0 && state.frame % 4 < 2 ? 0.4 : 1);
-    v.setStrokeStyle(2, VARIANT_TINT[e.variant] ?? 0xffffff);
+    // Phase-2 boss (e.tint) gets an emissive magenta stroke (reserve slot #ff3ea8) until the ticket-16
+    // recolor atlas lands; every other box keeps its variant stroke.
+    v.setStrokeStyle(2, e.tint ? 0xff3ea8 : (VARIANT_TINT[e.variant] ?? 0xffffff));
   }
 }

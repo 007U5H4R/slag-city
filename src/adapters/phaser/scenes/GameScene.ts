@@ -41,6 +41,7 @@ export class GameScene extends Phaser.Scene {
   private sparks!: Sparks;
   private creditFlash = 0;
   private pauseText!: Phaser.GameObjects.BitmapText;
+  private stageClear!: Phaser.GameObjects.BitmapText;
 
   constructor() { super('game'); }
 
@@ -78,6 +79,9 @@ export class GameScene extends Phaser.Scene {
 
     this.pauseText = this.add.bitmapText(BASE_W / 2, BASE_H / 2, 'display16', '')
       .setOrigin(0.5).setDepth(1000).setVisible(false);
+    // STAGE CLEAR banner, shown once the boss is defeated (the coin-op machine in ticket 18 takes over here).
+    this.stageClear = this.add.bitmapText(BASE_W / 2, BASE_H / 2, 'display16', 'STAGE CLEAR')
+      .setOrigin(0.5).setDepth(1000).setVisible(false);
     this.game.events.on(Phaser.Core.Events.HIDDEN, () => this.pause('PAUSED'));
     this.game.events.on(Phaser.Core.Events.VISIBLE, () => { if (this.pauseReason === 'PAUSED') this.resume(); });
   }
@@ -101,6 +105,7 @@ export class GameScene extends Phaser.Scene {
         if (ev.type === 'score') this.pops.spawn(ev.amount, ev.x, ev.y);
         else if (ev.type === 'namecard') this.nameCard.show(ENEMY_NAMES[ev.kind] ?? ev.kind.toUpperCase());
         else if (ev.type === 'weaponBreak') this.sparks.burst(ev.x, ev.y);
+        else if (ev.type === 'bossDefeated') { this.stageClear.setVisible(true); if (import.meta.env.DEV) console.log('[GameScene] STAGE CLEAR — the Foreman defeated'); }
       }
     });
     this.parallax.sync(this.world.camera.x, this.world.stage.sectionIndex);
