@@ -10,7 +10,7 @@ export function installCabinet(): { chromeHeight(): number } {
   const cabinet = document.getElementById('cabinet');
   if (!marquee || !cabinet) throw new Error('#marquee/#cabinet missing');
   const img = document.createElement('img');
-  img.src = '/assets/ui/marquee-placeholder.png';
+  img.src = '/assets/ui/marquee.png';
   img.alt = '';
   img.decoding = 'async';
   marquee.replaceChildren(img);
