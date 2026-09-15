@@ -18,6 +18,8 @@ import { ScorePops } from '../views/ScorePop';
 import { NameCardView } from '../views/NameCard';
 import { Parallax } from '../views/Parallax';
 import { HazardView } from '../views/HazardView';
+import { Sparks } from '../views/Sparks';
+import { WEAPON_HEAT } from '@core/weapons/heat';
 import { enableCrt, crtInstance } from '../crt/CrtPipeline';
 import { installFonts } from '../views/fonts';
 
@@ -36,6 +38,7 @@ export class GameScene extends Phaser.Scene {
   private hud!: Hud;
   private pops!: ScorePops;
   private nameCard!: NameCardView;
+  private sparks!: Sparks;
   private creditFlash = 0;
   private pauseText!: Phaser.GameObjects.BitmapText;
 
@@ -63,6 +66,7 @@ export class GameScene extends Phaser.Scene {
     this.hud = new Hud(this);
     this.pops = new ScorePops(this);
     this.nameCard = new NameCardView(this);
+    this.sparks = new Sparks(this);
     if (import.meta.env.DEV) this.input.keyboard?.on('keydown-H', () => this.debug.toggle());
     if (import.meta.env.DEV) this.input.keyboard?.on('keydown-F', () => spawnFeral(this.world, this.world.camera.x + 360, 150));
 
@@ -96,6 +100,7 @@ export class GameScene extends Phaser.Scene {
       for (const ev of this.world.events) {
         if (ev.type === 'score') this.pops.spawn(ev.amount, ev.x, ev.y);
         else if (ev.type === 'namecard') this.nameCard.show(ENEMY_NAMES[ev.kind] ?? ev.kind.toUpperCase());
+        else if (ev.type === 'weaponBreak') this.sparks.burst(ev.x, ev.y);
       }
     });
     this.parallax.sync(this.world.camera.x, this.world.stage.sectionIndex);
@@ -103,8 +108,9 @@ export class GameScene extends Phaser.Scene {
     this.views.sync(this.world);
     this.pops.step(steps, this.world.camera.x);
     this.nameCard.step(steps);
+    this.sparks.step(steps, this.world.camera.x);
     const hero = heroOf(this.world);
-    this.hud.render({ hp: hero.hp, maxHp: hero.maxHp, score: this.world.score, credits: 0, weapon: null, creditFlash: this.creditFlash });
+    this.hud.render({ hp: hero.hp, maxHp: hero.maxHp, score: this.world.score, credits: 0, weapon: hero.weapon ? { kind: hero.weapon.kind, heat: hero.weapon.heat, max: WEAPON_HEAT[hero.weapon.kind] } : null, creditFlash: this.creditFlash });
     this.debug.draw(this.world);
     const s = this.world.shake;
     const off = s.frames > 0 ? (s.frames % 2 === 0 ? s.px : -s.px) : 0;

@@ -34,6 +34,8 @@ export const ANIM_TABLE: Partial<Record<EntityKind, Record<string, AnimSpec>>> =
     grab: { atlas: 'hero', action: 'walk', fps: 0, loop: true },
     throw: { atlas: 'hero', action: 'attack', fps: 0, loop: false },
     special: { atlas: 'hero', action: 'attack', fps: 0, loop: false },
+    bladeSwing: { atlas: 'hero', action: 'attack', fps: 0, loop: false },   // ticket 12 swaps to a weapon-swing sheet
+    cannonFire: { atlas: 'hero', action: 'attack', fps: 0, loop: false },   // ticket 12 swaps to a cannon-fire sheet
     hurt: { atlas: 'hero', action: 'hurt', fps: 0, loop: true },
     knockdown: { atlas: 'hero', action: 'walk', fps: 0, loop: true },
     down: { atlas: 'hero', action: 'walk', fps: 0, loop: true },
