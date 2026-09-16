@@ -637,6 +637,12 @@ All committed, CDP-verified locally + prod smoke green on https://slag-city.verc
   - **Result:** the boss atlas is now the ROBOT (was the human Foreman). The gauntlet's 3 bosses render as it, variant-tinted (GRIST red / SLAGJAW green / KILVISH plain). `npm run check` GREEN (129), build clean. CDP-verified clean cutout + phase-2 + full gauntlet, zero console errors (`docs/verification/r4w2d-*.png`). Balance **313.9**, all reconciled.
   - **⛔ REMAINING (future slices):** distinct GRIST/SLAGJAW atlases (concepts exist; currently reuse tinted Kilvish) + a per-variant atlas map in `EntityView` (line ~100 hardcodes `'boss'`/`'boss-p2'` → key by `e.variant`); robotic-alien reskins of the gang enemies; optional hero look. Same generate-sheets→normalize→atlas pipeline.
 
+- **Review round 4 — Wave 2e (distinct GRIST + SLAGJAW enforcer sprites)** (feat `cce0c1d` → prod `09d43a4`, 2026-09-16): the two sub-bosses got their own robot-alien sprite sets (were tinted Kilvish).
+  - **GRIST** = heavy demolition brute (rusted, hydraulic crusher arm, back smokestacks, red visor); **SLAGJAW** = lean bladed hunter (scything blade-arms, molten split jaw, green coolant glow). Each: 8 seedream action sheets off its concept (`c1137ec1` / `3ecbb64a`) → normalizer → `public/assets/atlases/{grist,slagjaw}.{png,json}` + `-p2` recolors. 16 cr (8+8; 3 intermittent 429s resubmitted free), reconciled → balance **297.9**.
+  - **Renderer wiring:** `anim-table.ts` `BOSS_ATLAS = ['boss','grist','slagjaw']` (variant→atlas). `EntityView` boss branch: `base = BOSS_ATLAS[e.variant]`; if a distinct atlas exists use it (+ `${base}-p2` for phase 2) and set tint neutral; else fall back to `'boss'` with `VARIANT_TINT` (so a not-yet-built variant is still distinguished — no regression). `BootScene` manifest gains grist/grist-p2/slagjaw/slagjaw-p2. Frame names stay `boss/<action>/<i>` in every atlas so the anim-table lookups are unchanged.
+  - `npm run check` GREEN (129), build clean. CDP-verified the gauntlet renders 3 distinct robots + STAGE CLEAR, zero console errors (`docs/verification/r4w2e-*.png`).
+  - **⛔ REMAINING robot-alien art:** gang-enemy reskins (brawler/knife/heavy still human thugs) + optional hero. Same pipeline; gang already has per-kind atlases + tint hook.
+
 _Phases D–G expand here as reached._
 
 ## Open threads / parked items
