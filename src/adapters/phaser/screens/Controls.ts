@@ -27,10 +27,10 @@ export class Controls {
     this.frame = new ScifiFrame(scene, 3049);
     this.frame.draw(cx - 168, TOP - 16, 336, h);
     this.title = scene.add.text(cx, TOP - 4, 'CONTROLS', { fontFamily: UI_FONT, fontSize: '11px', fontStyle: '700', color: BRASS })
-      .setOrigin(0.5, 0.5).setDepth(3051).setScrollFactor(0).setResolution(4).setVisible(false);
+      .setOrigin(0.5, 0.5).setDepth(3051).setResolution(4).setVisible(false);
     this.lines = LINES.map((t, i) =>
       scene.add.text(cx, TOP + 12 + i * LINE_H, t, { fontFamily: UI_FONT, fontSize: '9px', fontStyle: '500', color: TEXT })
-        .setOrigin(0.5, 0.5).setDepth(3051).setScrollFactor(0).setResolution(4).setVisible(false));
+        .setOrigin(0.5, 0.5).setDepth(3051).setResolution(4).setVisible(false));
   }
 
   show(): void {

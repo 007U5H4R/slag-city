@@ -35,12 +35,12 @@ export class Attract {
 
   constructor(scene: Phaser.Scene) {
     if (scene.textures.exists('marquee')) {
-      this.marquee = scene.add.image(BASE_W / 2, BASE_H / 3, 'marquee').setOrigin(0.5).setDepth(3000).setScrollFactor(0).setVisible(false);
+      this.marquee = scene.add.image(BASE_W / 2, BASE_H / 3, 'marquee').setOrigin(0.5).setDepth(3000).setVisible(false);
     }
-    this.title = scene.add.bitmapText(BASE_W / 2, BASE_H / 3, 'display16', 'SLAG CITY').setOrigin(0.5).setDepth(3000).setScrollFactor(0).setVisible(false);
-    this.insertCoin = scene.add.bitmapText(BASE_W / 2, BASE_H - 40, 'hud8', 'INSERT COIN').setOrigin(0.5).setDepth(3001).setScrollFactor(0).setVisible(false);
-    this.pressStart = scene.add.bitmapText(BASE_W / 2, BASE_H - 40, 'hud8', 'PRESS START').setOrigin(0.5).setDepth(3001).setScrollFactor(0).setVisible(false);
-    this.plate = scene.add.rectangle(BASE_W / 2, BASE_H / 2, BASE_W, BASE_H, 0x000000, 0).setDepth(3300).setScrollFactor(0).setVisible(false);
+    this.title = scene.add.bitmapText(BASE_W / 2, BASE_H / 3, 'display16', 'SLAG CITY').setOrigin(0.5).setDepth(3000).setVisible(false);
+    this.insertCoin = scene.add.bitmapText(BASE_W / 2, BASE_H - 40, 'hud8', 'INSERT COIN').setOrigin(0.5).setDepth(3001).setVisible(false);
+    this.pressStart = scene.add.bitmapText(BASE_W / 2, BASE_H - 40, 'hud8', 'PRESS START').setOrigin(0.5).setDepth(3001).setVisible(false);
+    this.plate = scene.add.rectangle(BASE_W / 2, BASE_H / 2, BASE_W, BASE_H, 0x000000, 0).setDepth(3300).setVisible(false);
     const r = scene.cache.json.get('attract-demo') as ReplayFile | undefined;
     if (r && Array.isArray(r.inputs) && typeof r.seed === 'number') this.replay = r;
   }

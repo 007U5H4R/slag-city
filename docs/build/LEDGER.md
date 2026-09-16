@@ -580,6 +580,16 @@ All committed, CDP-verified locally + prod smoke green on https://slag-city.verc
 - **Deploy**: pushed to `main` → Vercel auto-deployed to production (57a9527). ⚠ GitHub Actions CI still billing-blocked (owner account); Vercel builds independently.
 - **⚠ Flaky test watch:** one background `npm run check` reported "1 failed" once under load; 2 clean re-runs = 129/129. No core changes this iteration; likely a slow-collect timing flake — watch it.
 
+- **Review round 3 — root-cause polish** (`457f4d3`, 2026-09-16, **local commit — NOT pushed, owner-gated**): all owner-reported issues fixed and CDP-verified live at 2x in headless Chrome:
+  - **UI clipping (dialogue off-left + scoreboard off-right)** — ROOT CAUSE: every UI overlay used `setScrollFactor(0)`, which only coincides with the world layer at zoom 1 (scroll 0). At zoom≥2 the camera's `centerOn` scroll (−192,−112) squished scroll-fixed UI into the left third (proved with a magenta sf1 / green sf0 test-rect pair — sf1 fills, sf0 → left half). FIX: removed `setScrollFactor(0)` from Hud, scifi-frame, Controls, Attract, Continue, GameOver, HiScoreEntry, HiScoreTable, StoryIntro → they render on the default factor like the world and fill at any integer scale. (This also explains the earlier HUD "cut off top-right" — same root cause, now truly fixed, not just nudged.)
+  - **Hero facing "front then back"** — ROOT CAUSE: the hero atlas cells had MIXED left/right orientation (walk 0=L,1=R,2=R,3=L; attack/idle/hurt=R), so the walk cycle flipped frame-to-frame. FIX: normalized every cell to face LEFT (sharp `.flop()` on cells 1,2,4,5,6,7,8,9; backup `hero-precommit-*.png` in scratch). `EntityView.setFlipX(facing===1)` then reads travel direction. Verified: 3 consecutive walk-right frames all face right; walk-left faces left.
+  - **Molten channel flat-slab overspill** — replaced with contained per-column animated pixel-flame tongues (deep-orange/orange/yellow + white core), clamped to x-range, height capped ≤20px (`HazardView` channel branch).
+  - **Conveyor belt overspill** — clamped tread slats to `[x0, x0+w]` (`HazardView` belt branch).
+  - **Story intro (Max Payne noir)** — NEW `screens/StoryIntro.ts`, adapter-only (no core screen-machine change → 129 tests unchanged): 5 noir slides shown once before a fresh game's sim starts; ATTACK advances, world frozen until dismissed, title music holds, HUD hidden during. Verified centered + legible.
+  - Plasma weapons (`item-textures`) + `LaserCurtain` (cyan beams) retained from the in-progress pass; both verified rendering.
+  - `npm run check` GREEN (129 tests), `npm run build` clean, zero console errors. Zero Higgsfield credit (pure code/atlas-flop).
+  - **⚠ NOT pushed / NOT redeployed** — awaiting owner push permission (standing constraint). Live site slag-city.vercel.app still on the previous commit until push.
+
 _Phases D–G expand here as reached._
 
 ## Open threads / parked items

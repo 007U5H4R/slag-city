@@ -17,9 +17,9 @@ export class GameOver {
 
   constructor(scene: Phaser.Scene) {
     this.title = scene.add.text(BASE_W / 2, BASE_H / 2 - 12, 'GAME OVER', { fontFamily: UI_FONT, fontSize: '26px', fontStyle: '700', color: RED })
-      .setOrigin(0.5, 0.5).setDepth(3000).setScrollFactor(0).setResolution(4).setVisible(false);
+      .setOrigin(0.5, 0.5).setDepth(3000).setResolution(4).setVisible(false);
     this.sub = scene.add.text(BASE_W / 2, BASE_H / 2 + 18, '', { fontFamily: UI_FONT, fontSize: '11px', fontStyle: '500', color: TEXT })
-      .setOrigin(0.5, 0.5).setDepth(3000).setScrollFactor(0).setResolution(4).setVisible(false);
+      .setOrigin(0.5, 0.5).setDepth(3000).setResolution(4).setVisible(false);
   }
 
   show(): void { this.active = true; }

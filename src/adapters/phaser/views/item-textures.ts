@@ -17,24 +17,27 @@ export function ensureItemTextures(scene: Phaser.Scene): void {
     g.clear(); draw(); g.generateTexture(key, w, h);
   };
 
-  // Dropped LASER CANNON pickup (22x12): steel body + cyan muzzle emitter with glow.
-  gen('wpn-cannon', 22, 12, () => {
-    g.fillStyle(0x40d0e0, 0.35).fillCircle(18, 6, 5);          // muzzle glow
-    g.fillStyle(0x2a2f3a, 1).fillRoundedRect(0, 3, 16, 7, 2);  // body
-    g.fillStyle(0x4a5568, 1).fillRect(2, 4, 11, 2);            // top highlight
-    g.fillStyle(0x1b1f27, 1).fillRect(4, 9, 4, 3);             // grip
-    g.fillStyle(0x9fe8ff, 1).fillRect(14, 4, 5, 4);            // emitter
-    g.fillStyle(0xffffff, 1).fillRect(17, 5, 2, 2);            // hot tip
+  // Dropped PLASMA BLASTER pickup (24x13): sleek dark chassis, glowing cyan energy chamber + muzzle.
+  gen('wpn-cannon', 24, 13, () => {
+    g.fillStyle(0x39d6d6, 0.3).fillCircle(20, 6, 6);           // muzzle bloom
+    g.fillStyle(0x1a2230, 1).fillRoundedRect(0, 3, 18, 7, 2);  // chassis
+    g.fillStyle(0x2f4560, 1).fillRect(2, 4, 12, 1);            // rail highlight
+    g.fillStyle(0x0b1a20, 1).fillRoundedRect(6, 4, 6, 5, 1);   // energy chamber recess
+    g.fillStyle(0x39d6d6, 1).fillRect(7, 5, 4, 3);             // cyan energy cell
+    g.fillStyle(0x172230, 1).fillRect(4, 9, 4, 4);             // grip
+    g.fillStyle(0x9ff5ff, 1).fillRect(16, 4, 5, 5);            // emitter
+    g.fillStyle(0xffffff, 1).fillRect(19, 5, 3, 3);            // hot tip
   });
 
-  // Dropped FLAME BLADE pickup (22x14): steel blade with a fire overlay + hot core.
-  gen('wpn-blade', 22, 14, () => {
-    g.fillStyle(0xff7a3e, 0.3).fillCircle(13, 7, 7);           // heat haze
-    g.fillStyle(0x3a2a20, 1).fillRect(1, 8, 8, 3);            // handle
-    g.fillStyle(0x2a1c14, 1).fillRect(1, 8, 3, 3);            // pommel
-    g.fillStyle(0xc0c4cc, 1).fillTriangle(8, 4, 21, 7, 8, 11); // steel blade
-    g.fillStyle(0xff7a3e, 0.9).fillTriangle(9, 5, 18, 7, 9, 10); // flame
-    g.fillStyle(0xffd23e, 0.95).fillTriangle(9, 6, 15, 7, 9, 9);  // hot core
+  // Dropped PLASMA BLADE pickup (24x14): hilt + a bright cyan energy blade with a white-hot edge + glow.
+  gen('wpn-blade', 24, 14, () => {
+    g.fillStyle(0x39d6d6, 0.3).fillTriangle(6, 1, 24, 7, 6, 13); // energy glow
+    g.fillStyle(0x1a2230, 1).fillRoundedRect(1, 7, 8, 4, 1);   // hilt
+    g.fillStyle(0x2f4560, 1).fillRect(1, 8, 8, 1);            // hilt highlight
+    g.fillStyle(0x0b1a20, 1).fillRect(8, 6, 2, 6);           // guard
+    g.fillStyle(0x2fd4d4, 0.95).fillTriangle(9, 4, 23, 7, 9, 10); // plasma blade
+    g.fillStyle(0xbafcf7, 1).fillTriangle(9, 5, 18, 7, 9, 9);    // white-hot core
+    g.fillStyle(0xffffff, 1).fillTriangle(9, 6, 14, 7, 9, 8);    // edge
   });
 
   // Hero LASER BOLT (16x6): white core in a cyan capsule with glow.

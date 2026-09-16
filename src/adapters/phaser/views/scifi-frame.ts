@@ -13,8 +13,8 @@ export class ScifiFrame {
 
   constructor(scene: Phaser.Scene, depth: number) {
     this.dim = scene.add.rectangle(BASE_W / 2, BASE_H / 2, BASE_W, BASE_H, 0x02080a, 0.82)
-      .setDepth(depth).setScrollFactor(0).setVisible(false);
-    this.g = scene.add.graphics().setDepth(depth + 1).setScrollFactor(0).setVisible(false);
+      .setDepth(depth).setVisible(false);
+    this.g = scene.add.graphics().setDepth(depth + 1).setVisible(false);
   }
 
   // Draw the framed panel once (geometry is static per screen).

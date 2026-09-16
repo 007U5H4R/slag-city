@@ -16,10 +16,10 @@ export class Hud {
   private score: Phaser.GameObjects.Text;
   private credits: Phaser.GameObjects.Text;
   constructor(private scene: Phaser.Scene) {
-    this.g = scene.add.graphics().setDepth(2000).setScrollFactor(0);
+    this.g = scene.add.graphics().setDepth(2000);
     const style = { fontFamily: UI_FONT, fontSize: '12px', fontStyle: '700', color: '#e8dcc0' };
-    this.score = scene.add.text(SCORE_X, 2, 'SCORE 000000', style).setDepth(2001).setScrollFactor(0).setResolution(4);
-    this.credits = scene.add.text(CREDITS_X, 2, 'CREDIT 0', style).setDepth(2001).setScrollFactor(0).setResolution(4);
+    this.score = scene.add.text(SCORE_X, 2, 'SCORE 000000', style).setDepth(2001).setResolution(4);
+    this.credits = scene.add.text(CREDITS_X, 2, 'CREDIT 0', style).setDepth(2001).setResolution(4);
   }
   // Hidden outside PLAY/CONTINUE by the coin-op machine (ticket 18); re-shown a frame before the next render.
   setVisible(v: boolean): void { this.g.setVisible(v); this.score.setVisible(v); this.credits.setVisible(v); }
