@@ -19,6 +19,7 @@ export interface Entity {
   pickupKind: PickupKind | null; weaponKind: WeaponKind | null;
   ownerFaction: Faction;
   grabbedId: number | null; phase: 1 | 2; speedMul: number; tint: boolean;
+  finalBoss?: boolean;   // set only on bosses (optional → absent from non-boss state, so goldens are unaffected); only the final boss (Kilvish) ends the stage
   lockIndex: number; weaponUsePending: boolean;
   dead: boolean; removeIn: number;
 }
