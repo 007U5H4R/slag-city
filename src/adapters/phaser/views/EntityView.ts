@@ -4,7 +4,7 @@ import { isBody } from '@core/sim/entity';
 import type { Entity, EntityKind } from '@core/sim/entity';
 import type { WorldState } from '@core/sim/state';
 import { dataFor, moveTotal } from '@core/combat/frame-data';
-import { animFor, frameIndexFor, VARIANT_TINT } from './anim-table';
+import { animFor, frameIndexFor, VARIANT_TINT, BOSS_ATLAS } from './anim-table';
 
 export const BOX_SIZE: Record<EntityKind, { w: number; h: number; color: number }> = {
   hero: { w: 20, h: 56, color: 0x4fc3f7 },
@@ -95,9 +95,14 @@ export class EntityViews {
       // An action with no frames (e.g. attack* before the attack sheet exists) leaves the
       // current frame in place — never call setFrame on a non-existent name (Phaser warns/errors).
       if (names.length > 0) {
-        // Phase-2 boss uses the reserve-slot recolored atlas (same frame names); tear-open is one-way.
+        // Boss sprite per gauntlet variant (0 Kilvish, 1 GRIST, 2 SLAGJAW); phase-2 uses the recolored
+        // reserve atlas (same frame names). A variant with no distinct atlas yet falls back to 'boss'.
+        let bossDistinct = false;
         if (e.kind === 'boss') {
-          const tex = e.tint ? 'boss-p2' : 'boss';
+          const base = BOSS_ATLAS[e.variant];
+          bossDistinct = !!base && base !== 'boss' && this.scene.textures.exists(base);
+          const atlasBase: string = bossDistinct ? base! : 'boss';
+          const tex = e.tint ? `${atlasBase}-p2` : atlasBase;
           if (v.texture.key !== tex && this.scene.textures.exists(tex)) v.setTexture(tex);
         }
         const move = isBody(e) ? dataFor(e.kind).moves[e.state] : undefined;
@@ -110,7 +115,7 @@ export class EntityViews {
         // Flash = solid white silhouette (hit feedback); otherwise apply the palette-swap variant tint
         // (VARIANT_TINT[0] = 0xffffff = neutral, so variant-0 entities and the hero are untinted).
         if (e.flashFrames > 0) v.setTintFill(0xffffff);
-        else v.setTint(VARIANT_TINT[e.variant] ?? 0xffffff);
+        else v.setTint(bossDistinct ? 0xffffff : (VARIANT_TINT[e.variant] ?? 0xffffff)); // distinct boss atlas carries its own colour
         v.setAlpha(e.invulnFrames > 0 && state.frame % 4 < 2 ? 0.4 : 1);
       }
       return;
