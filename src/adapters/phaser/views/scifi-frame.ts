@@ -25,9 +25,12 @@ export class ScifiFrame {
       { x: x + c, y }, { x: x + w - c, y }, { x: x + w, y: y + c }, { x: x + w, y: y + h - c },
       { x: x + w - c, y: y + h }, { x: x + c, y: y + h }, { x, y: y + h - c }, { x, y: y + c },
     ];
-    g.fillStyle(PANEL, 0.94).fillPoints(p, true);
+    g.fillStyle(PANEL, 0.96).fillPoints(p, true);
+    // soft outer glow: two faint wide passes bloom the cyan edge over the busy game art
+    g.lineStyle(6, CY, 0.10).strokePoints(p, true);
+    g.lineStyle(4, CY, 0.18).strokePoints(p, true);
     g.lineStyle(1, EDGE, 0.9).strokeRect(x + 4, y + 4, w - 8, h - 8);   // inner accent line
-    g.lineStyle(2, CY, 0.9).strokePoints(p, true);                       // cyan border
+    g.lineStyle(2, CY, 0.95).strokePoints(p, true);                      // cyan border
     // bright corner brackets
     g.lineStyle(2, CY_HI, 1);
     const b = 16;

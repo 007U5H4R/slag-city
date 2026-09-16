@@ -5,6 +5,7 @@
 import type Phaser from 'phaser';
 import { BASE_W, BASE_H } from '@shell/scale';
 import { UI_FONT } from '../views/ui-font';
+import { ScifiFrame } from '../views/scifi-frame';
 import { blinkOn } from '@core/arcade/screen-machine';
 
 const BRASS = '#d7a94a', TEXT = '#d8cbb0', DIM = '#8a7f6a', CY = 0x2fd4d4;
@@ -21,6 +22,7 @@ const SLIDES: Slide[] = [
 
 export class StoryIntro {
   private dim: Phaser.GameObjects.Rectangle;
+  private frame: ScifiFrame;
   private rule: Phaser.GameObjects.Graphics;
   private title: Phaser.GameObjects.Text;
   private marquee?: Phaser.GameObjects.Image;
@@ -31,13 +33,17 @@ export class StoryIntro {
 
   constructor(scene: Phaser.Scene) {
     const D = 3200;
+    // deep-noir full-screen dim (darker than the frame's own dim, which we suppress)
     this.dim = scene.add.rectangle(BASE_W / 2, BASE_H / 2, BASE_W, BASE_H, 0x03060a, 0.9)
       .setDepth(D).setVisible(false);
+    // sci-fi dialogue-box frame around the noir slides (angled corners, teal glow)
+    this.frame = new ScifiFrame(scene, D);
+    this.frame.draw(24, 16, BASE_W - 48, BASE_H - 32);
     this.rule = scene.add.graphics().setDepth(D + 1).setVisible(false);
     this.title = scene.add.text(BASE_W / 2, 0, '', { fontFamily: UI_FONT, fontSize: '18px', fontStyle: '700', color: BRASS, align: 'center' })
       .setOrigin(0.5, 0.5).setDepth(D + 2).setResolution(4).setVisible(false);
-    if (scene.textures.exists('marquee')) {
-      this.marquee = scene.add.image(BASE_W / 2, 0, 'marquee').setOrigin(0.5).setDepth(D + 2).setVisible(false);
+    if (scene.textures.exists('marquee-logo')) {
+      this.marquee = scene.add.image(BASE_W / 2, 0, 'marquee-logo').setOrigin(0.5).setDepth(D + 2).setVisible(false);
       const s = (BASE_W * 0.6) / this.marquee.width;
       this.marquee.setScale(s);
     }
@@ -66,10 +72,8 @@ export class StoryIntro {
       this.body.setY(top + titleH + bodyH / 2);
     }
     else this.body.setY(BASE_H / 2 - 6);
-    // thin cyan rules framing the panel
+    // the ScifiFrame draws the panel border now; this graphics layer carries just the slide pips
     const g = this.rule; g.clear();
-    g.fillStyle(CY, 0.85).fillRect(BASE_W / 2 - 70, 30, 140, 1);
-    g.fillStyle(CY, 0.5).fillRect(BASE_W / 2 - 40, BASE_H - 34, 80, 1);
     // slide pips
     const n = SLIDES.length, px = BASE_W / 2 - (n * 8) / 2;
     for (let k = 0; k < n; k++) g.fillStyle(k === i ? CY : 0x1b5a5e, 1).fillRect(px + k * 8, BASE_H - 12, 5, 2);
@@ -79,6 +83,7 @@ export class StoryIntro {
 
   show(slide: number): void {
     this.active = true;
+    this.frame.show(false); // suppress the frame's own dim — StoryIntro.dim supplies the deeper noir dim
     for (const o of [this.dim, this.rule, this.body, this.prompt]) o.setVisible(true);
     this.layout(slide);
   }
@@ -93,6 +98,7 @@ export class StoryIntro {
   hide(): void {
     if (!this.active) return;
     this.active = false;
+    this.frame.hide();
     for (const o of [this.dim, this.rule, this.title, this.body, this.prompt]) o.setVisible(false);
     this.marquee?.setVisible(false);
   }
