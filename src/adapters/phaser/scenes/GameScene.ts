@@ -7,7 +7,7 @@ import { ENEMY_NAMES } from '@core/arcade/hud';
 import { tick } from '@core/sim/tick';
 import { STAGE1 } from '@core/stage/stage1';
 import { spawnFeral } from '@core/entities/feral';
-import { spawnBoss } from '@core/entities/boss';
+import { spawnBoss, BOSS_WAVES } from '@core/entities/boss';
 import { createFixedStep, advanceFixedStep, resetFixedStep } from '@core/sim/loop';
 import { KeyboardSource } from '../input/keyboard';
 import { GamepadSource } from '../input/gamepad';
@@ -37,7 +37,7 @@ import { HiScoreTable } from '../screens/HiScoreTable';
 import { HiScoreEntry } from '../screens/HiScoreEntry';
 import { Controls } from '../screens/Controls';
 import { StoryIntro } from '../screens/StoryIntro';
-import { BossDialogue, KILVISH_PREFIGHT, KILVISH_DEFEAT } from '../screens/BossDialogue';
+import { BossDialogue, BOSS_SCRIPTS } from '../screens/BossDialogue';
 import { encodeInput } from '@core/input-codec';
 import { hashState } from '@core/sim/hash';
 import { ATTRACT } from '@core/arcade/attract';
@@ -78,9 +78,10 @@ export class GameScene extends Phaser.Scene {
   private story!: StoryIntro;
   private bossTalk!: BossDialogue;
   private bossTalkKind: 'prefight' | 'defeat' | null = null;
-  private bossPrefightShown = false;   // pre-fight taunt fires once per fresh game
-  private bossDefeatShown = false;      // defeat exchange fires once per fresh game
-  private pendingBossDefeat = false;    // hold STAGE CLEAR until the defeat exchange is dismissed
+  private bossWave = 0;                  // which gauntlet wave (0,1 = enforcers; last = Kilvish)
+  private bossActive = false;            // an encounter is underway (fires the wave-0 taunt once)
+  private pendingNextWave = false;       // a sub-boss defeat is awaiting its dialogue → then spawn the next wave
+  private pendingBossDefeat = false;     // the final boss defeat is awaiting its dialogue → then STAGE CLEAR
   // Noir story intro (adapter-only): shown once before a fresh game's sim starts; ATTACK advances one slide.
   private storyActive = false;
   private storySlide = 0;
@@ -149,7 +150,7 @@ export class GameScene extends Phaser.Scene {
     this.input.keyboard?.on('keydown-PLUS', () => this.adjustVolume(0.1));
     if (import.meta.env.DEV) this.input.keyboard?.on('keydown-H', () => this.debug.toggle());
     if (import.meta.env.DEV) this.input.keyboard?.on('keydown-F', () => spawnFeral(this.world, this.world.camera.x + 360, 150));
-    if (import.meta.env.DEV) this.input.keyboard?.on('keydown-B', () => spawnBoss(this.world, this.world.camera.x + 300, 176));
+    if (import.meta.env.DEV) this.input.keyboard?.on('keydown-B', () => spawnBoss(this.world, this.world.camera.x + 300, 176, BOSS_WAVES[0])); // wave 0 = first enforcer (matches the real boss-door spawn + drives the gauntlet)
     if (import.meta.env.DEV) this.input.keyboard?.on('keydown-R', () => this.toggleRecording());
 
     this.keyboard = new KeyboardSource(this);
@@ -194,7 +195,7 @@ export class GameScene extends Phaser.Scene {
       this.arcade = reduceArcade(this.arcade, { type: 'start' });
       if (this.arcade.screen === 'PLAY' && before !== 'PLAY') {
         if (before === 'CONTINUE') reviveHero(this.world);
-        else { this.worldSeed = Date.now() >>> 0; this.world = newGameWorld(this.worldSeed); this.storyActive = true; this.storySlide = 0; this.story.show(0); this.bossTalk.hide(); this.bossTalkKind = null; this.bossPrefightShown = false; this.bossDefeatShown = false; this.pendingBossDefeat = false; } // fresh game → play the noir intro first, re-arm boss dialogue
+        else { this.worldSeed = Date.now() >>> 0; this.world = newGameWorld(this.worldSeed); this.storyActive = true; this.storySlide = 0; this.story.show(0); this.bossTalk.hide(); this.bossTalkKind = null; this.bossWave = 0; this.bossActive = false; this.pendingNextWave = false; this.pendingBossDefeat = false; } // fresh game → play the noir intro first, re-arm the boss gauntlet
         this.sfx('start');
       }
     }
@@ -205,17 +206,27 @@ export class GameScene extends Phaser.Scene {
       if (this.storySlide >= this.story.count) { this.storyActive = false; this.story.hide(); }
       else { this.story.setSlide(this.storySlide); this.sfx('coin'); }
     }
-    // Boss encounter (Kilvish): freeze the fight for a pre-fight taunt the first frame the boss appears.
-    if (!this.storyActive && this.arcade.screen === 'PLAY' && !this.bossPrefightShown
+    // Boss gauntlet (enforcers → Kilvish): freeze the fight for a pre-fight taunt the first frame the boss appears.
+    if (!this.storyActive && this.arcade.screen === 'PLAY' && !this.bossActive
         && this.world.entities.some((e) => e.kind === 'boss')) {
-      this.bossPrefightShown = true; this.bossTalkKind = 'prefight'; this.bossTalk.start(KILVISH_PREFIGHT); this.sfx('coin');
+      this.bossActive = true; this.bossWave = 0;
+      this.bossTalkKind = 'prefight'; this.bossTalk.start(BOSS_SCRIPTS[this.bossWave]!.pre); this.sfx('coin');
     }
-    // ATTACK advances the exchange; dismissing the defeat exchange releases the deferred STAGE CLEAR.
+    // ATTACK advances the exchange. Finishing a defeat exchange either spawns the next wave (sub-boss) or
+    // releases the deferred STAGE CLEAR (final boss); finishing a taunt just resumes the fight.
     if (this.bossTalk.active && confirm) {
-      if (this.bossTalk.advance()) {
-        if (this.bossTalkKind === 'defeat' && this.pendingBossDefeat) { this.pendingBossDefeat = false; this.arcade = reduceArcade(this.arcade, { type: 'bossDefeated' }); }
-        this.bossTalkKind = null;
-      } else this.sfx('coin');
+      if (!this.bossTalk.advance()) this.sfx('coin');
+      else if (this.bossTalkKind === 'defeat') {
+        if (this.pendingNextWave) {
+          this.pendingNextWave = false; this.bossWave += 1;
+          for (let i = this.world.entities.length - 1; i >= 0; i--) if (this.world.entities[i]!.kind === 'boss') this.world.entities.splice(i, 1); // clear the fallen enforcer
+          spawnBoss(this.world, this.world.camera.x + 300, 176, BOSS_WAVES[this.bossWave]);
+          this.bossTalkKind = 'prefight'; this.bossTalk.start(BOSS_SCRIPTS[this.bossWave]!.pre); this.sfx('coin');
+        } else if (this.pendingBossDefeat) {
+          this.pendingBossDefeat = false; this.arcade = reduceArcade(this.arcade, { type: 'bossDefeated' });
+          this.bossTalkKind = null; this.bossActive = false;
+        }
+      } else this.bossTalkKind = null; // taunt done → FIGHT
     }
     const steps = advanceFixedStep(this.fixed, delta, () => {
       this.arcade = reduceArcade(this.arcade, { type: 'tick' });
@@ -227,10 +238,14 @@ export class GameScene extends Phaser.Scene {
       for (const ev of this.world.events) {
         if (ev.type === 'heroDead') this.arcade = reduceArcade(this.arcade, { type: 'heroDead' });
         else if (ev.type === 'bossDefeated') {
-          // First defeat: hold STAGE CLEAR behind Kilvish's dying exchange; dismissing it applies the reduce.
-          if (!this.bossDefeatShown) { this.bossDefeatShown = true; this.bossTalkKind = 'defeat'; this.pendingBossDefeat = true; this.bossTalk.start(KILVISH_DEFEAT); }
-          else this.arcade = reduceArcade(this.arcade, { type: 'bossDefeated' });
-          if (import.meta.env.DEV) console.log('[GameScene] Kilvish defeated — STAGE CLEAR');
+          // Play this wave's dying exchange (freeze). A sub-boss defeat spawns the next wave on dismiss;
+          // the final boss (Kilvish) holds STAGE CLEAR until dismiss (core already set stage.bossDefeated).
+          const wave = Math.min(this.bossWave, BOSS_SCRIPTS.length - 1);
+          const isFinal = this.bossWave >= BOSS_WAVES.length - 1;
+          this.bossTalkKind = 'defeat';
+          if (isFinal) this.pendingBossDefeat = true; else this.pendingNextWave = true;
+          this.bossTalk.start(BOSS_SCRIPTS[wave]!.defeat);
+          if (import.meta.env.DEV) console.log(`[GameScene] ${BOSS_SCRIPTS[wave]!.name} defeated (wave ${this.bossWave}${isFinal ? ', final — STAGE CLEAR' : ''})`);
         }
         else this.routeEvent(ev);
       }

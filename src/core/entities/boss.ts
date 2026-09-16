@@ -29,12 +29,28 @@ export const BOSS_DATA: ActorData & { reach: number; attackCooldown: number } = 
 };
 registerActorData('boss', BOSS_DATA);
 
-export function spawnBoss(state: WorldState, x: number, y: number): Entity {
+// A boss wave. Sub-bosses (finalBoss=false) don't end the stage — the adapter spawns the next wave after
+// its defeat dialogue; only the final boss (Kilvish) sets stage.bossDefeated. `variant` drives the tint
+// recolour (VARIANT_TINT). Defaults preserve the original single-boss behaviour (hp 300, final).
+export interface BossOpts { hp?: number; variant?: number; finalBoss?: boolean }
+export function spawnBoss(state: WorldState, x: number, y: number, opts: BossOpts = {}): Entity {
   const b = spawn(state, 'boss', x, y);
-  b.hp = BOSS_DATA.hp; b.maxHp = BOSS_DATA.hp; b.targetId = state.heroId;
+  const hp = opts.hp ?? BOSS_DATA.hp;
+  b.hp = hp; b.maxHp = hp; b.targetId = state.heroId;
+  b.variant = opts.variant ?? 0;
+  b.finalBoss = opts.finalBoss ?? true;
   b.weaponKind = 'blade';   // the arm it will tear off
   return b;
 }
+
+// The boss gauntlet: two sub-bosses (Kilvish's enforcers) then Kilvish. Sub-bosses are weaker and tinted
+// (variant → VARIANT_TINT). The adapter spawns waves 1+ after each defeat exchange and owns the dialogue;
+// keep this length in sync with BOSS_SCRIPTS in the adapter's BossDialogue.ts.
+export const BOSS_WAVES: Required<BossOpts>[] = [
+  { hp: 160, variant: 1, finalBoss: false }, // GRIST   — enforcer 1 (reddish)
+  { hp: 230, variant: 2, finalBoss: false }, // SLAGJAW — enforcer 2 (greenish)
+  { hp: 300, variant: 0, finalBoss: true },  // KILVISH — the overlord
+];
 
 export function updateBoss(state: WorldState, b: Entity, _input: InputFrame): void {
   b.stateFrame++;
@@ -47,7 +63,8 @@ export function updateBoss(state: WorldState, b: Entity, _input: InputFrame): vo
   if (b.state === 'dead') return;
   if (b.hp <= 0) {
     setState(b, 'dying'); b.invulnFrames = 9999;
-    state.stage.bossDefeated = true; state.score += SCORE.boss;
+    if (b.finalBoss ?? true) state.stage.bossDefeated = true; // only the final boss ends the stage; sub-bosses keep the arena locked for the next wave
+    state.score += SCORE.boss;
     emit(state, { type: 'bossDefeated' }); emit(state, { type: 'sfx', id: 'boss_death' });
     return;
   }
@@ -61,7 +78,7 @@ export function updateBoss(state: WorldState, b: Entity, _input: InputFrame): vo
     }
     return;
   }
-  if (b.phase === 1 && b.hp <= BOSS_DATA.hp * BOSS_PHASE2_AT) {
+  if (b.phase === 1 && b.hp <= b.maxHp * BOSS_PHASE2_AT) {   // 50% of THIS boss's hp (identical to BOSS_DATA.hp for the default 300-hp boss)
     setState(b, 'tearOpen'); b.invulnFrames = TEAR_OPEN_FRAMES; b.vel.x = 0; b.vel.y = 0;
     emit(state, { type: 'sfx', id: 'boss_tear' });
     return;

@@ -8,11 +8,10 @@ import { UI_FONT } from '../views/ui-font';
 import { ScifiFrame } from '../views/scifi-frame';
 import { blinkOn } from '@core/arcade/screen-machine';
 
-export type Speaker = 'HERO' | 'KILVISH';
-export interface Line { who: Speaker; text: string }
+// `who` is the on-screen speaker name; 'HERO' is the protagonist (gold), any other name is a boss (red).
+export interface Line { who: string; text: string }
 
-const NAME_COLOUR: Record<Speaker, string> = { HERO: '#ffd24a', KILVISH: '#ff3b6b' };
-const LINE_COLOUR = '#e8dcc0';
+const HERO_COLOUR = '#ffd24a', BOSS_COLOUR = '#ff3b6b', LINE_COLOUR = '#e8dcc0';
 const BOX = { x: 18, y: 150, w: 348, h: 58 };
 
 export class BossDialogue {
@@ -57,7 +56,7 @@ export class BossDialogue {
 
   private render(): void {
     const l = this.lines[this.idx]!;
-    this.name.setText(l.who).setColor(NAME_COLOUR[l.who]);
+    this.name.setText(l.who).setColor(l.who === 'HERO' ? HERO_COLOUR : BOSS_COLOUR);
     this.line.setText(l.text);
   }
 
@@ -73,14 +72,41 @@ export class BossDialogue {
   }
 }
 
-// Kilvish — the steel overlord who exterminated Earth and the hero's family. Reuse this shape per sub-boss.
-export const KILVISH_PREFIGHT: Line[] = [
-  { who: 'KILVISH', text: 'Another insect that refuses to die.' },
-  { who: 'HERO', text: 'You took my family, Kilvish.' },
-  { who: 'KILVISH', text: 'I took your whole species.\nThey were... inefficient.' },
-  { who: 'HERO', text: 'This hammer says otherwise.' },
-];
-export const KILVISH_DEFEAT: Line[] = [
-  { who: 'KILVISH', text: 'Impossible... flesh does not... win—' },
-  { who: 'HERO', text: 'For my wife. My children.\nFor all of them.' },
+// The boss gauntlet: two enforcers, then Kilvish. One entry per wave — KEEP IN SYNC with BOSS_WAVES
+// (src/core/entities/boss.ts). Every boss round trades a pre-fight taunt and a dying line with the hero.
+export interface BossScript { name: string; pre: Line[]; defeat: Line[] }
+export const BOSS_SCRIPTS: BossScript[] = [
+  {
+    name: 'GRIST',
+    pre: [
+      { who: 'GRIST', text: 'Kilvish sends his scrap to die first.' },
+      { who: 'HERO', text: 'Then I start with you.' },
+    ],
+    defeat: [{ who: 'GRIST', text: 'Sys...tem... fail—' }],
+  },
+  {
+    name: 'SLAGJAW',
+    pre: [
+      { who: 'SLAGJAW', text: 'Flesh. Warm. Inefficient.' },
+      { who: 'HERO', text: 'Where is Kilvish?' },
+      { who: 'SLAGJAW', text: 'Behind me.\nWhere all cowards hide.' },
+    ],
+    defeat: [
+      { who: 'SLAGJAW', text: 'He will... grind you...' },
+      { who: 'HERO', text: 'Let him try.' },
+    ],
+  },
+  {
+    name: 'KILVISH',
+    pre: [
+      { who: 'KILVISH', text: 'Another insect that refuses to die.' },
+      { who: 'HERO', text: 'You took my family, Kilvish.' },
+      { who: 'KILVISH', text: 'I took your whole species.\nThey were... inefficient.' },
+      { who: 'HERO', text: 'This hammer says otherwise.' },
+    ],
+    defeat: [
+      { who: 'KILVISH', text: 'Impossible... flesh does not... win—' },
+      { who: 'HERO', text: 'For my wife. My children.\nFor all of them.' },
+    ],
+  },
 ];

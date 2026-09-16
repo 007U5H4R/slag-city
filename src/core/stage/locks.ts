@@ -3,7 +3,7 @@ import type { WorldState } from '../sim/state';
 import { emit, SCREEN } from '../sim/state';
 import { spawnEntry } from './spawn';
 import { isBody } from '../sim/entity';
-import { spawnBoss } from '../entities/boss';
+import { spawnBoss, BOSS_WAVES } from '../entities/boss';
 
 // Scroll-lock engine: as the camera reaches each lock's camX it stops, spawns the lock's delayed spawn
 // table, and releases (camera free again) once every body from that lock is down. After the last lock,
@@ -19,7 +19,7 @@ export function lockSystem(state: WorldState): void {
     } else if (i >= stage.locks.length && !state.stage.bossDoorReached && state.camera.x >= stage.bossDoorX - SCREEN.w) {
       state.stage.bossDoorReached = true; state.camera.lockX = stage.bossDoorX - SCREEN.w; state.camera.x = state.camera.lockX;
       emit(state, { type: 'bossDoor' });
-      spawnBoss(state, state.camera.x + 300, 176);
+      spawnBoss(state, state.camera.x + 300, 176, BOSS_WAVES[0]); // wave 0 = first enforcer; the adapter spawns waves 1+ after each defeat exchange
     }
     // DEVIATION (owner-ratifiable — plan-internal contradiction): the plan returned unconditionally here,
     // deferring a lock's `delay: 0` spawns to the frame AFTER it engages — but locks.test asserts the
