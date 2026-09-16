@@ -4,180 +4,420 @@
    "frame": {
     "x": 0,
     "y": 0,
-    "w": 106,
-    "h": 121
+    "w": 109,
+    "h": 137
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 106,
-    "h": 121
+    "w": 109,
+    "h": 137
    },
    "sourceSize": {
-    "w": 106,
-    "h": 121
+    "w": 109,
+    "h": 137
    }
   },
   "boss/walk/0": {
    "frame": {
-    "x": 106,
+    "x": 109,
     "y": 0,
-    "w": 106,
-    "h": 121
+    "w": 109,
+    "h": 137
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 106,
-    "h": 121
+    "w": 109,
+    "h": 137
    },
    "sourceSize": {
-    "w": 106,
-    "h": 121
+    "w": 109,
+    "h": 137
    }
   },
   "boss/walk/1": {
    "frame": {
-    "x": 212,
+    "x": 218,
     "y": 0,
-    "w": 106,
-    "h": 121
+    "w": 109,
+    "h": 137
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 106,
-    "h": 121
+    "w": 109,
+    "h": 137
    },
    "sourceSize": {
-    "w": 106,
-    "h": 121
+    "w": 109,
+    "h": 137
    }
   },
   "boss/walk/2": {
    "frame": {
-    "x": 318,
+    "x": 327,
     "y": 0,
-    "w": 106,
-    "h": 121
+    "w": 109,
+    "h": 137
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 106,
-    "h": 121
+    "w": 109,
+    "h": 137
    },
    "sourceSize": {
-    "w": 106,
-    "h": 121
+    "w": 109,
+    "h": 137
    }
   },
   "boss/walk/3": {
    "frame": {
-    "x": 424,
+    "x": 436,
     "y": 0,
-    "w": 106,
-    "h": 121
+    "w": 109,
+    "h": 137
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 106,
-    "h": 121
+    "w": 109,
+    "h": 137
    },
    "sourceSize": {
-    "w": 106,
-    "h": 121
+    "w": 109,
+    "h": 137
    }
   },
   "boss/swing/0": {
    "frame": {
-    "x": 530,
+    "x": 545,
     "y": 0,
-    "w": 106,
-    "h": 121
+    "w": 109,
+    "h": 137
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 106,
-    "h": 121
+    "w": 109,
+    "h": 137
    },
    "sourceSize": {
-    "w": 106,
-    "h": 121
+    "w": 109,
+    "h": 137
    }
   },
   "boss/swing/1": {
    "frame": {
-    "x": 636,
+    "x": 654,
     "y": 0,
-    "w": 106,
-    "h": 121
+    "w": 109,
+    "h": 137
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 106,
-    "h": 121
+    "w": 109,
+    "h": 137
    },
    "sourceSize": {
-    "w": 106,
-    "h": 121
+    "w": 109,
+    "h": 137
    }
   },
   "boss/swing/2": {
    "frame": {
-    "x": 742,
+    "x": 763,
     "y": 0,
-    "w": 106,
-    "h": 121
+    "w": 109,
+    "h": 137
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 106,
-    "h": 121
+    "w": 109,
+    "h": 137
    },
    "sourceSize": {
-    "w": 106,
-    "h": 121
+    "w": 109,
+    "h": 137
    }
   },
   "boss/swing/3": {
    "frame": {
-    "x": 848,
+    "x": 872,
     "y": 0,
-    "w": 106,
-    "h": 121
+    "w": 109,
+    "h": 137
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 106,
-    "h": 121
+    "w": 109,
+    "h": 137
    },
    "sourceSize": {
-    "w": 106,
-    "h": 121
+    "w": 109,
+    "h": 137
+   }
+  },
+  "boss/ground-pound/0": {
+   "frame": {
+    "x": 981,
+    "y": 0,
+    "w": 109,
+    "h": 137
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 109,
+    "h": 137
+   },
+   "sourceSize": {
+    "w": 109,
+    "h": 137
+   }
+  },
+  "boss/ground-pound/1": {
+   "frame": {
+    "x": 1090,
+    "y": 0,
+    "w": 109,
+    "h": 137
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 109,
+    "h": 137
+   },
+   "sourceSize": {
+    "w": 109,
+    "h": 137
+   }
+  },
+  "boss/tear-open/0": {
+   "frame": {
+    "x": 1199,
+    "y": 0,
+    "w": 109,
+    "h": 137
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 109,
+    "h": 137
+   },
+   "sourceSize": {
+    "w": 109,
+    "h": 137
+   }
+  },
+  "boss/tear-open/1": {
+   "frame": {
+    "x": 1308,
+    "y": 0,
+    "w": 109,
+    "h": 137
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 109,
+    "h": 137
+   },
+   "sourceSize": {
+    "w": 109,
+    "h": 137
+   }
+  },
+  "boss/throw/0": {
+   "frame": {
+    "x": 1417,
+    "y": 0,
+    "w": 109,
+    "h": 137
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 109,
+    "h": 137
+   },
+   "sourceSize": {
+    "w": 109,
+    "h": 137
+   }
+  },
+  "boss/throw/1": {
+   "frame": {
+    "x": 1526,
+    "y": 0,
+    "w": 109,
+    "h": 137
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 109,
+    "h": 137
+   },
+   "sourceSize": {
+    "w": 109,
+    "h": 137
+   }
+  },
+  "boss/hurt/0": {
+   "frame": {
+    "x": 1635,
+    "y": 0,
+    "w": 109,
+    "h": 137
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 109,
+    "h": 137
+   },
+   "sourceSize": {
+    "w": 109,
+    "h": 137
+   }
+  },
+  "boss/hurt/1": {
+   "frame": {
+    "x": 1744,
+    "y": 0,
+    "w": 109,
+    "h": 137
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 109,
+    "h": 137
+   },
+   "sourceSize": {
+    "w": 109,
+    "h": 137
+   }
+  },
+  "boss/death/0": {
+   "frame": {
+    "x": 1853,
+    "y": 0,
+    "w": 109,
+    "h": 137
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 109,
+    "h": 137
+   },
+   "sourceSize": {
+    "w": 109,
+    "h": 137
+   }
+  },
+  "boss/death/1": {
+   "frame": {
+    "x": 1962,
+    "y": 0,
+    "w": 109,
+    "h": 137
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 109,
+    "h": 137
+   },
+   "sourceSize": {
+    "w": 109,
+    "h": 137
+   }
+  },
+  "boss/death/2": {
+   "frame": {
+    "x": 2071,
+    "y": 0,
+    "w": 109,
+    "h": 137
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 109,
+    "h": 137
+   },
+   "sourceSize": {
+    "w": 109,
+    "h": 137
+   }
+  },
+  "boss/death/3": {
+   "frame": {
+    "x": 2180,
+    "y": 0,
+    "w": 109,
+    "h": 137
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 109,
+    "h": 137
+   },
+   "sourceSize": {
+    "w": 109,
+    "h": 137
    }
   }
  },
@@ -185,8 +425,8 @@
   "app": "slag-city build-atlas",
   "image": "boss.png",
   "size": {
-   "w": 954,
-   "h": 121
+   "w": 2289,
+   "h": 137
   },
   "scale": "1",
   "slagcity": {
@@ -195,8 +435,8 @@
     1
    ],
    "scale": 0.06868918145392101,
-   "frameW": 106,
-   "frameH": 121
+   "frameW": 109,
+   "frameH": 137
   }
  }
 }

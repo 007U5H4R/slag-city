@@ -8,6 +8,11 @@
   "actions": [
     { "name": "idle", "sheet": "assets/sources/boss/idle.png", "frames": 1 },
     { "name": "walk", "sheet": "assets/sources/boss/walk.png", "frames": 4 },
-    { "name": "swing", "sheet": "assets/sources/boss/swing.png", "frames": 4 }
+    { "name": "swing", "sheet": "assets/sources/boss/swing.png", "frames": 4 },
+    { "name": "ground-pound", "sheet": "assets/sources/boss/ground-pound.png", "frames": 2 },
+    { "name": "tear-open", "sheet": "assets/sources/boss/tear-open.png", "frames": 2 },
+    { "name": "throw", "sheet": "assets/sources/boss/throw.png", "frames": 2 },
+    { "name": "hurt", "sheet": "assets/sources/boss/hurt.png", "frames": 2 },
+    { "name": "death", "sheet": "assets/sources/boss/death.png", "frames": 4 }
   ]
 }
