@@ -14,9 +14,9 @@ export class Continue {
   private active = false;
 
   constructor(scene: Phaser.Scene) {
-    this.dim = scene.add.rectangle(BASE_W / 2, BASE_H / 2, BASE_W, BASE_H, HUD_COLOURS.plate, 0.6).setDepth(3000).setScrollFactor(0).setVisible(false);
-    this.count = scene.add.bitmapText(BASE_W / 2, BASE_H / 2 - 8, 'display16', '10').setOrigin(0.5).setScale(2).setDepth(3001).setScrollFactor(0).setVisible(false);
-    this.prompt = scene.add.bitmapText(BASE_W / 2, BASE_H / 2 + 40, 'hud8', 'INSERT COIN TO CONTINUE').setOrigin(0.5).setDepth(3001).setScrollFactor(0).setVisible(false);
+    this.dim = scene.add.rectangle(BASE_W / 2, BASE_H / 2, BASE_W, BASE_H, HUD_COLOURS.plate, 0.6).setDepth(3000).setVisible(false);
+    this.count = scene.add.bitmapText(BASE_W / 2, BASE_H / 2 - 8, 'display16', '10').setOrigin(0.5).setScale(2).setDepth(3001).setVisible(false);
+    this.prompt = scene.add.bitmapText(BASE_W / 2, BASE_H / 2 + 40, 'hud8', 'INSERT COIN TO CONTINUE').setOrigin(0.5).setDepth(3001).setVisible(false);
   }
 
   show(): void { this.active = true; }

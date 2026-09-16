@@ -27,12 +27,12 @@ export class HiScoreTable {
     this.frame = new ScifiFrame(scene, 3198);
     this.frame.draw(20, 10, 344, 202);
     this.title = scene.add.text(BASE_W / 2, 20, 'HI-SCORES', { fontFamily: UI_FONT, fontSize: '18px', fontStyle: '700', color: BRASS })
-      .setOrigin(0.5, 0.5).setDepth(3201).setScrollFactor(0).setResolution(4).setVisible(false);
+      .setOrigin(0.5, 0.5).setDepth(3201).setResolution(4).setVisible(false);
     for (let i = 0; i < 10; i++) {
       this.rows.push(scene.add.text(ROW_X, ROW0_Y + i * ROW_H, '', { fontFamily: UI_FONT, fontSize: '12px', fontStyle: '500', color: TEXT })
-        .setDepth(3201).setScrollFactor(0).setResolution(4).setVisible(false));
+        .setDepth(3201).setResolution(4).setVisible(false));
       this.ccc.push(scene.add.text(CCC_X, ROW0_Y + i * ROW_H, '', { fontFamily: UI_FONT, fontSize: '12px', fontStyle: '700', color: GOLD })
-        .setDepth(3201).setScrollFactor(0).setResolution(4).setVisible(false));
+        .setDepth(3201).setResolution(4).setVisible(false));
     }
   }
 

@@ -28,14 +28,14 @@ export class HiScoreEntry {
     this.frame = new ScifiFrame(scene, 3198);
     this.frame.draw(52, 30, 280, 162);
     this.title = scene.add.text(cx, 46, 'ENTER YOUR INITIALS', { fontFamily: UI_FONT, fontSize: '16px', fontStyle: '700', color: BRASS })
-      .setOrigin(0.5, 0.5).setDepth(3201).setScrollFactor(0).setResolution(4).setVisible(false);
+      .setOrigin(0.5, 0.5).setDepth(3201).setResolution(4).setVisible(false);
     this.score = scene.add.text(cx, 74, '', { fontFamily: UI_FONT, fontSize: '12px', fontStyle: '500', color: TEXT })
-      .setOrigin(0.5, 0.5).setDepth(3201).setScrollFactor(0).setResolution(4).setVisible(false);
+      .setOrigin(0.5, 0.5).setDepth(3201).setResolution(4).setVisible(false);
     this.letters = [0, 1, 2].map((i) =>
       scene.add.text(cx + (i - 1) * LETTER_DX, LETTER_Y, 'A', { fontFamily: UI_FONT, fontSize: '26px', fontStyle: '700', color: GOLD })
-        .setOrigin(0.5, 0.5).setDepth(3201).setScrollFactor(0).setResolution(4).setVisible(false));
+        .setOrigin(0.5, 0.5).setDepth(3201).setResolution(4).setVisible(false));
     this.hint = scene.add.text(cx, 168, 'UP / DOWN  CHANGE      ATTACK  CONFIRM', { fontFamily: UI_FONT, fontSize: '10px', fontStyle: '500', color: TEXT })
-      .setOrigin(0.5, 0.5).setDepth(3201).setScrollFactor(0).setResolution(4).setVisible(false);
+      .setOrigin(0.5, 0.5).setDepth(3201).setResolution(4).setVisible(false);
   }
 
   setState(entry: EntryState, screenFrame: number, finalScore: number): void {

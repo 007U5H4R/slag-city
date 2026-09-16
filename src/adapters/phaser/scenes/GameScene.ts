@@ -20,6 +20,7 @@ import { ScorePops } from '../views/ScorePop';
 import { NameCardView } from '../views/NameCard';
 import { Parallax } from '../views/Parallax';
 import { HazardView } from '../views/HazardView';
+import { LaserCurtain } from '../views/LaserCurtain';
 import { Sparks } from '../views/Sparks';
 import { WEAPON_HEAT } from '@core/weapons/heat';
 import { enableCrt, crtInstance } from '../crt/CrtPipeline';
@@ -35,6 +36,7 @@ import { GameOver } from '../screens/GameOver';
 import { HiScoreTable } from '../screens/HiScoreTable';
 import { HiScoreEntry } from '../screens/HiScoreEntry';
 import { Controls } from '../screens/Controls';
+import { StoryIntro } from '../screens/StoryIntro';
 import { encodeInput } from '@core/input-codec';
 import { hashState } from '@core/sim/hash';
 import { ATTRACT } from '@core/arcade/attract';
@@ -56,6 +58,7 @@ export class GameScene extends Phaser.Scene {
   views!: EntityViews;
   private parallax!: Parallax;
   private hazards!: HazardView;
+  private lasers!: LaserCurtain;
   private debug!: DebugOverlay;
   private hud!: Hud;
   private pops!: ScorePops;
@@ -71,6 +74,10 @@ export class GameScene extends Phaser.Scene {
   private hiTable!: HiScoreTable;
   private hiEntry!: HiScoreEntry;
   private controls!: Controls;
+  private story!: StoryIntro;
+  // Noir story intro (adapter-only): shown once before a fresh game's sim starts; ATTACK advances one slide.
+  private storyActive = false;
+  private storySlide = 0;
   private audio!: AudioAdapter;
   private prevScreen = '';
   // Hi-scores (ticket 19.4): the live table, loaded from the kv at boot and re-saved on a qualifying entry.
@@ -105,6 +112,7 @@ export class GameScene extends Phaser.Scene {
     this.arcade = reduceArcade(createArcade(), { type: 'boot' });
     this.parallax = new Parallax(this);
     this.hazards = new HazardView(this, STAGE1.sections.flatMap((s) => s.hazards));
+    this.lasers = new LaserCurtain(this);
     const g = this.add.graphics();
     g.lineStyle(1, 0x333333, 1);
     g.strokeRect(0, WALK_BAND.minY, BASE_W, WALK_BAND.maxY - WALK_BAND.minY);
@@ -120,6 +128,7 @@ export class GameScene extends Phaser.Scene {
     this.hiTable = new HiScoreTable(this);
     this.hiEntry = new HiScoreEntry(this);
     this.controls = new Controls(this);
+    this.story = new StoryIntro(this);
     this.audio = new AudioAdapter(this, getSetting('volume'));
     void loadTable().then((t) => { this.table = t; });
     // Volume: '-'/'=' step 0.1, persisted (Design §; matches the ticket-22 AudioAdapter contract).
@@ -168,14 +177,22 @@ export class GameScene extends Phaser.Scene {
       const before = this.arcade.screen;
       this.arcade = reduceArcade(this.arcade, { type: 'start' });
       if (this.arcade.screen === 'PLAY' && before !== 'PLAY') {
-        if (before === 'CONTINUE') reviveHero(this.world); else { this.worldSeed = Date.now() >>> 0; this.world = newGameWorld(this.worldSeed); }
+        if (before === 'CONTINUE') reviveHero(this.world);
+        else { this.worldSeed = Date.now() >>> 0; this.world = newGameWorld(this.worldSeed); this.storyActive = true; this.storySlide = 0; this.story.show(0); } // fresh game → play the noir intro first
         this.sfx('start');
       }
     }
     if (coin && this.arcade.screen === 'PLAY' && this.world.stage.heroDead) reviveHero(this.world); // coin-continue
+    // Noir intro: ATTACK advances a slide; past the last one the sim is released and gameplay begins.
+    if (this.storyActive && confirm) {
+      this.storySlide += 1;
+      if (this.storySlide >= this.story.count) { this.storyActive = false; this.story.hide(); }
+      else { this.story.setSlide(this.storySlide); this.sfx('coin'); }
+    }
     const steps = advanceFixedStep(this.fixed, delta, () => {
       this.arcade = reduceArcade(this.arcade, { type: 'tick' });
       if (this.arcade.screen !== 'PLAY') return;
+      if (this.storyActive) return;                     // freeze the world while the intro plays
       tick(this.world, input);
       if (this.recording) this.recording.push(encodeInput(input)); // DEV attract-demo capture (19.3)
       this.arcade = reduceArcade(this.arcade, { type: 'score', score: this.world.score });
@@ -264,13 +281,15 @@ export class GameScene extends Phaser.Scene {
 
     this.parallax.sync(world.camera.x, world.stage.sectionIndex, world.stage.bossDoorReached);
     this.hazards.draw(world);
+    this.lasers.draw(world.camera.x, world.frame);
     this.views.sync(world);
     this.pops.step(steps, world.camera.x);
     this.nameCard.step(steps);
     this.sparks.step(steps, world.camera.x);
     this.debug.draw(world);
 
-    const inGame = scr === 'PLAY' || scr === 'CONTINUE';
+    this.story.step(this.arcade.screenFrame, this.storySlide); // noir intro prompt blink (no-op when inactive)
+    const inGame = (scr === 'PLAY' || scr === 'CONTINUE') && !this.storyActive;
     this.hud.setVisible(inGame);
     if (inGame) {
       const hero = heroOf(this.world);
@@ -296,7 +315,7 @@ export class GameScene extends Phaser.Scene {
     this.hiTable.step(steps);
 
     // Music per screen (hard switch; the adapter no-ops when unchanged). game_over cue once on entering GAME_OVER.
-    if (scr === 'ATTRACT' || scr === 'COIN') this.audio.music('title');
+    if (scr === 'ATTRACT' || scr === 'COIN' || this.storyActive) this.audio.music('title');
     else if (scr === 'PLAY' || scr === 'CONTINUE') this.audio.music(this.world.stage.bossDoorReached ? 'boss' : 'stage');
     else this.audio.music(null);
     if (scr === 'GAME_OVER' && this.prevScreen !== 'GAME_OVER') this.audio.sfx('game_over');
