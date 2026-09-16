@@ -23,6 +23,7 @@ export class StoryIntro {
   private dim: Phaser.GameObjects.Rectangle;
   private rule: Phaser.GameObjects.Graphics;
   private title: Phaser.GameObjects.Text;
+  private marquee?: Phaser.GameObjects.Image;
   private body: Phaser.GameObjects.Text;
   private prompt: Phaser.GameObjects.Text;
   private active = false;
@@ -35,6 +36,11 @@ export class StoryIntro {
     this.rule = scene.add.graphics().setDepth(D + 1).setVisible(false);
     this.title = scene.add.text(BASE_W / 2, 0, '', { fontFamily: UI_FONT, fontSize: '18px', fontStyle: '700', color: BRASS, align: 'center' })
       .setOrigin(0.5, 0.5).setDepth(D + 2).setResolution(4).setVisible(false);
+    if (scene.textures.exists('marquee')) {
+      this.marquee = scene.add.image(BASE_W / 2, 0, 'marquee').setOrigin(0.5).setDepth(D + 2).setVisible(false);
+      const s = (BASE_W * 0.6) / this.marquee.width;
+      this.marquee.setScale(s);
+    }
     this.body = scene.add.text(BASE_W / 2, 0, '', { fontFamily: UI_FONT, fontSize: '10px', fontStyle: '400', color: TEXT, align: 'center', lineSpacing: 5 })
       .setOrigin(0.5, 0.5).setDepth(D + 2).setResolution(4).setVisible(false);
     this.prompt = scene.add.text(BASE_W / 2, BASE_H - 22, '', { fontFamily: UI_FONT, fontSize: '8px', fontStyle: '700', color: DIM, align: 'center' })
@@ -44,13 +50,21 @@ export class StoryIntro {
   private layout(i: number): void {
     const s = SLIDES[i]!;
     const hasTitle = !!s.title;
-    this.title.setText(s.title ?? '').setVisible(hasTitle);
+    // The game-title slide shows the metallic marquee logo in place of the bitmap title text.
+    const useMarquee = hasTitle && !!this.marquee && s.title === SLIDES[0]!.title;
+    this.title.setText(s.title ?? '').setVisible(hasTitle && !useMarquee);
+    this.marquee?.setVisible(useMarquee);
     this.body.setText(s.body.join('\n'));
     // vertically centre the title+body block as a group
     const bodyH = this.body.height;
     const titleH = hasTitle ? this.title.height + 10 : 0;
     const top = (BASE_H - (titleH + bodyH)) / 2 - 6;
-    if (hasTitle) { this.title.setY(top + this.title.height / 2); this.body.setY(top + titleH + bodyH / 2); }
+    if (hasTitle) {
+      const titleY = top + this.title.height / 2;
+      this.title.setY(titleY);
+      this.marquee?.setY(titleY);
+      this.body.setY(top + titleH + bodyH / 2);
+    }
     else this.body.setY(BASE_H / 2 - 6);
     // thin cyan rules framing the panel
     const g = this.rule; g.clear();
@@ -80,5 +94,6 @@ export class StoryIntro {
     if (!this.active) return;
     this.active = false;
     for (const o of [this.dim, this.rule, this.title, this.body, this.prompt]) o.setVisible(false);
+    this.marquee?.setVisible(false);
   }
 }
