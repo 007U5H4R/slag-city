@@ -90,6 +90,12 @@ export class GameScene extends Phaser.Scene {
   private entryTableTimer = 0;
   // Which world the shared views last rendered — switching (attract demo <-> play) resets the view cache.
   private lastWorld: WorldState | null = null;
+  // Lava-stage scene cut (adapter-only): a full-screen black plate flashed once, the first time the play world
+  // reaches the boss pit, so the pit reveals as a hard cut instead of a continuous scroll. `cutWorld` re-arms
+  // the one-shot per fresh game (a new world instance resets `cutDone`).
+  private sceneCut!: Phaser.GameObjects.Rectangle;
+  private cutWorld: WorldState | null = null;
+  private cutDone = false;
   // DEV attract-demo recorder (ticket 19.3): seed of the current PLAY world + the encoded input log.
   private worldSeed = 1;
   private recording: number[] | null = null;
@@ -147,6 +153,9 @@ export class GameScene extends Phaser.Scene {
 
     this.pauseText = this.add.bitmapText(BASE_W / 2, BASE_H / 2, 'display16', '')
       .setOrigin(0.5).setDepth(1000).setVisible(false);
+    // Black plate for the lava-stage scene cut — above everything so the flash reads as a full hard cut.
+    this.sceneCut = this.add.rectangle(BASE_W / 2, BASE_H / 2, BASE_W, BASE_H, 0x000000, 0)
+      .setDepth(5000).setVisible(false);
     this.game.events.on(Phaser.Core.Events.HIDDEN, () => this.pause('PAUSED'));
     this.game.events.on(Phaser.Core.Events.VISIBLE, () => { if (this.pauseReason === 'PAUSED') this.resume(); });
   }
@@ -269,6 +278,14 @@ export class GameScene extends Phaser.Scene {
     const scr = this.arcade.screen;
     const attractActive = scr === 'ATTRACT' || scr === 'COIN';
 
+    // Hard cut into the lava/boss-pit stage: fire once, the first frame the play world reaches the boss door,
+    // so the camera snap + parallax swap to the pit happen hidden behind a black flash instead of scrolling in.
+    if (this.world !== this.cutWorld) { this.cutWorld = this.world; this.cutDone = false; }
+    if (!this.cutDone && this.world.stage.bossDoorReached && (scr === 'PLAY' || scr === 'CONTINUE')) {
+      this.cutDone = true;
+      this.playLavaSceneCut();
+    }
+
     // Attract owns its own loop + demo world; step it first so `segment`/`demoWorld` are current for the render.
     if (attractActive) this.attract.show(); else this.attract.hide();
     this.attract.step(this.arcade, steps);
@@ -324,6 +341,21 @@ export class GameScene extends Phaser.Scene {
     const s = world.shake;
     const off = s.frames > 0 ? (s.frames % 2 === 0 ? s.px : -s.px) : 0;
     this.cameras.main.centerOn(BASE_W / 2 + off, BASE_H / 2);
+  }
+
+  // One-shot fade-to-black-and-back that masks the boss-pit transition (~330ms total): quick fade in, brief
+  // hold while the camera/parallax settle on the lava section underneath, then reveal.
+  private playLavaSceneCut(): void {
+    this.sceneCut.setAlpha(0).setVisible(true);
+    this.tweens.chain({
+      targets: this.sceneCut,
+      tweens: [
+        { alpha: 1, duration: 120, ease: 'Quad.easeIn' },
+        { alpha: 1, duration: 70 },
+        { alpha: 0, duration: 140, ease: 'Quad.easeOut' },
+      ],
+      onComplete: () => this.sceneCut.setVisible(false),
+    });
   }
 
   private applyZoom(k: number): void {
