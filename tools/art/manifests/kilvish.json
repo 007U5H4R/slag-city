@@ -1,0 +1,18 @@
+{
+  "name": "boss",
+  "targetHeight": 120,
+  "palette": "assets/palette.provisional.json",
+  "scaleFrom": "walk",
+  "bgKey": "#808080",
+  "outDir": "public/assets/atlases",
+  "actions": [
+    { "name": "idle", "sheet": "assets/sources/boss-kilvish/idle.png", "frames": 1 },
+    { "name": "walk", "sheet": "assets/sources/boss-kilvish/walk.png", "frames": 4 },
+    { "name": "swing", "sheet": "assets/sources/boss-kilvish/swing.png", "frames": 4 },
+    { "name": "ground-pound", "sheet": "assets/sources/boss-kilvish/ground-pound.png", "frames": 2 },
+    { "name": "tear-open", "sheet": "assets/sources/boss-kilvish/tear-open.png", "frames": 2 },
+    { "name": "throw", "sheet": "assets/sources/boss-kilvish/throw.png", "frames": 2 },
+    { "name": "hurt", "sheet": "assets/sources/boss-kilvish/hurt.png", "frames": 2 },
+    { "name": "death", "sheet": "assets/sources/boss-kilvish/death.png", "frames": 4 }
+  ]
+}
