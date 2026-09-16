@@ -643,6 +643,9 @@ All committed, CDP-verified locally + prod smoke green on https://slag-city.verc
   - `npm run check` GREEN (129), build clean. CDP-verified the gauntlet renders 3 distinct robots + STAGE CLEAR, zero console errors (`docs/verification/r4w2e-*.png`).
   - **⛔ REMAINING robot-alien art:** gang-enemy reskins (brawler/knife/heavy still human thugs) + optional hero. Same pipeline; gang already has per-kind atlases + tint hook.
 
+- **Review round 4 — Wave 2f (gang enemy robot-alien reskin)** (feat `1ffbed6` → prod `628b4da`, 2026-09-17): brawler→GRUNT drone (orange optic, piston fists), knife→SCOUT drone (lean, energy blade, cyan eye), heavy→HEAVY drone (bulky, red optic band). Per kind: a concept + walk×4 + attack×4 seedream sheets off the concept → normalizer (`node kilvish-normalize.mjs <src> <out> <prefix> 64 '[["walk",4],["attack",4]]'`, now parameterized for prefix/targetH/actions) → reskinned `public/assets/atlases/{brawler,knife,heavy}.{png,json}`. **NO code change** — anim-table `gangAnims` + EntityView already reference these atlas keys; frame names `<kind>/walk|attack/i` unchanged; gang variant 0 → VARIANT_TINT neutral so the new colours show as-is. 9 cr (3 concepts + 6 sheets), reconciled → balance **288.9**. `npm run check` GREEN (129); CDP-verified a spawn wave renders robots, zero console errors (`docs/verification/r4w2f-gang-robots.png`).
+  - **The whole roster is now robot-alien themed:** hero (masked exorcist — unchanged), 3 bosses (Kilvish/GRIST/SLAGJAW), 3 gang kinds (grunt/scout/heavy). **Optional remaining:** a robot/cyborg HERO refresh (would need the hero atlas + intro portrait redone to match); feral drone look if it's still a placeholder.
+
 _Phases D–G expand here as reached._
 
 ## Open threads / parked items
