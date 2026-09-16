@@ -20,19 +20,29 @@ export class HazardView {
     for (const h of this.hazards) {
       if (h.type === 'belt') {
         const w = h.x2 - h.x1, hgt = h.y2 - h.y1;
-        g.fillStyle(0x2b2b33, 1).fillRect(Math.round(h.x1 - cx), h.y1, w, hgt);
-        // chevrons scroll at `push` px/frame to show the belt direction
-        g.fillStyle(0x555560, 1);
+        const x0 = Math.round(h.x1 - cx), y0 = h.y1;
+        g.fillStyle(0x23232b, 1).fillRect(x0, y0, w, hgt);                    // steel bed
+        // two-tone tread slats scrolling in the push direction (reads as a moving belt)
         const dir = Math.sign(h.push) || 1;
-        const scroll = ((world.frame * Math.abs(h.push)) % 16 + 16) % 16;
-        for (let x = h.x1; x < h.x2; x += 16) {
-          const sx = x - cx + dir * scroll;
-          g.fillRect(Math.round(sx), h.y1, 8, hgt);
+        const period = 14;
+        const scroll = ((world.frame * Math.max(1, Math.abs(h.push) * 2)) % period + period) % period;
+        for (let x = h.x1 - period; x < h.x2 + period; x += period) {
+          const sx = Math.round(x - cx + dir * scroll);
+          if (sx + 7 < x0 || sx > x0 + w) continue;                          // skip slats fully off the belt
+          g.fillStyle(0x3a3a45, 1).fillRect(sx, y0 + 2, 7, hgt - 4);
+          g.fillStyle(0x4c4c5a, 1).fillRect(sx, y0 + 2, 2, hgt - 4);         // slat highlight
         }
+        g.fillStyle(0x585863, 1).fillRect(x0, y0, w, 2).fillRect(x0, y0 + hgt - 2, w, 2); // edge rails
+        g.fillStyle(0xffa64d, 0.35).fillRect(x0, y0, w, 1);                  // warm rim light
+        g.fillStyle(0x71717e, 1).fillRect(x0, y0, 3, hgt).fillRect(x0 + w - 3, y0, 3, hgt); // end rollers
       } else if (h.type === 'channel') {
         const w = h.x2 - h.x1, hgt = h.y2 - h.y1;
-        const pulse = 0.6 + 0.4 * Math.sin(world.frame * 0.2);
-        g.fillStyle(0xff6a00, pulse).fillRect(Math.round(h.x1 - cx), h.y1, w, hgt);
+        const x0 = Math.round(h.x1 - cx), y0 = h.y1;
+        g.fillStyle(0x1a1512, 1).fillRect(x0 - 2, y0 - 2, w + 4, hgt + 4);   // steel trough rim
+        g.fillStyle(0xff6a00, 0.78 + 0.22 * Math.sin(world.frame * 0.3)).fillRect(x0, y0, w, hgt); // molten flicker
+        const core = y0 + Math.round(hgt * 0.32), coreH = Math.max(2, Math.round(hgt * 0.34));
+        g.fillStyle(0xffd23e, 0.5 + 0.3 * Math.sin(world.frame * 0.4 + 1)).fillRect(x0, core, w, coreH); // bright core
+        g.fillStyle(0xffe58a, 0.5).fillRect(x0, y0, w, 1);                   // emissive top rim
       } else if (h.type === 'ladle') {
         const left = Math.round(h.x - h.w / 2 - cx);
         g.fillStyle(0x777788, 1).fillRect(left, 40, h.w, 4); // the pour bracket

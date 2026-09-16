@@ -6,6 +6,7 @@ import { installViewportGate } from '@shell/viewport-gate';
 import { installCabinet } from '@shell/cabinet';
 import { installAudioUnlock } from '@adapters/phaser/audio/unlock';
 import { openHiScores } from '@shell/hiscore-store';
+import { preloadUiFont } from '@adapters/phaser/views/ui-font';
 import type { GameScene } from '@adapters/phaser/scenes/GameScene';
 
 const screen = document.getElementById('screen');
@@ -13,6 +14,7 @@ if (!screen) throw new Error('#screen missing from index.html');
 
 // Warm the hi-score kv once at boot (IndexedDB, silent memory fallback); GameScene reads the table from it.
 void openHiScores();
+preloadUiFont(); // fetch the modern UI font (Roboto Mono) so Text renders in it, not a fallback
 
 const cabinet = installCabinet();
 

@@ -33,6 +33,7 @@ import { Continue } from '../screens/Continue';
 import { GameOver } from '../screens/GameOver';
 import { HiScoreTable } from '../screens/HiScoreTable';
 import { HiScoreEntry } from '../screens/HiScoreEntry';
+import { Controls } from '../screens/Controls';
 import { encodeInput } from '@core/input-codec';
 import { hashState } from '@core/sim/hash';
 import { ATTRACT } from '@core/arcade/attract';
@@ -68,6 +69,7 @@ export class GameScene extends Phaser.Scene {
   private gameOver!: GameOver;
   private hiTable!: HiScoreTable;
   private hiEntry!: HiScoreEntry;
+  private controls!: Controls;
   private audio!: AudioAdapter;
   private prevScreen = '';
   // Hi-scores (ticket 19.4): the live table, loaded from the kv at boot and re-saved on a qualifying entry.
@@ -115,6 +117,7 @@ export class GameScene extends Phaser.Scene {
     this.gameOver = new GameOver(this);
     this.hiTable = new HiScoreTable(this);
     this.hiEntry = new HiScoreEntry(this);
+    this.controls = new Controls(this);
     this.audio = new AudioAdapter(this, getSetting('volume'));
     void loadTable().then((t) => { this.table = t; });
     // Volume: '-'/'=' step 0.1, persisted (Design §; matches the ticket-22 AudioAdapter contract).
@@ -189,7 +192,8 @@ export class GameScene extends Phaser.Scene {
   private updateHiScoreEntry(edges: { up: boolean; down: boolean; confirm: boolean }, steps: number): void {
     if (this.arcade.screen !== 'HISCORE_ENTRY') { this.entryPhase = 'idle'; this.entry = null; return; }
     if (this.entryPhase === 'idle') {
-      if (qualifies(this.table, this.arcade.finalScore)) { this.entryPhase = 'entry'; this.entry = createEntry(); this.entryHighlight = null; }
+      // A boss clear always earns a name on the board (congrats); otherwise only a qualifying score does.
+      if (this.world.stage.bossDefeated || qualifies(this.table, this.arcade.finalScore)) { this.entryPhase = 'entry'; this.entry = createEntry(); this.entryHighlight = null; }
       else { this.entryPhase = 'table'; this.entryHighlight = null; this.entryTableTimer = ATTRACT.tableFrames; }
     }
     if (this.entryPhase === 'entry' && this.entry) {
@@ -249,6 +253,8 @@ export class GameScene extends Phaser.Scene {
     // Attract owns its own loop + demo world; step it first so `segment`/`demoWorld` are current for the render.
     if (attractActive) this.attract.show(); else this.attract.hide();
     this.attract.step(this.arcade, steps);
+    // Controls panel on the attract title card so players can see the button map.
+    if (attractActive && this.attract.segment === 'title') this.controls.show(); else this.controls.hide();
 
     // Render whichever world is current: the attract demo during its segment, otherwise the play world.
     const world = (attractActive && this.attract.segment === 'demo' && this.attract.demoWorld) ? this.attract.demoWorld : this.world;

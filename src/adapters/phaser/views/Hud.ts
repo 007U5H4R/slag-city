@@ -2,22 +2,24 @@
 import Phaser from 'phaser';
 import { formatScore, healthBand } from '@core/arcade/hud';
 import { HUD_COLOURS } from './hud-colours';
+import { UI_FONT } from './ui-font';
 
 export interface HudModel { hp: number; maxHp: number; score: number; credits: number; weapon: { kind: string; heat: number; max: number } | null; creditFlash: number }
 
 // All positions on the 8-px grid inside the 16-px top band (Design §3.2).
 const HEALTH = { x: 8, y: 4, w: 96, h: 8 };
-const SCORE_X = 128, CREDITS_X = 296, TEXT_Y = 4;
+const SCORE_X = 128, CREDITS_X = 296;
 const HEAT = { x: 8, y: 208, w: 64, h: 8 };
 
 export class Hud {
   private g: Phaser.GameObjects.Graphics;
-  private score: Phaser.GameObjects.BitmapText;
-  private credits: Phaser.GameObjects.BitmapText;
+  private score: Phaser.GameObjects.Text;
+  private credits: Phaser.GameObjects.Text;
   constructor(private scene: Phaser.Scene) {
     this.g = scene.add.graphics().setDepth(2000).setScrollFactor(0);
-    this.score = scene.add.bitmapText(SCORE_X, TEXT_Y, 'hud8', 'SCORE 000000').setDepth(2001).setTint(HUD_COLOURS.text);
-    this.credits = scene.add.bitmapText(CREDITS_X, TEXT_Y, 'hud8', 'CREDIT 0').setDepth(2001).setTint(HUD_COLOURS.text);
+    const style = { fontFamily: UI_FONT, fontSize: '11px', fontStyle: '700', color: '#e8dcc0' };
+    this.score = scene.add.text(SCORE_X, 3, 'SCORE 000000', style).setDepth(2001).setScrollFactor(0).setResolution(4);
+    this.credits = scene.add.text(CREDITS_X, 3, 'CREDIT 0', style).setDepth(2001).setScrollFactor(0).setResolution(4);
   }
   // Hidden outside PLAY/CONTINUE by the coin-op machine (ticket 18); re-shown a frame before the next render.
   setVisible(v: boolean): void { this.g.setVisible(v); this.score.setVisible(v); this.credits.setVisible(v); }
