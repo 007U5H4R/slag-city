@@ -15,6 +15,9 @@ export class BootScene extends Phaser.Scene {
     { key: 'heavy', type: 'atlas', url: '/assets/atlases/heavy.png', atlasJson: '/assets/atlases/heavy.json' },
     { key: 'boss', type: 'atlas', url: '/assets/atlases/boss.png', atlasJson: '/assets/atlases/boss.json' },
     { key: 'feral', type: 'atlas', url: '/assets/atlases/feral.png', atlasJson: '/assets/atlases/feral.json' },
+    { key: 's1-sky', type: 'image', url: '/assets/backgrounds/s1-sky.png' },
+    { key: 's1-mid', type: 'image', url: '/assets/backgrounds/s1-mid.png' },
+    { key: 's1-ground', type: 'image', url: '/assets/backgrounds/s1-ground.png' },
     { key: 'attract-demo', type: 'json', url: '/assets/replays/attract-demo.json' },
   ];
   constructor() { super('boot'); }
