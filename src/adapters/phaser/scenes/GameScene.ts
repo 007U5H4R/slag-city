@@ -41,6 +41,7 @@ import type { HiScoreRow } from '@core/arcade/hiscores';
 import { createEntry, reduceEntry, entryText } from '@core/arcade/initials';
 import type { EntryState } from '@core/arcade/initials';
 import { loadTable, saveTable } from '@shell/hiscore-store';
+import { AudioAdapter } from '../audio/AudioAdapter';
 
 export class GameScene extends Phaser.Scene {
   world!: WorldState;
@@ -67,6 +68,8 @@ export class GameScene extends Phaser.Scene {
   private gameOver!: GameOver;
   private hiTable!: HiScoreTable;
   private hiEntry!: HiScoreEntry;
+  private audio!: AudioAdapter;
+  private prevScreen = '';
   // Hi-scores (ticket 19.4): the live table, loaded from the kv at boot and re-saved on a qualifying entry.
   private table: HiScoreRow[] = DEFAULT_TABLE;
   // HISCORE_ENTRY sub-phase (adapter-only; the machine just parks on HISCORE_ENTRY): enter initials, then show
@@ -112,7 +115,11 @@ export class GameScene extends Phaser.Scene {
     this.gameOver = new GameOver(this);
     this.hiTable = new HiScoreTable(this);
     this.hiEntry = new HiScoreEntry(this);
+    this.audio = new AudioAdapter(this, getSetting('volume'));
     void loadTable().then((t) => { this.table = t; });
+    // Volume: '-'/'=' step 0.1, persisted (Design §; matches the ticket-22 AudioAdapter contract).
+    this.input.keyboard?.on('keydown-MINUS', () => this.adjustVolume(-0.1));
+    this.input.keyboard?.on('keydown-PLUS', () => this.adjustVolume(0.1));
     if (import.meta.env.DEV) this.input.keyboard?.on('keydown-H', () => this.debug.toggle());
     if (import.meta.env.DEV) this.input.keyboard?.on('keydown-F', () => spawnFeral(this.world, this.world.camera.x + 360, 150));
     if (import.meta.env.DEV) this.input.keyboard?.on('keydown-B', () => spawnBoss(this.world, this.world.camera.x + 300, 176));
@@ -137,8 +144,8 @@ export class GameScene extends Phaser.Scene {
     setSetting('crt', on);
   }
 
-  pause(reason: string): void { this.paused = true; this.pauseReason = reason; this.pauseText.setText(reason).setVisible(true); }
-  resume(): void { this.paused = false; this.pauseReason = null; this.pauseText.setVisible(false); resetFixedStep(this.fixed); }
+  pause(reason: string): void { this.paused = true; this.pauseReason = reason; this.pauseText.setText(reason).setVisible(true); this.audio?.mute(true); }
+  resume(): void { this.paused = false; this.pauseReason = null; this.pauseText.setVisible(false); resetFixedStep(this.fixed); this.audio?.mute(false); }
 
   override update(_time: number, delta: number): void {
     if (this.paused) return;
@@ -208,10 +215,17 @@ export class GameScene extends Phaser.Scene {
     if (ev.type === 'score') this.pops.spawn(ev.amount, ev.x, ev.y);
     else if (ev.type === 'namecard') this.nameCard.show(ENEMY_NAMES[ev.kind] ?? ev.kind.toUpperCase());
     else if (ev.type === 'weaponBreak') this.sparks.burst(ev.x, ev.y);
+    else if (ev.type === 'sfx') this.audio.sfx(ev.id);
   }
 
-  // Audio lands in a later ticket; the machine already emits the cues so sound can hook in without touching this flow.
-  private sfx(_name: string): void { /* no-op until the audio pass */ }
+  // Adapter-side cues (coin/start/hiscore_confirm/game_over) route through the procedural AudioAdapter (ticket 22).
+  private sfx(name: string): void { this.audio?.sfx(name); }
+
+  private adjustVolume(delta: number): void {
+    const v = Math.max(0, Math.min(1, this.audio.getVolume() + delta));
+    this.audio.setVolume(v);
+    setSetting('volume', v);
+  }
 
   // DEV attract-demo recorder (ticket 19.3): arm before pressing Start so capture begins at world frame 0.
   // On stop, JSON.stringify({ seed, inputs, hash }) lands on window.__replay for the engineer to save to
@@ -272,6 +286,13 @@ export class GameScene extends Phaser.Scene {
     else if (scr === 'HISCORE_ENTRY' && this.entryPhase === 'table') { this.hiTable.setTable(this.table, this.entryHighlight); this.hiTable.show(); }
     else this.hiTable.hide();
     this.hiTable.step(steps);
+
+    // Music per screen (hard switch; the adapter no-ops when unchanged). game_over cue once on entering GAME_OVER.
+    if (scr === 'ATTRACT' || scr === 'COIN') this.audio.music('title');
+    else if (scr === 'PLAY' || scr === 'CONTINUE') this.audio.music(this.world.stage.bossDoorReached ? 'boss' : 'stage');
+    else this.audio.music(null);
+    if (scr === 'GAME_OVER' && this.prevScreen !== 'GAME_OVER') this.audio.sfx('game_over');
+    this.prevScreen = scr;
 
     const s = world.shake;
     const off = s.frames > 0 ? (s.frames % 2 === 0 ? s.px : -s.px) : 0;
