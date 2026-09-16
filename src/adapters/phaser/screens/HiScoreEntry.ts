@@ -3,20 +3,20 @@
 // letters (the active one blinks), and a controls hint. The scene owns the EntryState + input edges
 // (reduceEntry) and the insert/save; this view only renders whatever state it is handed.
 import type Phaser from 'phaser';
-import { BASE_W, BASE_H } from '@shell/scale';
+import { BASE_W } from '@shell/scale';
 import { blinkOn } from '@core/arcade/screen-machine';
 import { formatScore } from '@core/arcade/hud';
 import { LETTERS } from '@core/arcade/initials';
 import type { EntryState } from '@core/arcade/initials';
-import { HUD_COLOURS } from '../views/hud-colours';
 import { UI_FONT } from '../views/ui-font';
+import { ScifiFrame } from '../views/scifi-frame';
 
 const LETTER_Y = 112;
 const LETTER_DX = 30;
 const TEXT = '#e8dcc0', GOLD = '#f0c040', BRASS = '#b08d3c';
 
 export class HiScoreEntry {
-  private dim: Phaser.GameObjects.Rectangle;
+  private frame: ScifiFrame;
   private title: Phaser.GameObjects.Text;
   private score: Phaser.GameObjects.Text;
   private letters: Phaser.GameObjects.Text[];
@@ -25,8 +25,8 @@ export class HiScoreEntry {
 
   constructor(scene: Phaser.Scene) {
     const cx = BASE_W / 2;
-    this.dim = scene.add.rectangle(cx, BASE_H / 2, BASE_W, BASE_H, HUD_COLOURS.plate, 0.9)
-      .setDepth(3200).setScrollFactor(0).setVisible(false);
+    this.frame = new ScifiFrame(scene, 3198);
+    this.frame.draw(52, 30, 280, 162);
     this.title = scene.add.text(cx, 46, 'ENTER YOUR INITIALS', { fontFamily: UI_FONT, fontSize: '16px', fontStyle: '700', color: BRASS })
       .setOrigin(0.5, 0.5).setDepth(3201).setScrollFactor(0).setResolution(4).setVisible(false);
     this.score = scene.add.text(cx, 74, '', { fontFamily: UI_FONT, fontSize: '12px', fontStyle: '500', color: TEXT })
@@ -51,14 +51,14 @@ export class HiScoreEntry {
   show(): void { this.active = true; }
   hide(): void {
     this.active = false;
-    this.dim.setVisible(false); this.title.setVisible(false); this.score.setVisible(false);
+    this.frame.hide(); this.title.setVisible(false); this.score.setVisible(false);
     for (const l of this.letters) l.setVisible(false);
     this.hint.setVisible(false);
   }
 
   step(_n: number): void {
     if (!this.active) return;
-    this.dim.setVisible(true); this.title.setVisible(true); this.score.setVisible(true);
+    this.frame.show(); this.title.setVisible(true); this.score.setVisible(true);
     for (const l of this.letters) l.setVisible(true);
     this.hint.setVisible(true);
   }

@@ -3,12 +3,12 @@
 // up). `HI-SCORES` title over 10 rows with a gold `1CC` marker on 1-credit runs; the just-inserted row gold.
 // Shown by the attract loop (`table` segment, no highlight) and the HISCORE_ENTRY table phase (new row gold).
 import type Phaser from 'phaser';
-import { BASE_W, BASE_H } from '@shell/scale';
+import { BASE_W } from '@shell/scale';
 import { formatScore } from '@core/arcade/hud';
 import { rowIs1CC } from '@core/arcade/hiscores';
 import type { HiScoreRow } from '@core/arcade/hiscores';
-import { HUD_COLOURS } from '../views/hud-colours';
 import { UI_FONT } from '../views/ui-font';
+import { ScifiFrame } from '../views/scifi-frame';
 
 const ROW0_Y = 48;
 const ROW_H = 15;
@@ -17,15 +17,15 @@ const CCC_X = 256;   // 1CC column
 const TEXT = '#e8dcc0', GOLD = '#f0c040', BRASS = '#b08d3c';
 
 export class HiScoreTable {
-  private dim: Phaser.GameObjects.Rectangle;
+  private frame: ScifiFrame;
   private title: Phaser.GameObjects.Text;
   private rows: Phaser.GameObjects.Text[] = [];
   private ccc: Phaser.GameObjects.Text[] = [];
   private active = false;
 
   constructor(scene: Phaser.Scene) {
-    this.dim = scene.add.rectangle(BASE_W / 2, BASE_H / 2, BASE_W, BASE_H, HUD_COLOURS.plate, 0.9)
-      .setDepth(3200).setScrollFactor(0).setVisible(false);
+    this.frame = new ScifiFrame(scene, 3198);
+    this.frame.draw(20, 10, 344, 202);
     this.title = scene.add.text(BASE_W / 2, 20, 'HI-SCORES', { fontFamily: UI_FONT, fontSize: '18px', fontStyle: '700', color: BRASS })
       .setOrigin(0.5, 0.5).setDepth(3201).setScrollFactor(0).setResolution(4).setVisible(false);
     for (let i = 0; i < 10; i++) {
@@ -49,14 +49,14 @@ export class HiScoreTable {
   show(): void { this.active = true; }
   hide(): void {
     this.active = false;
-    this.dim.setVisible(false); this.title.setVisible(false);
+    this.frame.hide(); this.title.setVisible(false);
     for (const t of this.rows) t.setVisible(false);
     for (const t of this.ccc) t.setVisible(false);
   }
 
   step(_n: number): void {
     if (!this.active) return;
-    this.dim.setVisible(true); this.title.setVisible(true);
+    this.frame.show(); this.title.setVisible(true);
     for (const t of this.rows) t.setVisible(true);
     for (const t of this.ccc) t.setVisible(t.text.length > 0);
   }

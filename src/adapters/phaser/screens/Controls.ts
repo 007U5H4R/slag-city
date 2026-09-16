@@ -3,8 +3,8 @@
 // Keyboard is the primary scheme; a gamepad also works (d-pad/stick move, South jump, West attack, Start).
 import type Phaser from 'phaser';
 import { BASE_W } from '@shell/scale';
-import { HUD_COLOURS } from '../views/hud-colours';
 import { UI_FONT } from '../views/ui-font';
+import { ScifiFrame } from '../views/scifi-frame';
 
 const TEXT = '#cdbfa6', BRASS = '#b08d3c';
 const LINES = [
@@ -16,16 +16,16 @@ const LINES = [
 const TOP = 118, LINE_H = 13;
 
 export class Controls {
-  private bg: Phaser.GameObjects.Rectangle;
+  private frame: ScifiFrame;
   private title: Phaser.GameObjects.Text;
   private lines: Phaser.GameObjects.Text[];
   private active = false;
 
   constructor(scene: Phaser.Scene) {
     const cx = BASE_W / 2;
-    const h = LINE_H * LINES.length + 26;
-    this.bg = scene.add.rectangle(cx, TOP + h / 2 - 8, 320, h, HUD_COLOURS.plate, 0.66)
-      .setStrokeStyle(1, HUD_COLOURS.brass, 0.7).setDepth(3050).setScrollFactor(0).setVisible(false);
+    const h = LINE_H * LINES.length + 28;
+    this.frame = new ScifiFrame(scene, 3049);
+    this.frame.draw(cx - 168, TOP - 16, 336, h);
     this.title = scene.add.text(cx, TOP - 4, 'CONTROLS', { fontFamily: UI_FONT, fontSize: '11px', fontStyle: '700', color: BRASS })
       .setOrigin(0.5, 0.5).setDepth(3051).setScrollFactor(0).setResolution(4).setVisible(false);
     this.lines = LINES.map((t, i) =>
@@ -36,14 +36,14 @@ export class Controls {
   show(): void {
     if (this.active) return;
     this.active = true;
-    this.bg.setVisible(true); this.title.setVisible(true);
+    this.frame.show(false); this.title.setVisible(true); // no full-screen dim on the attract title
     for (const l of this.lines) l.setVisible(true);
   }
 
   hide(): void {
     if (!this.active) return;
     this.active = false;
-    this.bg.setVisible(false); this.title.setVisible(false);
+    this.frame.hide(); this.title.setVisible(false);
     for (const l of this.lines) l.setVisible(false);
   }
 }
