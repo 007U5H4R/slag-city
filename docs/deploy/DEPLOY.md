@@ -1,5 +1,8 @@
 # Deploy readiness — SLAG CITY (ticket 24)
 
+## 🚀 LIVE 2026-09-16 — https://slag-city.vercel.app
+Deployed to Vercel (team "Tushar", project `slag-city`, prj_sKhBxSu3uouvvomoPErzSfTiojpm), auto-building from GitHub `main`. Production URL is **public** (200, no auth wall) and boots to ATTRACT with zero console errors (CDP-verified). Preview deployments (non-main branches) are behind Vercel Deployment Protection by default — that's expected; the production URL is the shareable one. Aliases: `slag-city.vercel.app`, `slag-city-tushar-49a6.vercel.app`. NOTE: fill the `index.html` OG `DEPLOY_ORIGIN` placeholder with `https://slag-city.vercel.app` and verify link preview (LinkedIn Inspector / opengraph.xyz).
+
 ## ✅ PUSHED 2026-09-16 (owner said "push it")
 - **Repo: https://github.com/007U5H4R/slag-city** (PRIVATE — make public when ready). Default branch **main**; `build/stage-1` also pushed (same commit). 96 commits.
 - **⚠ CI is BLOCKED by GitHub Actions billing** — the `check`+`e2e` runs failed instantly (0-3s) with: *"The job was not started because recent account payments have failed or your spending limit needs to be increased."* This is an **account billing issue, NOT a code failure** — the local gate (`npm run check` = 129 tests + `npm run e2e` smoke) is GREEN. Fix billing in GitHub → Settings → Billing & plans, then re-run: `gh run rerun <id>` or push again.
