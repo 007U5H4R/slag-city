@@ -1,7 +1,12 @@
 # Deploy readiness — SLAG CITY (ticket 24)
 
-**⛔ GATE: the owner must authorise the GitHub push / deploy. Nothing here has been pushed or deployed.**
-Prepared 2026-09-15 (owner AFK-delegated build; explicit instruction: "wait for my permission before deploying it to GitHub").
+## ✅ PUSHED 2026-09-16 (owner said "push it")
+- **Repo: https://github.com/007U5H4R/slag-city** (PRIVATE — make public when ready). Default branch **main**; `build/stage-1` also pushed (same commit). 96 commits.
+- **⚠ CI is BLOCKED by GitHub Actions billing** — the `check`+`e2e` runs failed instantly (0-3s) with: *"The job was not started because recent account payments have failed or your spending limit needs to be increased."* This is an **account billing issue, NOT a code failure** — the local gate (`npm run check` = 129 tests + `npm run e2e` smoke) is GREEN. Fix billing in GitHub → Settings → Billing & plans, then re-run: `gh run rerun <id>` or push again.
+- **⏸ HOSTING NOT DONE** — needs a host choice + the owner's account: Vercel (framework Vite, output `dist`) or itch.io (zip `dist`). No server/secrets needed. After hosting, fill the `DEPLOY_ORIGIN` placeholder in `index.html` OG tags + verify link preview.
+
+---
+_Original readiness notes (pre-push):_
 
 ## State
 - Repo is **local-only**, branch `build/stage-1`, **no git remote**, nothing pushed (owner chose local-only through ticket 24).
