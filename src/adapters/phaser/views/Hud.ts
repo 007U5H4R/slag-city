@@ -8,7 +8,7 @@ export interface HudModel { hp: number; maxHp: number; score: number; credits: n
 
 // All positions on the 8-px grid inside the 16-px top band (Design §3.2).
 const HEALTH = { x: 8, y: 4, w: 96, h: 8 };
-const SCORE_X = 128, CREDITS_X = 296;
+const SCORE_X = 126, CREDITS_X = 262; // CREDIT pulled in from the right so the CRT barrel doesn't clip it
 const HEAT = { x: 8, y: 208, w: 64, h: 8 };
 
 export class Hud {
@@ -17,9 +17,9 @@ export class Hud {
   private credits: Phaser.GameObjects.Text;
   constructor(private scene: Phaser.Scene) {
     this.g = scene.add.graphics().setDepth(2000).setScrollFactor(0);
-    const style = { fontFamily: UI_FONT, fontSize: '11px', fontStyle: '700', color: '#e8dcc0' };
-    this.score = scene.add.text(SCORE_X, 3, 'SCORE 000000', style).setDepth(2001).setScrollFactor(0).setResolution(4);
-    this.credits = scene.add.text(CREDITS_X, 3, 'CREDIT 0', style).setDepth(2001).setScrollFactor(0).setResolution(4);
+    const style = { fontFamily: UI_FONT, fontSize: '12px', fontStyle: '700', color: '#e8dcc0' };
+    this.score = scene.add.text(SCORE_X, 2, 'SCORE 000000', style).setDepth(2001).setScrollFactor(0).setResolution(4);
+    this.credits = scene.add.text(CREDITS_X, 2, 'CREDIT 0', style).setDepth(2001).setScrollFactor(0).setResolution(4);
   }
   // Hidden outside PLAY/CONTINUE by the coin-op machine (ticket 18); re-shown a frame before the next render.
   setVisible(v: boolean): void { this.g.setVisible(v); this.score.setVisible(v); this.credits.setVisible(v); }
@@ -27,7 +27,7 @@ export class Hud {
   render(m: HudModel): void {
     const g = this.g; g.clear();
     // plates: one shared style (dark plate + brass border) so the three elements read as one group (Design §3.2)
-    const PLATES = [{ x: HEALTH.x - 4, w: HEALTH.w + 8 }, { x: SCORE_X - 4, w: 108 }, { x: CREDITS_X - 4, w: 76 }];
+    const PLATES = [{ x: HEALTH.x - 4, w: HEALTH.w + 8 }, { x: SCORE_X - 6, w: 120 }, { x: CREDITS_X - 6, w: 92 }];
     for (const p of PLATES) {
       g.fillStyle(HUD_COLOURS.plate, 1); g.fillRect(p.x, 0, p.w, 16);
       g.lineStyle(1, HUD_COLOURS.brass, 1); g.strokeRect(p.x + 0.5, 0.5, p.w - 1, 15);
