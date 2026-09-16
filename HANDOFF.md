@@ -1,5 +1,17 @@
 # HANDOFF — SLAG CITY
 
+**▶ 2026-09-16 — REVIEW ROUND 3 (post-launch polish). HEAD (local) = `457f4d3` on `build/stage-1`. ⚠ COMMITTED LOCALLY ONLY — NOT pushed to GitHub, NOT redeployed to Vercel (awaiting owner push permission per standing constraint).**
+Game is live at **https://slag-city.vercel.app** (previous commit) + repo **github.com/007U5H4R/slag-city**.
+**This round fixed all owner-reported issues + added the noir story intro — all CDP-verified live at 2x (see LEDGER "Review round 3"):**
+  1. **UI clipping** (dialogue off-left, scoreboard off-right) — root cause was `setScrollFactor(0)` on every overlay (only aligns at zoom 1); removed it across all 9 overlay files so UI fills at any integer scale. ✅ verified centered.
+  2. **Hero "front then back"** — hero atlas had mixed L/R cell orientation; normalized all cells to face LEFT via sharp flop. ✅ verified walk R & L.
+  3. **Molten channel overspill** → contained animated pixel-flame tongues; **belt overspill** → slats clamped to bounds. ✅ verified on-hazard.
+  4. **Story intro** (Max Payne noir, `screens/StoryIntro.ts`, adapter-only) before a fresh game. ✅ verified.
+  Plasma weapons + LaserCurtain retained/verified. `npm run check` GREEN (129), build clean, zero credit.
+  **NEXT for a fresh session:** (a) get owner push permission → `git push origin build/stage-1` then merge/push `main` with a NEW commit so Vercel does a PRODUCTION deploy (same-SHA dedups to a preview); (b) re-run the live smoke against slag-city.vercel.app; (c) then continue any remaining review items.
+
+---
+
 **Stage 6 (Execution) — ✅ PHASE A COMPLETE + SIGNED OFF; ▶ NOW IN PHASE B / Ticket 03 (art tracer). Model: Opus 4.8 (`claude-opus-4-8`), standard effort.**
 Original arcade beat-'em-up (Phaser 3 + Vite + TypeScript). Stages 1–5 approved; executing the
 per-ticket plans via subagent-driven development (one fresh implementer per task, brief/report as
