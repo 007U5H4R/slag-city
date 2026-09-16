@@ -18,6 +18,10 @@ export class BootScene extends Phaser.Scene {
     { key: 'heavy', type: 'atlas', url: '/assets/atlases/heavy.png', atlasJson: '/assets/atlases/heavy.json' },
     { key: 'boss', type: 'atlas', url: '/assets/atlases/boss.png', atlasJson: '/assets/atlases/boss.json' },
     { key: 'boss-p2', type: 'atlas', url: '/assets/atlases/boss-p2.png', atlasJson: '/assets/atlases/boss.json' },
+    { key: 'grist', type: 'atlas', url: '/assets/atlases/grist.png', atlasJson: '/assets/atlases/grist.json' },     // sub-boss 1 (variant 1)
+    { key: 'grist-p2', type: 'atlas', url: '/assets/atlases/grist-p2.png', atlasJson: '/assets/atlases/grist.json' },
+    { key: 'slagjaw', type: 'atlas', url: '/assets/atlases/slagjaw.png', atlasJson: '/assets/atlases/slagjaw.json' },   // sub-boss 2 (variant 2)
+    { key: 'slagjaw-p2', type: 'atlas', url: '/assets/atlases/slagjaw-p2.png', atlasJson: '/assets/atlases/slagjaw.json' },
     { key: 'feral', type: 'atlas', url: '/assets/atlases/feral.png', atlasJson: '/assets/atlases/feral.json' },
     { key: 's1-sky', type: 'image', url: '/assets/backgrounds/s1-sky.png' },
     { key: 's1-mid', type: 'image', url: '/assets/backgrounds/s1-mid.png' },

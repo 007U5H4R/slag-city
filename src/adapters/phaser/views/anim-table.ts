@@ -82,6 +82,9 @@ export function animFor(e: Entity): AnimSpec | null { return ANIM_TABLE[e.kind]?
 // exported for ticket 03's sprite pipeline to resolve variant textures (base for 0, `${base}-v${variant}`
 // otherwise) with a fallback to the base atlas — nothing calls variantAtlasKey yet, which is expected.
 export const VARIANT_TINT = [0xffffff, 0xffd0d0, 0xd0ffd0, 0xd0d0ff] as const;
+// Boss gauntlet atlas per wave variant (0 Kilvish, 1 GRIST, 2 SLAGJAW). A variant with no distinct atlas
+// yet falls back to 'boss' (the Kilvish sprite) tinted by VARIANT_TINT — see EntityView.
+export const BOSS_ATLAS = ['boss', 'grist', 'slagjaw'] as const;
 export const variantAtlasKey = (base: string, variant: number): string => (variant === 0 ? base : `${base}-v${variant}`);
 
 /** Looping: advance by fps at 60Hz. Non-looping: spread the frames over the move's total length. */
