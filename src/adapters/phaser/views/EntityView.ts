@@ -40,10 +40,11 @@ export class EntityViews {
       alive.add(e.id);
       let v = this.views.get(e.id);
       if (!v) {
-        const itemKey = e.kind === 'weaponPickup' ? `wpn-${e.weaponKind}` : e.kind === 'projectile' ? `proj-${e.state}` : null;
+        const itemKey = e.kind === 'weaponPickup' ? `wpn-${e.weaponKind}` : e.kind === 'projectile' ? `proj-${e.state}` : e.kind === 'crate' ? 'crate' : null;
         const spec = animFor(e);
         if (itemKey && this.scene.textures.exists(itemKey)) {
-          v = this.scene.add.image(0, 0, itemKey).setOrigin(0.5, 0.5); // weapon pickup / projectile texture
+          // projectiles fly (centre origin); ground items (crate/weapon pickup) sit on their base.
+          v = this.scene.add.image(0, 0, itemKey).setOrigin(0.5, e.kind === 'projectile' ? 0.5 : 1);
         } else if (spec && this.scene.textures.exists(spec.atlas)) {
           v = this.scene.add.sprite(0, 0, spec.atlas).setOrigin(0.5, 1);
         } else {
@@ -84,7 +85,9 @@ export class EntityViews {
         const move = isBody(e) ? dataFor(e.kind).moves[e.state] : undefined;
         const i = frameIndexFor(e, names.length, spec, move ? moveTotal(move) : undefined);
         v.setFrame(`${key}/${i}`);
-        v.setFlipX(e.facing === -1);
+        // The hero atlas art faces LEFT by default; gang/boss/feral art faces RIGHT. Flip so the sprite
+        // always faces travel direction (facing 1 = right).
+        v.setFlipX(e.kind === 'hero' ? e.facing === 1 : e.facing === -1);
         // Flash = solid white silhouette (hit feedback); otherwise apply the palette-swap variant tint
         // (VARIANT_TINT[0] = 0xffffff = neutral, so variant-0 entities and the hero are untinted).
         if (e.flashFrames > 0) v.setTintFill(0xffffff);

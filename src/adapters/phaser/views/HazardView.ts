@@ -21,7 +21,7 @@ export class HazardView {
       if (h.type === 'belt') {
         const w = h.x2 - h.x1, hgt = h.y2 - h.y1;
         const x0 = Math.round(h.x1 - cx), y0 = h.y1;
-        g.fillStyle(0x23232b, 1).fillRect(x0, y0, w, hgt);                    // steel bed
+        g.fillStyle(0x162030, 1).fillRect(x0, y0, w, hgt);                   // dark blue-steel bed
         // two-tone tread slats scrolling in the push direction (reads as a moving belt)
         const dir = Math.sign(h.push) || 1;
         const period = 14;
@@ -29,12 +29,15 @@ export class HazardView {
         for (let x = h.x1 - period; x < h.x2 + period; x += period) {
           const sx = Math.round(x - cx + dir * scroll);
           if (sx + 7 < x0 || sx > x0 + w) continue;                          // skip slats fully off the belt
-          g.fillStyle(0x3a3a45, 1).fillRect(sx, y0 + 2, 7, hgt - 4);
-          g.fillStyle(0x4c4c5a, 1).fillRect(sx, y0 + 2, 2, hgt - 4);         // slat highlight
+          g.fillStyle(0x24384e, 1).fillRect(sx, y0 + 3, 7, hgt - 6);
+          g.fillStyle(0x35526e, 1).fillRect(sx, y0 + 3, 2, hgt - 6);         // slat highlight
         }
-        g.fillStyle(0x585863, 1).fillRect(x0, y0, w, 2).fillRect(x0, y0 + hgt - 2, w, 2); // edge rails
-        g.fillStyle(0xffa64d, 0.35).fillRect(x0, y0, w, 1);                  // warm rim light
-        g.fillStyle(0x71717e, 1).fillRect(x0, y0, 3, hgt).fillRect(x0 + w - 3, y0, 3, hgt); // end rollers
+        // blue LED light strips along both rails + a bright pulsing centre line (reference: lit conveyor)
+        const pulse = 0.7 + 0.3 * Math.sin(world.frame * 0.25);
+        g.fillStyle(0x0a2c5a, 1).fillRect(x0, y0, w, 3).fillRect(x0, y0 + hgt - 3, w, 3); // rail housing
+        g.fillStyle(0x37b7ff, pulse).fillRect(x0, y0 + 1, w, 1).fillRect(x0, y0 + hgt - 2, w, 1); // LEDs
+        g.fillStyle(0x8fdcff, 0.35 * pulse).fillRect(x0, y0 + Math.round(hgt / 2) - 1, w, 2);     // centre glow
+        g.fillStyle(0x4a6a8a, 1).fillRect(x0, y0, 3, hgt).fillRect(x0 + w - 3, y0, 3, hgt);       // end rollers
       } else if (h.type === 'channel') {
         const w = h.x2 - h.x1, hgt = h.y2 - h.y1;
         const x0 = Math.round(h.x1 - cx), y0 = h.y1;
