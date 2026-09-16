@@ -18,6 +18,15 @@ export class BootScene extends Phaser.Scene {
     { key: 's1-sky', type: 'image', url: '/assets/backgrounds/s1-sky.png' },
     { key: 's1-mid', type: 'image', url: '/assets/backgrounds/s1-mid.png' },
     { key: 's1-ground', type: 'image', url: '/assets/backgrounds/s1-ground.png' },
+    { key: 's2-sky', type: 'image', url: '/assets/backgrounds/s2-sky.png' },
+    { key: 's2-mid', type: 'image', url: '/assets/backgrounds/s2-mid.png' },
+    { key: 's2-ground', type: 'image', url: '/assets/backgrounds/s2-ground.png' },
+    { key: 's3-sky', type: 'image', url: '/assets/backgrounds/s3-sky.png' },
+    { key: 's3-mid', type: 'image', url: '/assets/backgrounds/s3-mid.png' },
+    { key: 's3-ground', type: 'image', url: '/assets/backgrounds/s3-ground.png' },
+    { key: 'pit-sky', type: 'image', url: '/assets/backgrounds/pit-sky.png' },
+    { key: 'pit-mid', type: 'image', url: '/assets/backgrounds/pit-mid.png' },
+    { key: 'pit-ground', type: 'image', url: '/assets/backgrounds/pit-ground.png' },
     { key: 'attract-demo', type: 'json', url: '/assets/replays/attract-demo.json' },
   ];
   constructor() { super('boot'); }

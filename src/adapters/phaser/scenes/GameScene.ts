@@ -240,7 +240,7 @@ export class GameScene extends Phaser.Scene {
     const world = (attractActive && this.attract.segment === 'demo' && this.attract.demoWorld) ? this.attract.demoWorld : this.world;
     if (world !== this.lastWorld) { this.views.reset(); this.lastWorld = world; }
 
-    this.parallax.sync(world.camera.x, world.stage.sectionIndex);
+    this.parallax.sync(world.camera.x, world.stage.sectionIndex, world.stage.bossDoorReached);
     this.hazards.draw(world);
     this.views.sync(world);
     this.pops.step(steps, world.camera.x);
