@@ -590,6 +590,33 @@ All committed, CDP-verified locally + prod smoke green on https://slag-city.verc
   - `npm run check` GREEN (129 tests), `npm run build` clean, zero console errors. Zero Higgsfield credit (pure code/atlas-flop).
   - **⚠ NOT pushed / NOT redeployed** — awaiting owner push permission (standing constraint). Live site slag-city.vercel.app still on the previous commit until push.
 
+- **DEPLOYED to production (2026-09-16)** — owner granted push permission. Review round 3 (`457f4d3`+`3182bbf`) pushed to `origin/build/stage-1`, then merged to `main` via a fresh `--no-ff` commit (`6b69c55`) so Vercel runs a real production build (same-SHA would dedup to a preview). Live-smoked on slag-city.vercel.app: boots to ATTRACT, zero console errors. Vercel project `prj_sKhBxSu3uouvvomoPErzSfTiojpm`, team `team_pLaStAJybzggE3tGD5ioih5M` (hobby); production deploys off `main`.
+
+- **Review round 4 — Wave 1 (post-launch UI fixes)** (branch `505f597`, merged to prod `b33eea8`, 2026-09-16, LIVE): owner-reported fixes, dispatched as 2 parallel implementer subagents (logo, laser) + orchestrator (glow); `npm run check` GREEN (129), CDP-verified on local preview + production live-smoke (zero console errors):
+  1. **Garbled "SLAG CITY" title** — ROOT CAUSE: `marquee` texture was never in the Boot manifest, so Attract/StoryIntro fell back to the broken `display16` bitmap font ("SLAG CIIY"). FIX: added `{key:'marquee', url:'/assets/ui/marquee.png'}` to `BootScene.MANIFEST`; Attract scales the logo to 60% BASE_W; **StoryIntro's title slide now renders the real metallic logo image** (owner: "use the original logo for the intro"). marquee.png is 768×160.
+  2. **"Laser thing"** — removed the cosmetic `LaserCurtain` (stray cyan scanning beams / "pole"): deleted `LaserCurtain.ts` + its 4 refs in GameScene. Cannon weapon + projectile untouched.
+  3. **Special-attack red glow** — `EntityView` draws a pulsing additive-blend red aura behind the hero while `hero.state==='special'` (renderer-agnostic; works on the Canvas fallback). Code-verified + type-checked; live visual confirm pending (0.5s window).
+  4. **Facing "moving forward looks back"** — INVESTIGATED, NOT a current bug: CDP-verified on the preview build the hero faces travel direction both ways (left→faces left, right→hammer strikes right). The owner saw the pre-deploy build. Atlas NOT re-flopped (would have been the 4th flip — the eyeball-flop trap).
+
+### Review round 4 — Wave 2 backlog (owner UI overhaul; decisions: recreate sci-fi look PROCEDURALLY — image #15 is a paid pack, no asset-ripping; ship after Wave 1)
+  - **Sci-fi HUD top bar** (owner images #14/#17) — restyle SCORE/CREDIT/health plates in the teal-glow angular style (see the existing HI-SCORES panel + `scifi-frame.ts`), and ensure the numbers/text are clearly legible (owner: "not visible properly" over the busy bg). Fix the garbled first plate.
+  - **Sci-fi panels** (image #15) — recreate the aesthetic procedurally across Controls/Continue/GameOver/HiScore panels.
+  - **Intro dialogue box** (image #16) — the noir StoryIntro uses a sci-fi dialog-panel frame (angled corners, teal glow, title tab).
+  - **Intro player portrait** (owner: "realistic image of player on the side, like Contra") — ⛔ credit-gated (Higgsfield seedream portrait) + owner aesthetic accept.
+  - **Lava-stage transition** (owner: "not smooth → scene cut") — make the boss/lava-pit transition a hard scene cut into a fresh scene rather than a scroll.
+  - **Remaining tickets** — mostly gated: sprite polish (credit), 14.4 timed-run (manual), master palette (risky).
+
+- **Review round 4 — Wave 2 (sci-fi UI overhaul)** (branch `c3e37b9`, merged to prod `a177573`, 2026-09-16): owner UI overhaul. **DECISION (deviation from the earlier "recreate PROCEDURALLY" note):** owner's continuation prompt said "do Wave 2 via Higgsfield". Resolved by tool-fit: **Higgsfield for the large decorative assets** (logo bg-removal; hero portrait candidates), **procedural for the 16-px HUD bar + panels** — a generated raster at a 16-px base band is mush and kills text legibility, which was the owner's core complaint; the teal `scifi-frame.ts` look already matches the reference art. Flagged for owner override.
+  - **HUD bar** (`Hud.ts`) — replaced the three loose dark/brass plates with one full-width teal sci-fi bar (faint top rule + bright cyan underline + corner brackets at each end). SCORE now gold, CREDIT cyan, **both with a 4-px dark stroke + drop shadow** so they stay legible over the busy parallax (owner: "not visible properly"). Health bar re-themed (dark trough + cyan frame). The old "garbled first plate" is gone (the plate approach was the problem).
+  - **scifi-frame** (`scifi-frame.ts`) — added a two-pass faint wide cyan glow bloom (6-px @0.10 + 4-px @0.18) so every panel that uses it reads over the game art; panel fill bumped 0.94→0.96. All panels sharing it (Controls, HiScoreEntry, HiScoreTable) inherit the upgrade.
+  - **Panels** — `Continue.ts` + `GameOver.ts` now draw a `ScifiFrame`; **Continue moved off the garbled `display16`/`hud8` bitmap fonts to the modern UI font** (Roboto Mono), matching the sibling panels. GameOver card sits in a 300×80 teal panel; Continue in a 192×92 panel over a light dim (frozen hero still reads behind).
+  - **Story-intro dialogue box** (`StoryIntro.ts`) — the 5 noir slides are now wrapped in a full-screen `ScifiFrame` dialogue box (angled corners, teal glow); the two old thin cyan rules were removed (frame replaces them), slide pips kept.
+  - **Transparent logo** — Higgsfield `remove_background` on the live `marquee.png` → `public/assets/ui/marquee-logo.png` (768×160 RGBA, bg + chains stripped, metal sign plate on transparency). Registered in `BootScene.MANIFEST`; **StoryIntro AND Attract** now float `marquee-logo` (Attract added for consistency — was a dark-boxed `marquee`). 1 cr, reconciled.
+  - **Hero portrait (Contra-style)** — ⛔ **OWNER ACCEPT GATED, NOT WIRED.** 3 seedream_v4_5 candidates generated (image-ref = hero reference job, 2:3, 3 cr) → `docs/art/candidates/ui/portrait/portrait-{1,2,3}.png` (+ `-sm` previews). All 3 are strong, consistent iron-mask forge busts. Awaiting owner pick before wiring into the intro side panel.
+  - **Lava scene-cut** — already done last session (`dc70553`, hard fade-cut); no work needed.
+  - **Verification:** `npm run check` GREEN (129 tests, typecheck, lint, build). CDP @1024px, **zero console errors** — HUD/intro-logo/intro-body/gameover/attract-controls all captured (`docs/verification/r4w2-*.png`). Higgsfield balance **324.9** (session −4 cr = 1 bg-removal + 3 portraits; every batch reconciled vs `transactions`, no overrun).
+  - **⛔ REMAINING after this run:** (a) hero portrait — owner picks 1 of 3, then wire into StoryIntro (side panel, aesthetic accept); (b) same gated backlog as before — sprite polish (credit), 14.4 timed-run (manual owner + stopwatch), ticket-04.2 master palette + hero re-quantise (risky). No other Wave 2 items open.
+
 _Phases D–G expand here as reached._
 
 ## Open threads / parked items
@@ -604,3 +631,11 @@ _Phases D–G expand here as reached._
   `JSON.stringify` replacer) — do NOT try to edit the eslint config. Same applies to any future
   "omit a key" spot in the plan.
 - **TODO:** add `.claude/settings.local.json` to `.gitignore` in a later small commit (not done now to avoid disturbing 01.1's staged `.gitignore`). Stage explicit paths so it isn't committed meanwhile.
+
+## Campfire board reconciliation (2026-09-16, Review round 4)
+Owner spotted board↔code drift. Reconciled via Backlog CLI (`node <fork>/scripts/cli.cjs task edit/create`, never hand-edited):
+- **Phase A** (task-44/45/46 + subtasks = Tickets 07/08/09) were still `To Do` → set **Done**. Tickets 01/02/03/05/06/20 (task-38..43) were already Done. Active board = all Done.
+- **Phase B+ onboarded** (were never on the board) as new tasks, statuses = implementation truth:
+  - task-47 T10 feral · task-48 T11 weapons · task-49 T13 gang/feral sprites · task-50 T14 stage-1 · task-51 T15 boss FSM · task-52 T16 boss sprites · task-53 T17 backgrounds · task-54 T18 coin-op · task-55 T19 hi-scores · task-56 T21 marquee/OG · task-57 T22 audio · task-58 T23 e2e/CI · task-59 T24 deploy — all **Done** (live).
+  - task-60 T04 master palette — **In Progress** (backgrounds done; 04.2 palette + hero re-quantise deferred).
+  - task-61 T12 hero action sheets — **To Do** (jump/grab/throw/special still fall back to walk/attack; credit-gated art).
