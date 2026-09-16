@@ -20,7 +20,6 @@ import { ScorePops } from '../views/ScorePop';
 import { NameCardView } from '../views/NameCard';
 import { Parallax } from '../views/Parallax';
 import { HazardView } from '../views/HazardView';
-import { LaserCurtain } from '../views/LaserCurtain';
 import { Sparks } from '../views/Sparks';
 import { WEAPON_HEAT } from '@core/weapons/heat';
 import { enableCrt, crtInstance } from '../crt/CrtPipeline';
@@ -58,7 +57,6 @@ export class GameScene extends Phaser.Scene {
   views!: EntityViews;
   private parallax!: Parallax;
   private hazards!: HazardView;
-  private lasers!: LaserCurtain;
   private debug!: DebugOverlay;
   private hud!: Hud;
   private pops!: ScorePops;
@@ -112,7 +110,6 @@ export class GameScene extends Phaser.Scene {
     this.arcade = reduceArcade(createArcade(), { type: 'boot' });
     this.parallax = new Parallax(this);
     this.hazards = new HazardView(this, STAGE1.sections.flatMap((s) => s.hazards));
-    this.lasers = new LaserCurtain(this);
     const g = this.add.graphics();
     g.lineStyle(1, 0x333333, 1);
     g.strokeRect(0, WALK_BAND.minY, BASE_W, WALK_BAND.maxY - WALK_BAND.minY);
@@ -281,7 +278,6 @@ export class GameScene extends Phaser.Scene {
 
     this.parallax.sync(world.camera.x, world.stage.sectionIndex, world.stage.bossDoorReached);
     this.hazards.draw(world);
-    this.lasers.draw(world.camera.x, world.frame);
     this.views.sync(world);
     this.pops.step(steps, world.camera.x);
     this.nameCard.step(steps);

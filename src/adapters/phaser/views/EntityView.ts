@@ -22,7 +22,13 @@ export const BOX_SIZE: Record<EntityKind, { w: number; h: number; color: number 
 export class EntityViews {
   private views = new Map<number, Phaser.GameObjects.Rectangle | Phaser.GameObjects.Sprite | Phaser.GameObjects.Image>();
   private frameNames = new Map<string, string[]>();
-  constructor(private scene: Phaser.Scene, private layer: Phaser.GameObjects.Layer) {}
+  // Additive red aura drawn behind the hero while the special is active (renderer-agnostic — works on the
+  // Canvas fallback, unlike WebGL-only preFX glow). One shared Graphics, cleared and redrawn each frame.
+  private glow: Phaser.GameObjects.Graphics;
+  constructor(private scene: Phaser.Scene, private layer: Phaser.GameObjects.Layer) {
+    this.glow = scene.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
+    this.layer.add(this.glow);
+  }
 
   // Drop every cached view. Called when the rendered world is swapped (attract demo <-> play) so a reused
   // entity id from the new world never inherits the previous world's box/sprite of a different kind.
@@ -35,6 +41,7 @@ export class EntityViews {
   has(id: number): boolean { const v = this.views.get(id); return !!v && v.visible; }
 
   sync(state: WorldState): void {
+    this.glow.clear(); // redrawn this frame only if the hero is mid-special
     const alive = new Set<number>();
     for (const e of state.entities) {
       alive.add(e.id);
@@ -63,6 +70,17 @@ export class EntityViews {
   private place(v: Phaser.GameObjects.Rectangle | Phaser.GameObjects.Sprite | Phaser.GameObjects.Image, e: Entity, state: WorldState): void {
     v.setPosition(Math.round(e.pos.x - state.camera.x), Math.round(e.pos.y - e.pos.z));
     v.setDepth(e.pos.y);
+    // Special-attack aura: a pulsing red glow behind the hero for the duration of the special state.
+    if (e.kind === 'hero' && e.state === 'special') {
+      const sx = Math.round(e.pos.x - state.camera.x);
+      const cy = Math.round(e.pos.y - e.pos.z) - 26; // mid-body (origin sits at the feet)
+      const pulse = 0.6 + 0.4 * Math.abs(Math.sin(state.frame * 0.4));
+      const g = this.glow;
+      g.fillStyle(0xff2020, 0.12 * pulse); g.fillCircle(sx, cy, 36);
+      g.fillStyle(0xff3838, 0.18 * pulse); g.fillCircle(sx, cy, 24);
+      g.fillStyle(0xff6a6a, 0.24 * pulse); g.fillCircle(sx, cy, 14);
+      g.setDepth(e.pos.y - 1); // just behind the hero sprite (layer sorts by depth below)
+    }
     if (v instanceof Phaser.GameObjects.Sprite) {
       const spec = animFor(e);
       if (!spec) return;

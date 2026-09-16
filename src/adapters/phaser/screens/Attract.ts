@@ -36,6 +36,8 @@ export class Attract {
   constructor(scene: Phaser.Scene) {
     if (scene.textures.exists('marquee')) {
       this.marquee = scene.add.image(BASE_W / 2, BASE_H / 3, 'marquee').setOrigin(0.5).setDepth(3000).setVisible(false);
+      const s = (BASE_W * 0.6) / this.marquee.width;
+      this.marquee.setScale(s);
     }
     this.title = scene.add.bitmapText(BASE_W / 2, BASE_H / 3, 'display16', 'SLAG CITY').setOrigin(0.5).setDepth(3000).setVisible(false);
     this.insertCoin = scene.add.bitmapText(BASE_W / 2, BASE_H - 40, 'hud8', 'INSERT COIN').setOrigin(0.5).setDepth(3001).setVisible(false);
