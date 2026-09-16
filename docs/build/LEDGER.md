@@ -569,6 +569,17 @@ contradictions to ratify** (independently verified: check GREEN, golden unchange
 **▶ NEXT (remaining — all owner/manual/optional): (1) fix GitHub Actions BILLING → CI green (`gh run rerun` or re-push); (2) HOST the `dist` build (Vercel/itch, owner account) → fill `index.html` DEPLOY_ORIGIN + verify link preview; (3) 14.4 timed-run playtest (manual); (4) trademark lock (`docs/legal/title-check.md`); (5) OPTIONAL polish: ticket 04.2 master palette + hero re-quantise (risky — touches tuned hero), gang variant recolor atlases (already tint-distinguished), feral/hero extra sprite states (hold-frame now). ✅ FEATURE-COMPLETE: 16 (boss+phase2), 13 (feral), 04.1+17 (all bg), 22 (audio), 19 (hiscores), 23 (e2e/CI), 21 (marquee/OG) all DONE.**
 **Standing this run: GateGuard fact-forces on every first-touch new-file/edit (answer 4 facts briefly, retry — env glob is read at session start so editing it won't help mid-session). NEVER push (no remote; owner must authorise GitHub). Screenshot all art to `docs/verification/` for the owner's morning review.**
 
+## Post-launch polish iteration (2026-09-16, owner review notes) — LIVE
+
+All committed, CDP-verified locally + prod smoke green on https://slag-city.vercel.app.
+- **Modern UI font** (`13cf52f`): Roboto Mono (index.html google-font + `views/ui-font.ts`) for HUD score/credits, scoreboard, name entry, GAME OVER/STAGE CLEAR — monospaced so columns align; arcade marquee/name-cards/INSERT COIN kept bitmap.
+- **Controls panel** (`13cf52f`): `screens/Controls.ts` on the attract title (move/attack/jump/special/coin/start/crt/volume).
+- **Ending flow** (`13cf52f`): boss defeat → "STAGE CLEAR! / CONGRATULATIONS — ENTER YOUR NAME"; a boss clear ALWAYS earns name entry (`world.stage.bossDefeated || qualifies`). (Next stage = future work.)
+- **Conveyor revamp** (`13cf52f`): `HazardView` belt (steel bed + two-tone scrolling tread + rails + rollers) + molten channel (layered flicker + bright core).
+- **Weapon/laser graphics** (`57a9527`): `views/item-textures.ts` procedural textures (laser cannon + flame blade pickups, hero laser bolt, boss molten glob) → EntityView renders Images instead of rectangles.
+- **Deploy**: pushed to `main` → Vercel auto-deployed to production (57a9527). ⚠ GitHub Actions CI still billing-blocked (owner account); Vercel builds independently.
+- **⚠ Flaky test watch:** one background `npm run check` reported "1 failed" once under load; 2 clean re-runs = 129/129. No core changes this iteration; likely a slow-collect timing flake — watch it.
+
 _Phases D–G expand here as reached._
 
 ## Open threads / parked items
