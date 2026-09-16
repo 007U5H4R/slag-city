@@ -1,29 +1,41 @@
 // src/adapters/phaser/screens/StoryIntro.ts
-// Noir story intro (Max Payne-style narrative slides) shown once when a fresh game begins, before the sim
-// starts. Purely adapter-side: GameScene freezes the world on the first PLAY frame, plays these slides, and
-// releases the sim when the last slide is dismissed. Advanced by the ATTACK button, one slide at a time.
+// Story intro shown once when a fresh game begins, before the sim starts. Emotional revenge arc: robotic
+// aliens ("the machines" / "the steel legion") exterminated Earth and the hero's family; he is one of the
+// last survivors, turning his forge hammer on the machines. Purely adapter-side: GameScene freezes the
+// world on the first PLAY frame, plays these slides, and releases the sim when the last slide is dismissed.
+// Advanced by the ATTACK button, one slide at a time. Contra-style hero portrait pinned to the left, the
+// sci-fi dialogue box on the right.
 import type Phaser from 'phaser';
 import { BASE_W, BASE_H } from '@shell/scale';
 import { UI_FONT } from '../views/ui-font';
 import { ScifiFrame } from '../views/scifi-frame';
 import { blinkOn } from '@core/arcade/screen-machine';
 
-const BRASS = '#d7a94a', TEXT = '#d8cbb0', DIM = '#8a7f6a', CY = 0x2fd4d4;
+const BRASS = '#d7a94a', TEXT = '#d8cbb0', DIM = '#8a7f6a', CY = 0x2fd4d4, CY_HI = 0x8ff7f2;
 
-// Each slide: an optional big title + body lines (hand-wrapped so the layout is exact at 384px and never clips).
+// Layout: hero portrait panel on the left, dialogue box on the right.
+const PORT = { x: 14, y: 30, w: 104, h: 164 };            // portrait frame
+const BOX = { x: 126, y: 16, w: 234, h: 192 };            // dialogue box (ScifiFrame)
+const TCX = BOX.x + BOX.w / 2;                            // text column centre
+const CYB = BOX.y + BOX.h / 2;                            // box vertical centre
+
+// Each slide: an optional big title + body lines (hand-wrapped so the narrow right column never clips).
 interface Slide { title?: string; body: string[] }
 const SLIDES: Slide[] = [
-  { title: 'SLAG CITY', body: ['The furnaces never cool.', 'Neither does the debt.'] },
-  { body: ['They call it progress —', 'molten steel by day,', 'people gone missing by night.', '', 'The FOREMAN owns the mills,', 'the streets, and every soul on them.'] },
-  { body: ['They took your crew.', 'Broke your hands on the line.', 'Left you for scrap', 'in the cooling pits.'] },
-  { body: ['But scrap gets reforged.', '', 'You pull your hammer from the ash', 'and start walking', 'toward the tower.'] },
-  { title: 'ONE MAN. ONE HAMMER.', body: ['One way out.'] },
+  { title: 'SLAG CITY', body: ['The machines fell', 'from the sky.'] },
+  { body: ['They called it', 'first contact.', '', 'It was extermination.'] },
+  { body: ['KILVISH,', 'their steel overlord,', 'burned the world', 'to slag.', '', 'Your wife. Your children.', 'Gone in one night.'] },
+  { body: ['You crawled from', 'the rubble — one of', 'the last souls alive.'] },
+  { body: ['His enforcers guard', 'the road to his throne.', '', 'Break them all', 'to reach him.'] },
+  { body: ['They left you', 'your two hands', 'and a red-hot hammer.', '', 'That was', 'their last mistake.'] },
+  { title: 'FIND KILVISH', body: ['Make them all burn.'] },
 ];
 
 export class StoryIntro {
   private dim: Phaser.GameObjects.Rectangle;
   private frame: ScifiFrame;
   private rule: Phaser.GameObjects.Graphics;
+  private portrait?: Phaser.GameObjects.Image;
   private title: Phaser.GameObjects.Text;
   private marquee?: Phaser.GameObjects.Image;
   private body: Phaser.GameObjects.Text;
@@ -36,20 +48,25 @@ export class StoryIntro {
     // deep-noir full-screen dim (darker than the frame's own dim, which we suppress)
     this.dim = scene.add.rectangle(BASE_W / 2, BASE_H / 2, BASE_W, BASE_H, 0x03060a, 0.9)
       .setDepth(D).setVisible(false);
-    // sci-fi dialogue-box frame around the noir slides (angled corners, teal glow)
+    // sci-fi dialogue box on the right (angled corners, teal glow)
     this.frame = new ScifiFrame(scene, D);
-    this.frame.draw(24, 16, BASE_W - 48, BASE_H - 32);
+    this.frame.draw(BOX.x, BOX.y, BOX.w, BOX.h);
     this.rule = scene.add.graphics().setDepth(D + 1).setVisible(false);
-    this.title = scene.add.text(BASE_W / 2, 0, '', { fontFamily: UI_FONT, fontSize: '18px', fontStyle: '700', color: BRASS, align: 'center' })
+    // Contra-style hero portrait, pinned left, fit to the portrait frame height
+    if (scene.textures.exists('hero-portrait')) {
+      this.portrait = scene.add.image(PORT.x + PORT.w / 2, PORT.y + PORT.h / 2, 'hero-portrait')
+        .setOrigin(0.5).setDepth(D + 2).setVisible(false);
+      this.portrait.setScale((PORT.h - 8) / this.portrait.height);
+    }
+    this.title = scene.add.text(TCX, 0, '', { fontFamily: UI_FONT, fontSize: '15px', fontStyle: '700', color: BRASS, align: 'center' })
       .setOrigin(0.5, 0.5).setDepth(D + 2).setResolution(4).setVisible(false);
     if (scene.textures.exists('marquee-logo')) {
-      this.marquee = scene.add.image(BASE_W / 2, 0, 'marquee-logo').setOrigin(0.5).setDepth(D + 2).setVisible(false);
-      const s = (BASE_W * 0.6) / this.marquee.width;
-      this.marquee.setScale(s);
+      this.marquee = scene.add.image(TCX, 0, 'marquee-logo').setOrigin(0.5).setDepth(D + 2).setVisible(false);
+      this.marquee.setScale((BOX.w - 44) / this.marquee.width);
     }
-    this.body = scene.add.text(BASE_W / 2, 0, '', { fontFamily: UI_FONT, fontSize: '10px', fontStyle: '400', color: TEXT, align: 'center', lineSpacing: 5 })
+    this.body = scene.add.text(TCX, 0, '', { fontFamily: UI_FONT, fontSize: '9px', fontStyle: '400', color: TEXT, align: 'center', lineSpacing: 4 })
       .setOrigin(0.5, 0.5).setDepth(D + 2).setResolution(4).setVisible(false);
-    this.prompt = scene.add.text(BASE_W / 2, BASE_H - 22, '', { fontFamily: UI_FONT, fontSize: '8px', fontStyle: '700', color: DIM, align: 'center' })
+    this.prompt = scene.add.text(TCX, BASE_H - 20, '', { fontFamily: UI_FONT, fontSize: '8px', fontStyle: '700', color: DIM, align: 'center' })
       .setOrigin(0.5, 0.5).setDepth(D + 2).setResolution(4).setVisible(false);
   }
 
@@ -61,21 +78,29 @@ export class StoryIntro {
     this.title.setText(s.title ?? '').setVisible(hasTitle && !useMarquee);
     this.marquee?.setVisible(useMarquee);
     this.body.setText(s.body.join('\n'));
-    // vertically centre the title+body block as a group
+    // vertically centre the title+body block as a group inside the box
     const bodyH = this.body.height;
-    const titleH = hasTitle ? this.title.height + 10 : 0;
-    const top = (BASE_H - (titleH + bodyH)) / 2 - 6;
+    const headH = useMarquee ? this.marquee!.displayHeight : this.title.height;
+    const titleH = hasTitle ? headH + 10 : 0;
+    const top = CYB - (titleH + bodyH) / 2;
     if (hasTitle) {
-      const titleY = top + this.title.height / 2;
+      const titleY = top + headH / 2;
       this.title.setY(titleY);
       this.marquee?.setY(titleY);
       this.body.setY(top + titleH + bodyH / 2);
     }
-    else this.body.setY(BASE_H / 2 - 6);
-    // the ScifiFrame draws the panel border now; this graphics layer carries just the slide pips
+    else this.body.setY(CYB);
+    // portrait frame + slide pips
     const g = this.rule; g.clear();
-    // slide pips
-    const n = SLIDES.length, px = BASE_W / 2 - (n * 8) / 2;
+    g.fillStyle(0x02090c, 0.55).fillRect(PORT.x, PORT.y, PORT.w, PORT.h);        // dark backing behind the art
+    g.lineStyle(6, CY, 0.10).strokeRect(PORT.x, PORT.y, PORT.w, PORT.h);         // glow bloom
+    g.lineStyle(2, CY, 0.9).strokeRect(PORT.x, PORT.y, PORT.w, PORT.h);          // teal border
+    g.lineStyle(2, CY_HI, 1);                                                    // bright corner brackets
+    g.lineBetween(PORT.x, PORT.y, PORT.x + 12, PORT.y); g.lineBetween(PORT.x, PORT.y, PORT.x, PORT.y + 12);
+    g.lineBetween(PORT.x + PORT.w - 12, PORT.y + PORT.h, PORT.x + PORT.w, PORT.y + PORT.h);
+    g.lineBetween(PORT.x + PORT.w, PORT.y + PORT.h - 12, PORT.x + PORT.w, PORT.y + PORT.h);
+    // slide pips under the box
+    const n = SLIDES.length, px = TCX - (n * 8) / 2;
     for (let k = 0; k < n; k++) g.fillStyle(k === i ? CY : 0x1b5a5e, 1).fillRect(px + k * 8, BASE_H - 12, 5, 2);
   }
 
@@ -85,6 +110,7 @@ export class StoryIntro {
     this.active = true;
     this.frame.show(false); // suppress the frame's own dim — StoryIntro.dim supplies the deeper noir dim
     for (const o of [this.dim, this.rule, this.body, this.prompt]) o.setVisible(true);
+    this.portrait?.setVisible(true);
     this.layout(slide);
   }
 
@@ -101,5 +127,6 @@ export class StoryIntro {
     this.frame.hide();
     for (const o of [this.dim, this.rule, this.title, this.body, this.prompt]) o.setVisible(false);
     this.marquee?.setVisible(false);
+    this.portrait?.setVisible(false);
   }
 }

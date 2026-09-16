@@ -37,6 +37,7 @@ import { HiScoreTable } from '../screens/HiScoreTable';
 import { HiScoreEntry } from '../screens/HiScoreEntry';
 import { Controls } from '../screens/Controls';
 import { StoryIntro } from '../screens/StoryIntro';
+import { BossDialogue, KILVISH_PREFIGHT, KILVISH_DEFEAT } from '../screens/BossDialogue';
 import { encodeInput } from '@core/input-codec';
 import { hashState } from '@core/sim/hash';
 import { ATTRACT } from '@core/arcade/attract';
@@ -75,6 +76,11 @@ export class GameScene extends Phaser.Scene {
   private hiEntry!: HiScoreEntry;
   private controls!: Controls;
   private story!: StoryIntro;
+  private bossTalk!: BossDialogue;
+  private bossTalkKind: 'prefight' | 'defeat' | null = null;
+  private bossPrefightShown = false;   // pre-fight taunt fires once per fresh game
+  private bossDefeatShown = false;      // defeat exchange fires once per fresh game
+  private pendingBossDefeat = false;    // hold STAGE CLEAR until the defeat exchange is dismissed
   // Noir story intro (adapter-only): shown once before a fresh game's sim starts; ATTACK advances one slide.
   private storyActive = false;
   private storySlide = 0;
@@ -135,6 +141,7 @@ export class GameScene extends Phaser.Scene {
     this.hiEntry = new HiScoreEntry(this);
     this.controls = new Controls(this);
     this.story = new StoryIntro(this);
+    this.bossTalk = new BossDialogue(this);
     this.audio = new AudioAdapter(this, getSetting('volume'));
     void loadTable().then((t) => { this.table = t; });
     // Volume: '-'/'=' step 0.1, persisted (Design §; matches the ticket-22 AudioAdapter contract).
@@ -187,7 +194,7 @@ export class GameScene extends Phaser.Scene {
       this.arcade = reduceArcade(this.arcade, { type: 'start' });
       if (this.arcade.screen === 'PLAY' && before !== 'PLAY') {
         if (before === 'CONTINUE') reviveHero(this.world);
-        else { this.worldSeed = Date.now() >>> 0; this.world = newGameWorld(this.worldSeed); this.storyActive = true; this.storySlide = 0; this.story.show(0); } // fresh game → play the noir intro first
+        else { this.worldSeed = Date.now() >>> 0; this.world = newGameWorld(this.worldSeed); this.storyActive = true; this.storySlide = 0; this.story.show(0); this.bossTalk.hide(); this.bossTalkKind = null; this.bossPrefightShown = false; this.bossDefeatShown = false; this.pendingBossDefeat = false; } // fresh game → play the noir intro first, re-arm boss dialogue
         this.sfx('start');
       }
     }
@@ -198,16 +205,33 @@ export class GameScene extends Phaser.Scene {
       if (this.storySlide >= this.story.count) { this.storyActive = false; this.story.hide(); }
       else { this.story.setSlide(this.storySlide); this.sfx('coin'); }
     }
+    // Boss encounter (Kilvish): freeze the fight for a pre-fight taunt the first frame the boss appears.
+    if (!this.storyActive && this.arcade.screen === 'PLAY' && !this.bossPrefightShown
+        && this.world.entities.some((e) => e.kind === 'boss')) {
+      this.bossPrefightShown = true; this.bossTalkKind = 'prefight'; this.bossTalk.start(KILVISH_PREFIGHT); this.sfx('coin');
+    }
+    // ATTACK advances the exchange; dismissing the defeat exchange releases the deferred STAGE CLEAR.
+    if (this.bossTalk.active && confirm) {
+      if (this.bossTalk.advance()) {
+        if (this.bossTalkKind === 'defeat' && this.pendingBossDefeat) { this.pendingBossDefeat = false; this.arcade = reduceArcade(this.arcade, { type: 'bossDefeated' }); }
+        this.bossTalkKind = null;
+      } else this.sfx('coin');
+    }
     const steps = advanceFixedStep(this.fixed, delta, () => {
       this.arcade = reduceArcade(this.arcade, { type: 'tick' });
       if (this.arcade.screen !== 'PLAY') return;
-      if (this.storyActive) return;                     // freeze the world while the intro plays
+      if (this.storyActive || this.bossTalk.active) return; // freeze the world while the intro / boss dialogue plays
       tick(this.world, input);
       if (this.recording) this.recording.push(encodeInput(input)); // DEV attract-demo capture (19.3)
       this.arcade = reduceArcade(this.arcade, { type: 'score', score: this.world.score });
       for (const ev of this.world.events) {
         if (ev.type === 'heroDead') this.arcade = reduceArcade(this.arcade, { type: 'heroDead' });
-        else if (ev.type === 'bossDefeated') { this.arcade = reduceArcade(this.arcade, { type: 'bossDefeated' }); if (import.meta.env.DEV) console.log('[GameScene] STAGE CLEAR — the Foreman defeated'); }
+        else if (ev.type === 'bossDefeated') {
+          // First defeat: hold STAGE CLEAR behind Kilvish's dying exchange; dismissing it applies the reduce.
+          if (!this.bossDefeatShown) { this.bossDefeatShown = true; this.bossTalkKind = 'defeat'; this.pendingBossDefeat = true; this.bossTalk.start(KILVISH_DEFEAT); }
+          else this.arcade = reduceArcade(this.arcade, { type: 'bossDefeated' });
+          if (import.meta.env.DEV) console.log('[GameScene] Kilvish defeated — STAGE CLEAR');
+        }
         else this.routeEvent(ev);
       }
     });
@@ -306,6 +330,7 @@ export class GameScene extends Phaser.Scene {
     this.debug.draw(world);
 
     this.story.step(this.arcade.screenFrame, this.storySlide); // noir intro prompt blink (no-op when inactive)
+    this.bossTalk.step(this.arcade.screenFrame);                // boss dialogue prompt blink (no-op when inactive)
     const inGame = (scr === 'PLAY' || scr === 'CONTINUE') && !this.storyActive;
     this.hud.setVisible(inGame);
     if (inGame) {
