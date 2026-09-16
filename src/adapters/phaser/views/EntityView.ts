@@ -73,6 +73,11 @@ export class EntityViews {
       // An action with no frames (e.g. attack* before the attack sheet exists) leaves the
       // current frame in place — never call setFrame on a non-existent name (Phaser warns/errors).
       if (names.length > 0) {
+        // Phase-2 boss uses the reserve-slot recolored atlas (same frame names); tear-open is one-way.
+        if (e.kind === 'boss') {
+          const tex = e.tint ? 'boss-p2' : 'boss';
+          if (v.texture.key !== tex && this.scene.textures.exists(tex)) v.setTexture(tex);
+        }
         const move = isBody(e) ? dataFor(e.kind).moves[e.state] : undefined;
         const i = frameIndexFor(e, names.length, spec, move ? moveTotal(move) : undefined);
         v.setFrame(`${key}/${i}`);
