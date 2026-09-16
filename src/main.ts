@@ -43,8 +43,10 @@ function installTestHook(): void {
   const scene = (): GameScene | undefined => game?.scene.getScene('game') as GameScene | undefined;
   Object.defineProperty(window, '__slag', {
     value: {
-      screen: () => scene()?.arcade.screen ?? 'BOOT',
-      heroVisible: () => { const s = scene(); return !!s && s.arcade.screen === 'PLAY' && s.views.has(s.world.heroId); },
+      // Guard `arcade`/`views`/`world`: the scene can exist for a frame before create() assigns them
+      // (a race a slower host exposes), and this read-only hook must never throw.
+      screen: () => scene()?.arcade?.screen ?? 'BOOT',
+      heroVisible: () => { const s = scene(); return !!s?.arcade && s.arcade.screen === 'PLAY' && !!s.views?.has(s.world.heroId); },
       scale: () => lastK,
     },
     writable: false,

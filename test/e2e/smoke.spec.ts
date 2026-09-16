@@ -11,11 +11,13 @@ test('boots, integer-scales, takes a coin and start, shows the hero, no console 
   expect(dims.w % 384).toBe(0); expect(dims.h % 224).toBe(0);
   expect(dims.cw / 384).toBe(dims.ch / 224);
   expect(Number.isInteger(Math.round(dims.cw) / 384)).toBe(true);
-  await page.waitForFunction(() => (window as unknown as { __slag: { screen(): string } }).__slag.screen() === 'ATTRACT', null, { timeout: 15_000 });
+  // Optional-chain the hook so the predicate RETRIES (returns false) instead of throwing while __slag is
+  // still installing — matters against a slower remote host (e2e:prod), not just localhost.
+  await page.waitForFunction(() => (window as unknown as { __slag?: { screen(): string } }).__slag?.screen() === 'ATTRACT', null, { timeout: 15_000 });
   await page.keyboard.press('5');
-  await page.waitForFunction(() => (window as unknown as { __slag: { screen(): string } }).__slag.screen() === 'COIN');
+  await page.waitForFunction(() => (window as unknown as { __slag?: { screen(): string } }).__slag?.screen() === 'COIN');
   await page.keyboard.press('Enter');
-  await page.waitForFunction(() => (window as unknown as { __slag: { heroVisible(): boolean } }).__slag.heroVisible(), null, { timeout: 5_000 });
+  await page.waitForFunction(() => (window as unknown as { __slag?: { heroVisible(): boolean } }).__slag?.heroVisible() === true, null, { timeout: 5_000 });
   await page.waitForTimeout(1000);
   expect(errors).toEqual([]);
 });
