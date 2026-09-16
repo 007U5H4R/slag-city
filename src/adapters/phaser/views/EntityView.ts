@@ -20,7 +20,7 @@ export const BOX_SIZE: Record<EntityKind, { w: number; h: number; color: number 
 };
 
 export class EntityViews {
-  private views = new Map<number, Phaser.GameObjects.Rectangle | Phaser.GameObjects.Sprite>();
+  private views = new Map<number, Phaser.GameObjects.Rectangle | Phaser.GameObjects.Sprite | Phaser.GameObjects.Image>();
   private frameNames = new Map<string, string[]>();
   constructor(private scene: Phaser.Scene, private layer: Phaser.GameObjects.Layer) {}
 
@@ -40,8 +40,11 @@ export class EntityViews {
       alive.add(e.id);
       let v = this.views.get(e.id);
       if (!v) {
+        const itemKey = e.kind === 'weaponPickup' ? `wpn-${e.weaponKind}` : e.kind === 'projectile' ? `proj-${e.state}` : null;
         const spec = animFor(e);
-        if (spec && this.scene.textures.exists(spec.atlas)) {
+        if (itemKey && this.scene.textures.exists(itemKey)) {
+          v = this.scene.add.image(0, 0, itemKey).setOrigin(0.5, 0.5); // weapon pickup / projectile texture
+        } else if (spec && this.scene.textures.exists(spec.atlas)) {
           v = this.scene.add.sprite(0, 0, spec.atlas).setOrigin(0.5, 1);
         } else {
           const s = BOX_SIZE[e.kind];
@@ -56,7 +59,7 @@ export class EntityViews {
     this.layer.sort('depth'); // depth set to pos.y below → draw order = y sort
   }
 
-  private place(v: Phaser.GameObjects.Rectangle | Phaser.GameObjects.Sprite, e: Entity, state: WorldState): void {
+  private place(v: Phaser.GameObjects.Rectangle | Phaser.GameObjects.Sprite | Phaser.GameObjects.Image, e: Entity, state: WorldState): void {
     v.setPosition(Math.round(e.pos.x - state.camera.x), Math.round(e.pos.y - e.pos.z));
     v.setDepth(e.pos.y);
     if (v instanceof Phaser.GameObjects.Sprite) {
@@ -90,10 +93,15 @@ export class EntityViews {
       }
       return;
     }
-    v.setScale(e.facing, 1);
-    v.setFillStyle(e.flashFrames > 0 ? 0xffffff : BOX_SIZE[e.kind].color, e.invulnFrames > 0 && state.frame % 4 < 2 ? 0.4 : 1);
-    // Phase-2 boss (e.tint) gets an emissive magenta stroke (reserve slot #ff3ea8) until the ticket-16
-    // recolor atlas lands; every other box keeps its variant stroke.
-    v.setStrokeStyle(2, e.tint ? 0xff3ea8 : (VARIANT_TINT[e.variant] ?? 0xffffff));
+    if (v instanceof Phaser.GameObjects.Rectangle) {
+      v.setScale(e.facing, 1);
+      v.setFillStyle(e.flashFrames > 0 ? 0xffffff : BOX_SIZE[e.kind].color, e.invulnFrames > 0 && state.frame % 4 < 2 ? 0.4 : 1);
+      // Phase-2 boss (e.tint) gets an emissive magenta stroke; every other box keeps its variant stroke.
+      v.setStrokeStyle(2, e.tint ? 0xff3ea8 : (VARIANT_TINT[e.variant] ?? 0xffffff));
+      return;
+    }
+    // Item Image (weapon pickup / projectile): face the projectile by travel direction; flicker on invuln.
+    v.setFlipX(e.kind === 'projectile' && e.facing === -1);
+    v.setAlpha(e.invulnFrames > 0 && state.frame % 4 < 2 ? 0.5 : 1);
   }
 }

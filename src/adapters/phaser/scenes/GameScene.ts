@@ -13,6 +13,7 @@ import { KeyboardSource } from '../input/keyboard';
 import { GamepadSource } from '../input/gamepad';
 import { composeInput } from '../input/compose';
 import { EntityViews } from '../views/EntityView';
+import { ensureItemTextures } from '../views/item-textures';
 import { DebugOverlay } from '../views/DebugOverlay';
 import { Hud } from '../views/Hud';
 import { ScorePops } from '../views/ScorePop';
@@ -90,6 +91,7 @@ export class GameScene extends Phaser.Scene {
 
   create(): void {
     installFonts(this);
+    ensureItemTextures(this); // procedural weapon/projectile textures (dropped weapons, laser bolt, glob)
     this.cameras.main.setBackgroundColor('#000000');
     this.applyZoom((this.registry.get('scale') as number | undefined) ?? 1);
     this.game.events.on('rescale', (k: number) => this.applyZoom(k));
