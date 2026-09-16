@@ -34,8 +34,8 @@ export class Attract {
   private prevSegment: AttractSegment | null = null;
 
   constructor(scene: Phaser.Scene) {
-    if (scene.textures.exists('marquee')) {
-      this.marquee = scene.add.image(BASE_W / 2, BASE_H / 3, 'marquee').setOrigin(0.5).setDepth(3000).setVisible(false);
+    if (scene.textures.exists('marquee-logo')) {
+      this.marquee = scene.add.image(BASE_W / 2, BASE_H / 3, 'marquee-logo').setOrigin(0.5).setDepth(3000).setVisible(false);
       const s = (BASE_W * 0.6) / this.marquee.width;
       this.marquee.setScale(s);
     }

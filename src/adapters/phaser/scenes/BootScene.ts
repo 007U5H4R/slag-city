@@ -10,6 +10,7 @@ export class BootScene extends Phaser.Scene {
     { key: 'hud8', type: 'image', url: '/assets/fonts/hud8.png' },
     { key: 'display16', type: 'image', url: '/assets/fonts/display16.png' },
     { key: 'marquee', type: 'image', url: '/assets/ui/marquee.png' },
+    { key: 'marquee-logo', type: 'image', url: '/assets/ui/marquee-logo.png' }, // background removed — floats over attract/intro art
     { key: 'hero', type: 'atlas', url: '/assets/atlases/hero.png', atlasJson: '/assets/atlases/hero.json' },
     { key: 'brawler', type: 'atlas', url: '/assets/atlases/brawler.png', atlasJson: '/assets/atlases/brawler.json' },
     { key: 'knife', type: 'atlas', url: '/assets/atlases/knife.png', atlasJson: '/assets/atlases/knife.json' },
