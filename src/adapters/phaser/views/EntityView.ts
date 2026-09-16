@@ -103,9 +103,10 @@ export class EntityViews {
         const move = isBody(e) ? dataFor(e.kind).moves[e.state] : undefined;
         const i = frameIndexFor(e, names.length, spec, move ? moveTotal(move) : undefined);
         v.setFrame(`${key}/${i}`);
-        // The hero atlas art faces LEFT by default; gang/boss/feral art faces RIGHT. Flip so the sprite
-        // always faces travel direction (facing 1 = right).
-        v.setFlipX(e.kind === 'hero' ? e.facing === 1 : e.facing === -1);
+        // ALL sprite atlases (hero + gang + boss + feral) are authored facing RIGHT, so flip only when the
+        // entity faces left (facing -1). (The hero used to have an inverted special-case that rendered it
+        // backward relative to travel — owner-reported; unified here. facing 1 = right, set in hero.ts.)
+        v.setFlipX(e.facing === -1);
         // Flash = solid white silhouette (hit feedback); otherwise apply the palette-swap variant tint
         // (VARIANT_TINT[0] = 0xffffff = neutral, so variant-0 entities and the hero are untinted).
         if (e.flashFrames > 0) v.setTintFill(0xffffff);
