@@ -1,28 +1,21 @@
 // Regression scar for the SLAGJAW dialogue overflow (2026-09-17): the boss-encounter dialogue box
-// (BossDialogue.BOX, 58px tall) renders at most TWO text rows. A line written with 3+ rows (2+ "\n")
-// spills below the frame — which is exactly what shipped and had to be split. This guards BOSS_SCRIPTS
-// against it mechanically, in `npm run check`, so a future 3-row line fails the gate instead of the eye.
-//
-// It reads the source as text (rather than importing the module) on purpose: BossDialogue pulls in Phaser
-// via ScifiFrame, which does not load in the node test environment. The invariant lives in the literal
-// data, so a text check over the `text: '…'` literals is both sufficient and Phaser-free.
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+// (BossDialogue.BOX, 58px tall) renders at most TWO text rows. A line written with 3+ rows spills below the
+// frame — which is exactly what shipped and had to be split. Asserts on the REAL script data (not a regex over
+// the source), so a line can't dodge it by using double quotes or a template literal.
 import { describe, it, expect } from 'vitest';
+import { BOSS_SCRIPTS } from '@adapters/phaser/screens/BossDialogue';
+import { BOSS_WAVES } from '@core/entities/boss';
 
-const SRC = fileURLToPath(new URL('../../src/adapters/phaser/screens/BossDialogue.ts', import.meta.url));
 const MAX_ROWS = 2; // BossDialogue.BOX holds two rows; keep in sync if the box height changes.
 
 describe('BossDialogue scripts fit the dialogue box', () => {
   it(`no dialogue line exceeds ${MAX_ROWS} rows (would overflow BOX)`, () => {
-    const src = readFileSync(SRC, 'utf8');
-    // Every speaker line is `text: '…'` — capture the single-quoted literal (with escape handling).
-    const lines = [...src.matchAll(/text:\s*'((?:[^'\\]|\\.)*)'/g)].map((m) => m[1]!);
-    expect(lines.length).toBeGreaterThan(0); // sanity: the regex actually found the scripts
-    const tooTall = lines
-      .map((t) => ({ text: t, rows: (t.match(/\\n/g)?.length ?? 0) + 1 }))
-      .filter((l) => l.rows > MAX_ROWS);
-    expect(tooTall, `these lines render >${MAX_ROWS} rows and will spill out of the box:\n` +
-      tooTall.map((l) => `  (${l.rows} rows) "${l.text}"`).join('\n')).toEqual([]);
+    const lines = BOSS_SCRIPTS.flatMap((s) => [...s.pre, ...s.defeat].map((l) => ({ boss: s.name, who: l.who, text: l.text, rows: l.text.split('\n').length })));
+    expect(lines.length).toBeGreaterThan(0);
+    expect(lines.filter((l) => l.rows > MAX_ROWS)).toEqual([]);
+  });
+  it('has exactly one script per boss wave (GameScene indexes BOSS_SCRIPTS by wave)', () => {
+    expect(BOSS_SCRIPTS.length).toBe(BOSS_WAVES.length);
+    for (const s of BOSS_SCRIPTS) { expect(s.pre.length).toBeGreaterThan(0); expect(s.defeat.length).toBeGreaterThan(0); }
   });
 });
