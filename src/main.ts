@@ -19,7 +19,7 @@ void openHiScores();
 preloadUiFont(); // fetch the modern UI font (Roboto Mono) so Text renders in it, not a fallback
 
 // Product analytics (Mixpanel). No-op unless VITE_MIXPANEL_TOKEN is set; funnel step 1 = landed the page.
-initAnalytics();
+void initAnalytics(); // lazy-loads the SDK; track() calls made meanwhile are queued
 track(EVENTS.PAGE_LOADED);
 
 const cabinet = installCabinet();
