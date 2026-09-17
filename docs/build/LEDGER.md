@@ -690,6 +690,16 @@ Three owner requests after the narrative rework, each shipped to prod as its own
 - `8037af7` README added (marquee logo).
 - **Critique run 2 (whole product, dual-agent): 22/40 "Acceptable"** vs run 1's 31/40 — a different, harsher reviewer with mobile + first-visitor conversion in scope, not a regression from the fixes; LLM-judged scores are not comparable run-to-run. Snapshot `.impeccable/critique/2026-09-17T06-24-44Z__slag-city-vercel-app.md`. Open P1s: attract CTA cropped by the Controls panel and never says "press 5 / free"; no pause/exit/in-game help; mobile renders at k=1 with keyboard legend and controls over the playfield. P2s: cabinet costs a scale step on laptops; seams/stale copy/contrast (BossDialogue prompt 4.18:1, pips, no reduced-motion).
 
+### Critique run 2 sweep shipped (2026-09-17, prod merge `6feca43`)
+Owner answers: attract CTA first · keep the coin ritual but make it obviously free · do everything. One commit per item:
+- `7ed59fb` **CTA + device copy** — prompt moved below the Controls panel onto its own plate, 12px UI font, "PRESS 5 — INSERT COIN · FREE PLAY" / "TAP COIN", pulses instead of blinking off; `views/device-copy.ts` is the single source for "which button" wording (J / ATK, 5 / COIN, Enter / START); CONTINUE honours banked credits; clear card reads CHAPTER ONE CLEAR; intro box shortened so prompt + pips sit below it; boss-dialogue prompt contrast 4.18 → 6.7:1.
+- `4dc981e` **Pause + help** — `PausePanel` (P / Esc / Enter / gamepad Start / mobile pill) carries the control legend + CRT/volume/fullscreen(F); `<body data-screen>` drives which touch buttons show; `seenStory` setting → returning players open on the last intro slide and can hold-skip boss dialogue.
+- `97304fe` **Mobile** — `computeMobileScale` renders at device density (k=2..3, was k=1 stretched); rotate card has the logo and can be tapped through (portrait play); touch overlay is a labelled group with keyboard/switch activation.
+- `18b8ace` **Adaptive cabinet** — `chooseCabinet` drops marquee + panel when that gains a scale step (1440×780: ×2 → ×3, confirmed on prod). Rows are collapsed, not display:none'd (that pushed the bezel into a 0-height grid row).
+- `7d8aca9` **Seams** — boss name-card suppressed (dialogue names the boss), boss bar hot palette, speaker label YOU, size-coded pips, new narrow-window gate copy + pause while gated + `#room[hidden]`, prefers-reduced-motion (no shake, steady lasers), Roboto Mono 400 loaded, initials hold-repeat, meta/OG copy, web manifest + generated icons.
+- Gate: 143 unit tests, e2e 2/2, each item browser-checked (screenshots `docs/verification/critique2/10–19`). **Not seen rendered:** boss bar palette, YOU label, GAME OVER card, outro — all need a boss fight / a death. **Not done from the critique:** CREDIT dimming during play, START-with-0-credits feedback, initials back-step, laser colour (owner-chosen), ScifiFrame mood variants, key remapping, `(pointer: coarse)` on a real touchscreen laptop.
+- Slip caught before push: `git add docs/verification` swept 35 old untracked screenshots into a commit; reset and re-committed with explicit paths. **Always stage explicit paths in this repo.**
+
 _Phases D–G expand here as reached._
 
 ## Open threads / parked items
