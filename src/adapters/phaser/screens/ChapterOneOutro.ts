@@ -11,7 +11,7 @@ import { UI_FONT } from '../views/ui-font';
 import { ScifiFrame } from '../views/scifi-frame';
 import { blinkOn } from '@core/arcade/screen-machine';
 
-const BRASS = '#d7a94a', TEXT = '#d8cbb0', DIM = '#8a7f6a', RED = '#ff3b6b';
+const BRASS = '#d7a94a', TEXT = '#d8cbb0', DIM = '#b0a488', RED = '#ff3b6b';
 
 const BOX = { x: 34, y: 34, w: BASE_W - 68, h: BASE_H - 68 };
 const CX = BOX.x + BOX.w / 2;                 // horizontal centre
@@ -66,7 +66,7 @@ export class ChapterOneOutro {
     // slide pips along the bottom
     const g = this.pips; g.clear();
     const n = SLIDES.length, px = CX - (n * 8) / 2;
-    for (let k = 0; k < n; k++) g.fillStyle(k === i ? 0x2fd4d4 : 0x1b5a5e, 1).fillRect(px + k * 8, BASE_H - 12, 5, 2);
+    for (let k = 0; k < n; k++) g.fillStyle(k === i ? 0x2fd4d4 : 0x2f6b70, 1).fillRect(px + k * 8, BASE_H - 12, 5, 2);
   }
 
   setSlide(i: number): void { if (this.active) this.layout(Math.max(0, Math.min(SLIDES.length - 1, i))); }
@@ -81,7 +81,7 @@ export class ChapterOneOutro {
   step(frame: number, slide: number): void {
     if (!this.active) return;
     const last = slide >= SLIDES.length - 1;
-    this.prompt.setText(blinkOn(frame) ? (last ? 'PRESS ATTACK' : 'PRESS ATTACK  ▸') : '');
+    this.prompt.setText(blinkOn(frame) ? (last ? 'PRESS ATTACK' : 'PRESS ATTACK ▸    ·    HOLD TO SKIP') : '');
   }
 
   hide(): void {

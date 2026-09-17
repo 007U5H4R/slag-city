@@ -95,6 +95,7 @@ export class GameScene extends Phaser.Scene {
   private outro!: ChapterOneOutro;
   private outroActive = false;
   private outroSlide = 0;
+  private skipHeld = 0; // frames ATTACK has been held during the intro/outro; past SKIP_HOLD_FRAMES, skip it
   private audio!: AudioAdapter;
   private prevScreen = '';
   // Hi-scores (ticket 19.4): the live table, loaded from the kv at boot and re-saved on a qualifying entry.
@@ -212,6 +213,14 @@ export class GameScene extends Phaser.Scene {
       }
     }
     if (coin && this.arcade.screen === 'PLAY' && this.world.stage.heroDead) reviveHero(this.world); // coin-continue
+    // Hold ATTACK to skip the long reading walls (intro + chapter-one outro). Boss taunts stay tap-to-advance
+    // (short, and finishing one has side effects). Fires once when the hold crosses the threshold.
+    const SKIP_HOLD_FRAMES = 35;
+    this.skipHeld = (this.storyActive || this.outroActive) && input.attack ? this.skipHeld + 1 : 0;
+    if (this.skipHeld === SKIP_HOLD_FRAMES) {
+      if (this.storyActive) { this.storyActive = false; this.story.hide(); }
+      else if (this.outroActive) { this.outroActive = false; this.outro.hide(); this.arcade = reduceArcade(this.arcade, { type: 'bossDefeated' }); }
+    }
     // Noir intro: ATTACK advances a slide; past the last one the sim is released and gameplay begins.
     if (this.storyActive && confirm) {
       this.storySlide += 1;

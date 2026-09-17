@@ -12,7 +12,7 @@ import { UI_FONT } from '../views/ui-font';
 import { ScifiFrame } from '../views/scifi-frame';
 import { blinkOn } from '@core/arcade/screen-machine';
 
-const BRASS = '#d7a94a', TEXT = '#d8cbb0', DIM = '#8a7f6a', CY = 0x2fd4d4, CY_HI = 0x8ff7f2;
+const BRASS = '#d7a94a', TEXT = '#d8cbb0', DIM = '#b0a488', CY = 0x2fd4d4, CY_HI = 0x8ff7f2;
 
 // Layout: hero portrait panel on the left, dialogue box on the right.
 const PORT = { x: 14, y: 30, w: 104, h: 164 };            // portrait frame
@@ -103,7 +103,7 @@ export class StoryIntro {
     g.lineBetween(PORT.x + PORT.w, PORT.y + PORT.h - 12, PORT.x + PORT.w, PORT.y + PORT.h);
     // slide pips under the box
     const n = SLIDES.length, px = TCX - (n * 8) / 2;
-    for (let k = 0; k < n; k++) g.fillStyle(k === i ? CY : 0x1b5a5e, 1).fillRect(px + k * 8, BASE_H - 12, 5, 2);
+    for (let k = 0; k < n; k++) g.fillStyle(k === i ? CY : 0x2f6b70, 1).fillRect(px + k * 8, BASE_H - 12, 5, 2);
   }
 
   setSlide(i: number): void { if (this.active) this.layout(Math.max(0, Math.min(SLIDES.length - 1, i))); }
@@ -120,7 +120,7 @@ export class StoryIntro {
   step(frame: number, slide: number): void {
     if (!this.active) return;
     const last = slide >= SLIDES.length - 1;
-    this.prompt.setText(blinkOn(frame) ? (last ? 'PRESS ATTACK TO BEGIN' : 'PRESS ATTACK  ▸') : '');
+    this.prompt.setText(blinkOn(frame) ? (last ? 'PRESS ATTACK TO BEGIN' : 'PRESS ATTACK ▸    ·    HOLD TO SKIP') : '');
   }
 
   hide(): void {
