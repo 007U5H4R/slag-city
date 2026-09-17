@@ -13,6 +13,7 @@ import { ScifiFrame } from '../views/scifi-frame';
 
 const GOLD = '#f0c040', RED = '#e0503a', TEXT = '#e8dcc0', DIM = '#b8ac95';
 const BOX = { w: 320, h: 108 };
+const hex = (css: string): number => parseInt(css.slice(1), 16); // one source of truth for the mood colours
 
 export class GameOver {
   stageClear = false;
@@ -22,6 +23,7 @@ export class GameOver {
   private score: Phaser.GameObjects.Text;
   private prompt: Phaser.GameObjects.Text;
   private active = false;
+  private mood: boolean | null = null; // last drawn stageClear; the title + accent only redraw when it changes
   private readonly cx = BASE_W / 2;
   private readonly cy = BASE_H / 2;
 
@@ -40,7 +42,7 @@ export class GameOver {
 
   show(): void { this.active = true; }
   hide(): void {
-    this.active = false;
+    this.active = false; this.mood = null;
     this.frame.hide();
     for (const o of [this.title, this.score, this.prompt]) o.setVisible(false);
     this.accent.setVisible(false);
@@ -49,14 +51,16 @@ export class GameOver {
   step(arcade: ArcadeState, _n: number): void {
     if (!this.active) return;
     this.frame.show(true);
-    const colour = this.stageClear ? GOLD : RED;
-    const colourHex = this.stageClear ? 0xf0c040 : 0xe0503a;
-    // Mood accent: a soft colour bar under the title so STAGE CLEAR (gold) and GAME OVER (red) read differently.
-    const g = this.accent; g.clear(); g.setVisible(true);
-    g.fillStyle(colourHex, 0.18).fillRect(this.cx - 92, this.cy - 15, 184, 8);
-    g.fillStyle(colourHex, 0.9).fillRect(this.cx - 70, this.cy - 12, 140, 2);
-
-    this.title.setText(this.stageClear ? 'STAGE CLEAR!' : 'GAME OVER').setColor(colour).setVisible(true);
+    // Title + mood accent (a soft colour bar under the title: gold STAGE CLEAR vs red GAME OVER) only change
+    // with `stageClear`, so draw them once per mood rather than every frame.
+    if (this.mood !== this.stageClear) {
+      this.mood = this.stageClear;
+      const colour = this.stageClear ? GOLD : RED;
+      const g = this.accent; g.clear(); g.setVisible(true);
+      g.fillStyle(hex(colour), 0.18).fillRect(this.cx - 92, this.cy - 15, 184, 8);
+      g.fillStyle(hex(colour), 0.9).fillRect(this.cx - 70, this.cy - 12, 140, 2);
+      this.title.setText(this.stageClear ? 'STAGE CLEAR!' : 'GAME OVER').setColor(colour).setVisible(true);
+    }
     this.score.setText(`FINAL SCORE   ${String(arcade.finalScore).padStart(6, '0')}`).setVisible(true);
     // Honest prompt: START advances to the ranking; a coin (when none banked) starts a fresh game after entry.
     const prompt = this.stageClear
