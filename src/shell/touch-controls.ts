@@ -72,6 +72,9 @@ export function installTouchControls(): void {
     }
   }
 
+  // Pause pill: not part of the InputFrame — it asks the scene to toggle the player's pause.
+  document.getElementById('b-pause')?.addEventListener('pointerdown', (e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent('slag:pause')); });
+
   // Backstops: if capture failed and the finger lifted over something else, the control never saw its pointerup.
   window.addEventListener('pointerup', (e) => releasePointer(e.pointerId));
   window.addEventListener('pointercancel', (e) => releasePointer(e.pointerId));

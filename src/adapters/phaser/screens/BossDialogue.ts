@@ -63,9 +63,9 @@ export class BossDialogue {
     this.line.setText(l.text);
   }
 
-  step(frame: number): void {
+  step(frame: number, skippable = false): void {
     if (!this.active) return;
-    this.prompt.setText(`${this.attackWord} ▸`).setAlpha(blinkOn(frame) ? 1 : 0.5); // pulse, never vanish
+    this.prompt.setText(skippable ? `${this.attackWord} ▸  ·  HOLD TO SKIP` : `${this.attackWord} ▸`).setAlpha(blinkOn(frame) ? 1 : 0.5); // pulse, never vanish
   }
 
   hide(): void {

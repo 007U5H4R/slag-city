@@ -41,6 +41,7 @@ import { HiScoreEntry } from '../screens/HiScoreEntry';
 import { Controls } from '../screens/Controls';
 import { StoryIntro } from '../screens/StoryIntro';
 import { ChapterOneOutro } from '../screens/ChapterOneOutro';
+import { PausePanel } from '../screens/PausePanel';
 import { BossDialogue, BOSS_SCRIPTS } from '../screens/BossDialogue';
 import { BossHealthBar } from '../views/BossHealthBar';
 import { encodeInput } from '@core/input-codec';
@@ -52,6 +53,8 @@ import { createEntry, reduceEntry, entryText } from '@core/arcade/initials';
 import type { EntryState } from '@core/arcade/initials';
 import { loadTable, saveTable } from '@shell/hiscore-store';
 import { AudioAdapter } from '../audio/AudioAdapter';
+
+const PLAYER_PAUSE = 'PAUSED BY PLAYER';
 
 export class GameScene extends Phaser.Scene {
   world!: WorldState;
@@ -97,6 +100,9 @@ export class GameScene extends Phaser.Scene {
   private outroActive = false;
   private outroSlide = 0;
   private holdSkip: HoldSkip = createHoldSkip(); // hold-ATTACK-to-skip timing for the intro/outro (time-based, see hold-skip.ts)
+  private pausePanel!: PausePanel;
+  private returning = false; // this browser has finished the intro before → short intro, skippable boss dialogue
+  private domScreen = '';    // last value mirrored to <body data-screen> (drives which touch buttons show)
   private portraitQuery: MediaQueryList | null = null; // mobile only — see syncOrientation
   private lastUpdateAt = 0; // performance.now() of the previous update — Phaser's `delta` is smoothed/capped, NOT wall-clock
   private audio!: AudioAdapter;
@@ -159,6 +165,7 @@ export class GameScene extends Phaser.Scene {
     this.controls = new Controls(this);
     this.story = new StoryIntro(this);
     this.outro = new ChapterOneOutro(this);
+    this.pausePanel = new PausePanel(this);
     this.bossTalk = new BossDialogue(this);
     this.bossBar = new BossHealthBar(this);
     this.audio = new AudioAdapter(this, getSetting('volume'));
@@ -183,7 +190,12 @@ export class GameScene extends Phaser.Scene {
     // Black plate for the lava-stage scene cut — above everything so the flash reads as a full hard cut.
     this.sceneCut = this.add.rectangle(BASE_W / 2, BASE_H / 2, BASE_W, BASE_H, 0x000000, 0)
       .setDepth(5000).setVisible(false);
-    this.game.events.on(Phaser.Core.Events.HIDDEN, () => this.pause('PAUSED'));
+    this.game.events.on(Phaser.Core.Events.HIDDEN, () => { if (!this.paused) this.pause('PAUSED'); }); // never downgrade a player pause to an auto-resuming one
+    // Player pause: P / Esc (and Enter / gamepad Start, handled in update) on desktop, the II pill on mobile.
+    this.input.keyboard?.on('keydown-P', () => this.togglePlayerPause());
+    this.input.keyboard?.on('keydown-ESC', () => this.togglePlayerPause());
+    window.addEventListener('slag:pause', () => this.togglePlayerPause());
+    this.input.keyboard?.on('keydown-F', () => { if (!import.meta.env.DEV) void (document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()).catch(() => undefined); });
     this.game.events.on(Phaser.Core.Events.VISIBLE, () => { if (this.pauseReason === 'PAUSED') { this.resume(); this.syncOrientation(); } });
     // Mobile: the portrait "rotate to landscape" card hides the controls, so freeze the game under it —
     // otherwise the hero is beaten and the CONTINUE countdown expires where the player can't see it.
@@ -201,8 +213,27 @@ export class GameScene extends Phaser.Scene {
     setSetting('crt', on);
   }
 
+  // Advance the boss exchange one line (or, on a hold-skip, straight to its end) and run what finishing it means.
+  private advanceBossTalk(toEnd: boolean): void {
+    let done = this.bossTalk.advance();
+    while (toEnd && !done) done = this.bossTalk.advance();
+    if (!done) { this.sfx('coin'); return; }
+    if (this.bossTalkKind !== 'defeat') { this.bossTalkKind = null; return; } // taunt done → FIGHT
+
+    if (this.pendingNextWave) {
+      this.pendingNextWave = false; this.bossWave += 1;
+      for (let i = this.world.entities.length - 1; i >= 0; i--) if (this.world.entities[i]!.kind === 'boss') this.world.entities.splice(i, 1); // clear the fallen enforcer
+      spawnBoss(this.world, this.world.camera.x + 300, 176, BOSS_WAVES[this.bossWave]);
+      this.bossTalkKind = 'prefight'; this.bossTalk.start(BOSS_SCRIPTS[this.bossWave]!.pre); this.sfx('coin');
+    } else if (this.pendingBossDefeat) {
+      // Kilvish is down — roll into the chapter-one epilogue, which fires STAGE CLEAR when dismissed.
+      this.pendingBossDefeat = false; this.bossTalkKind = null; this.bossActive = false;
+      this.outroActive = true; this.outroSlide = 0; this.outro.show(0); this.sfx('coin');
+    }
+  }
+
   // The ONE place each reading screen ends — reached by tapping past the last slide or by hold-to-skip.
-  private finishIntro(): void { this.storyActive = false; this.story.hide(); } // releases the frozen sim
+  private finishIntro(): void { this.storyActive = false; this.story.hide(); setSetting('seenStory', true); } // releases the frozen sim; next run gets the short intro
   private finishOutro(): void {
     this.outroActive = false; this.outro.hide();
     this.arcade = reduceArcade(this.arcade, { type: 'bossDefeated' }); // the deferred STAGE CLEAR
@@ -214,14 +245,32 @@ export class GameScene extends Phaser.Scene {
     else if (this.pauseReason === 'ROTATE DEVICE') this.resume();
   }
 
-  pause(reason: string): void { this.paused = true; this.pauseReason = reason; this.pauseText.setText(reason).setVisible(true); this.audio?.mute(true); }
-  resume(): void { this.paused = false; this.pauseReason = null; this.pauseText.setVisible(false); resetFixedStep(this.fixed); this.audio?.mute(false); }
+  pause(reason: string): void {
+    this.paused = true; this.pauseReason = reason; this.audio?.mute(true);
+    if (reason === PLAYER_PAUSE) { this.pausePanel.show(); this.pauseText.setVisible(false); }
+    else this.pauseText.setText(reason).setVisible(true);
+    document.body.dataset.paused = reason === PLAYER_PAUSE ? 'player' : 'auto';
+  }
+  resume(): void {
+    this.paused = false; this.pauseReason = null; this.pauseText.setVisible(false); this.pausePanel.hide();
+    resetFixedStep(this.fixed); this.audio?.mute(false); delete document.body.dataset.paused;
+  }
+  // The player's own pause: only while a game is in progress, and only the player's pause is theirs to lift.
+  private togglePlayerPause(): void {
+    if (this.paused) { if (this.pauseReason === PLAYER_PAUSE) this.resume(); return; }
+    if (this.arcade.screen === 'PLAY') this.pause(PLAYER_PAUSE);
+  }
 
   override update(_time: number, delta: number): void {
-    if (this.paused) return;
     const input = composeInput([this.keyboard, this.gamepad, this.touch]);
-    const coin = input.coin && !this.prevInput.coin;
     const start = input.start && !this.prevInput.start;
+    // START (Enter / gamepad Start) is the pause button during play — it does nothing else there — and lifts a
+    // player pause. Read before the paused early-return so a paused game can still hear it.
+    if (start && (this.pauseReason === PLAYER_PAUSE || (!this.paused && this.arcade.screen === 'PLAY'))) {
+      this.togglePlayerPause(); this.prevInput = input; return;
+    }
+    if (this.paused) { this.prevInput = input; return; }
+    const coin = input.coin && !this.prevInput.coin;
     // Edge-triggered initials-entry controls (HISCORE_ENTRY): up/down cycle the active letter, attack confirms.
     const up = input.up && !this.prevInput.up;
     const down = input.down && !this.prevInput.down;
@@ -234,7 +283,7 @@ export class GameScene extends Phaser.Scene {
       this.arcade = reduceArcade(this.arcade, { type: 'start' });
       if (this.arcade.screen === 'PLAY' && before !== 'PLAY') {
         if (before === 'CONTINUE') reviveHero(this.world);
-        else { this.worldSeed = Date.now() >>> 0; this.world = newGameWorld(this.worldSeed); this.storyActive = true; this.storySlide = 0; this.story.show(0); this.bossTalk.hide(); this.bossTalkKind = null; this.bossWave = 0; this.bossActive = false; this.pendingNextWave = false; this.pendingBossDefeat = false; this.outro.hide(); this.outroActive = false; this.outroSlide = 0; track(EVENTS.GAME_STARTED); } // fresh game → play the noir intro first, re-arm the boss gauntlet + clear the chapter-one outro; funnel: "played"
+        else { this.worldSeed = Date.now() >>> 0; this.world = newGameWorld(this.worldSeed); this.returning = getSetting('seenStory'); this.storyActive = true; this.storySlide = this.returning ? this.story.count - 1 : 0; this.story.show(this.storySlide); this.bossTalk.hide(); this.bossTalkKind = null; this.bossWave = 0; this.bossActive = false; this.pendingNextWave = false; this.pendingBossDefeat = false; this.outro.hide(); this.outroActive = false; this.outroSlide = 0; track(EVENTS.GAME_STARTED); } // fresh game → play the noir intro first, re-arm the boss gauntlet + clear the chapter-one outro; funnel: "played"
         this.sfx('start');
       }
     }
@@ -247,9 +296,11 @@ export class GameScene extends Phaser.Scene {
     const nowMs = performance.now();
     const realDt = this.lastUpdateAt ? nowMs - this.lastUpdateAt : 0;
     this.lastUpdateAt = nowMs;
-    const skip = stepHoldSkip(this.holdSkip, this.storyActive || this.outroActive, input.attack, realDt);
+    // Boss exchanges become hold-skippable too once this browser has seen the story (a returning player).
+    const skippable = this.storyActive || this.outroActive || (this.bossTalk.active && this.returning);
+    const skip = stepHoldSkip(this.holdSkip, skippable, input.attack, realDt);
     this.holdSkip = skip.state;
-    if (skip.fire) { if (this.storyActive) this.finishIntro(); else if (this.outroActive) this.finishOutro(); }
+    if (skip.fire) { if (this.storyActive) this.finishIntro(); else if (this.outroActive) this.finishOutro(); else if (this.bossTalk.active) this.advanceBossTalk(true); }
     // Noir intro: ATTACK advances a slide; past the last one the sim is released and gameplay begins.
     if (this.storyActive && confirm) {
       this.storySlide += 1;
@@ -275,21 +326,7 @@ export class GameScene extends Phaser.Scene {
     }
     // ATTACK advances the exchange. Finishing a defeat exchange either spawns the next wave (sub-boss) or
     // releases the deferred STAGE CLEAR (final boss); finishing a taunt just resumes the fight.
-    if (this.bossTalk.active && confirm) {
-      if (!this.bossTalk.advance()) this.sfx('coin');
-      else if (this.bossTalkKind === 'defeat') {
-        if (this.pendingNextWave) {
-          this.pendingNextWave = false; this.bossWave += 1;
-          for (let i = this.world.entities.length - 1; i >= 0; i--) if (this.world.entities[i]!.kind === 'boss') this.world.entities.splice(i, 1); // clear the fallen enforcer
-          spawnBoss(this.world, this.world.camera.x + 300, 176, BOSS_WAVES[this.bossWave]);
-          this.bossTalkKind = 'prefight'; this.bossTalk.start(BOSS_SCRIPTS[this.bossWave]!.pre); this.sfx('coin');
-        } else if (this.pendingBossDefeat) {
-          // Kilvish is down — roll into the chapter-one epilogue, which fires STAGE CLEAR when dismissed.
-          this.pendingBossDefeat = false; this.bossTalkKind = null; this.bossActive = false;
-          this.outroActive = true; this.outroSlide = 0; this.outro.show(0); this.sfx('coin');
-        }
-      } else this.bossTalkKind = null; // taunt done → FIGHT
-    }
+    if (this.bossTalk.active && confirm) this.advanceBossTalk(false);
     const steps = advanceFixedStep(this.fixed, delta, () => {
       // If the hero and a sub-boss fell on the same tick, the boss's dying exchange plays over CONTINUE: hold the
       // countdown while the player reads it, so it can't expire underneath the dialogue.
@@ -393,6 +430,7 @@ export class GameScene extends Phaser.Scene {
 
   private renderScreens(steps: number): void {
     const scr = this.arcade.screen;
+    if (scr !== this.domScreen) { this.domScreen = scr; document.body.dataset.screen = scr; } // CSS shows COIN/START / the pause pill only where they act
     const attractActive = scr === 'ATTRACT' || scr === 'COIN';
 
     // Hard cut into the lava/boss-pit stage: fire once, the first frame the play world reaches the boss door,
@@ -423,7 +461,7 @@ export class GameScene extends Phaser.Scene {
     this.debug.draw(world);
 
     this.story.step(this.arcade.screenFrame, this.storySlide); // noir intro prompt blink (no-op when inactive)
-    this.bossTalk.step(this.arcade.screenFrame);                // boss dialogue prompt blink (no-op when inactive)
+    this.bossTalk.step(this.arcade.screenFrame, this.returning);                // boss dialogue prompt blink (no-op when inactive)
     this.outro.step(this.arcade.screenFrame, this.outroSlide);  // chapter-one outro prompt blink (no-op when inactive)
     const inGame = (scr === 'PLAY' || scr === 'CONTINUE') && !this.storyActive && !this.outroActive; // no HUD bleeding through the intro/outro dim
     this.hud.setVisible(inGame);

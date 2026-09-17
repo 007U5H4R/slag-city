@@ -19,6 +19,7 @@ describe('settings', () => {
   it('returns defaults when nothing is stored', () => {
     expect(getSetting('crt')).toBe(true);
     expect(getSetting('volume')).toBe(0.8);
+    expect(getSetting('seenStory')).toBe(false);
   });
   it('round-trips values', () => {
     setSetting('crt', false); setSetting('volume', 0.25);
