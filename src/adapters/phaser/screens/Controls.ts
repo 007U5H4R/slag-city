@@ -5,15 +5,16 @@ import type Phaser from 'phaser';
 import { BASE_W } from '@shell/scale';
 import { UI_FONT } from '../views/ui-font';
 import { ScifiFrame } from '../views/scifi-frame';
+import { deviceCopy } from '../views/device-copy';
 
 const TEXT = '#cdbfa6', BRASS = '#b08d3c';
-const LINES = [
-  'MOVE   ARROWS / WASD',
-  'ATTACK  J      JUMP  K      SPECIAL  L',
-  'INSERT COIN  5        START  ENTER',
-  'CRT  C        VOLUME  − / =',
-];
-const TOP = 118, LINE_H = 13;
+// The line a newcomer needs RIGHT NOW (how to get a credit and start) comes first. Utilities (CRT, volume, pause)
+// are not taught here — they live on the pause panel, where they're wanted.
+export const CONTROL_LINES = {
+  desktop: ['INSERT COIN  5        START  ENTER', 'MOVE   ARROWS / WASD', 'ATTACK  J      JUMP  K      SPECIAL  L'],
+  mobile: ['COIN  +  START    TOP RIGHT', 'MOVE    D-PAD    LEFT THUMB', 'ATK  ATTACK     JUMP     SPEC  SPECIAL'],
+};
+const TOP = 112, LINE_H = 13;
 
 export class Controls {
   private frame: ScifiFrame;
@@ -23,6 +24,7 @@ export class Controls {
 
   constructor(scene: Phaser.Scene) {
     const cx = BASE_W / 2;
+    const LINES = deviceCopy(scene).mobile ? CONTROL_LINES.mobile : CONTROL_LINES.desktop;
     const h = LINE_H * LINES.length + 28;
     this.frame = new ScifiFrame(scene, 3049);
     this.frame.draw(cx - 168, TOP - 16, 336, h);

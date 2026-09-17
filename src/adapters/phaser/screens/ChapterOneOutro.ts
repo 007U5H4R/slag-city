@@ -10,6 +10,7 @@ import { BASE_W, BASE_H } from '@shell/scale';
 import { UI_FONT } from '../views/ui-font';
 import { ScifiFrame } from '../views/scifi-frame';
 import { blinkOn } from '@core/arcade/screen-machine';
+import { deviceCopy } from '../views/device-copy';
 
 const BRASS = '#d7a94a', TEXT = '#d8cbb0', DIM = '#b0a488', RED = '#ff3b6b';
 
@@ -35,10 +36,12 @@ export class ChapterOneOutro {
   private body: Phaser.GameObjects.Text;
   private prompt: Phaser.GameObjects.Text;
   private active = false;
+  private attackWord: string;
   readonly count = SLIDES.length;
 
   constructor(scene: Phaser.Scene) {
     const D = 3200;
+    this.attackWord = deviceCopy(scene).attack;
     this.dim = scene.add.rectangle(BASE_W / 2, BASE_H / 2, BASE_W, BASE_H, 0x03060a, 0.92)
       .setDepth(D).setVisible(false);
     this.frame = new ScifiFrame(scene, D);
@@ -81,7 +84,7 @@ export class ChapterOneOutro {
   step(frame: number, slide: number): void {
     if (!this.active) return;
     const last = slide >= SLIDES.length - 1;
-    this.prompt.setText(blinkOn(frame) ? (last ? 'PRESS ATTACK' : 'PRESS ATTACK ▸    ·    HOLD TO SKIP') : '');
+    this.prompt.setText(last ? this.attackWord : `${this.attackWord} ▸    ·    HOLD TO SKIP`).setAlpha(blinkOn(frame) ? 1 : 0.5); // pulse, never vanish
   }
 
   hide(): void {
