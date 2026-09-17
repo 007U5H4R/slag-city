@@ -97,6 +97,7 @@ export class GameScene extends Phaser.Scene {
   private outroActive = false;
   private outroSlide = 0;
   private holdSkip: HoldSkip = createHoldSkip(); // hold-ATTACK-to-skip timing for the intro/outro (time-based, see hold-skip.ts)
+  private portraitQuery: MediaQueryList | null = null; // mobile only — see syncOrientation
   private lastUpdateAt = 0; // performance.now() of the previous update — Phaser's `delta` is smoothed/capped, NOT wall-clock
   private audio!: AudioAdapter;
   private prevScreen = '';
@@ -129,7 +130,9 @@ export class GameScene extends Phaser.Scene {
     this.applyZoom((this.registry.get('scale') as number | undefined) ?? 1);
     this.game.events.on('rescale', (k: number) => this.applyZoom(k));
 
-    this.crtOn = getSetting('crt');
+    // Mobile renders at k=1, where the CRT scanline term darkens every row (-18%) and blurs at native 384px —
+    // and a phone has no C key to turn it off. So the CRT pass is desktop-only.
+    this.crtOn = getSetting('crt') && this.registry.get('mobile') !== true;
     enableCrt(this, this.crtOn);
     this.input.keyboard?.on('keydown-C', () => this.setCrt(!this.crtOn));
     if (new URLSearchParams(location.search).has('pattern')) this.scene.launch('pattern');
@@ -173,6 +176,7 @@ export class GameScene extends Phaser.Scene {
     this.gamepad.onDisconnect(() => this.pause('CONTROLLER DISCONNECTED'));
     this.gamepad.onConnect(() => this.resume());
     this.input.keyboard?.on('keydown', () => { if (this.pauseReason === 'CONTROLLER DISCONNECTED') this.resume(); });
+    this.input.on('pointerdown', () => { if (this.pauseReason === 'CONTROLLER DISCONNECTED') this.resume(); }); // touch devices have no keyboard
 
     this.pauseText = this.add.bitmapText(BASE_W / 2, BASE_H / 2, 'display16', '')
       .setOrigin(0.5).setDepth(1000).setVisible(false);
@@ -180,7 +184,14 @@ export class GameScene extends Phaser.Scene {
     this.sceneCut = this.add.rectangle(BASE_W / 2, BASE_H / 2, BASE_W, BASE_H, 0x000000, 0)
       .setDepth(5000).setVisible(false);
     this.game.events.on(Phaser.Core.Events.HIDDEN, () => this.pause('PAUSED'));
-    this.game.events.on(Phaser.Core.Events.VISIBLE, () => { if (this.pauseReason === 'PAUSED') this.resume(); });
+    this.game.events.on(Phaser.Core.Events.VISIBLE, () => { if (this.pauseReason === 'PAUSED') { this.resume(); this.syncOrientation(); } });
+    // Mobile: the portrait "rotate to landscape" card hides the controls, so freeze the game under it —
+    // otherwise the hero is beaten and the CONTINUE countdown expires where the player can't see it.
+    if (this.registry.get('mobile') === true) {
+      this.portraitQuery = window.matchMedia('(orientation: portrait)');
+      this.portraitQuery.addEventListener('change', () => this.syncOrientation());
+      this.syncOrientation();
+    }
   }
 
   setCrt(on: boolean): void {
@@ -195,6 +206,12 @@ export class GameScene extends Phaser.Scene {
   private finishOutro(): void {
     this.outroActive = false; this.outro.hide();
     this.arcade = reduceArcade(this.arcade, { type: 'bossDefeated' }); // the deferred STAGE CLEAR
+  }
+
+  private syncOrientation(): void {
+    if (!this.portraitQuery) return;
+    if (this.portraitQuery.matches) { if (!this.paused) this.pause('ROTATE DEVICE'); }
+    else if (this.pauseReason === 'ROTATE DEVICE') this.resume();
   }
 
   pause(reason: string): void { this.paused = true; this.pauseReason = reason; this.pauseText.setText(reason).setVisible(true); this.audio?.mute(true); }
@@ -248,8 +265,11 @@ export class GameScene extends Phaser.Scene {
       else { this.outro.setSlide(this.outroSlide); this.sfx('coin'); }
     }
     // Boss gauntlet (enforcers → Kilvish): freeze the fight for a pre-fight taunt the first frame the boss appears.
-    if (!this.storyActive && this.arcade.screen === 'PLAY' && !this.bossActive
-        && this.world.entities.some((e) => e.kind === 'boss')) {
+    // Only a LIVE boss arms it, and never while the outro is up: the outro defers the STAGE CLEAR transition, so
+    // the screen is still PLAY with bossActive=false and Kilvish's dying body still in the (frozen) world — which
+    // used to re-fire this and start GRIST's taunt underneath the outro.
+    if (!this.storyActive && !this.outroActive && !this.bossTalk.active && this.arcade.screen === 'PLAY' && !this.bossActive
+        && this.world.entities.some((e) => e.kind === 'boss' && e.state !== 'dying' && e.state !== 'dead')) {
       this.bossActive = true; this.bossWave = 0;
       this.bossTalkKind = 'prefight'; this.bossTalk.start(BOSS_SCRIPTS[this.bossWave]!.pre); this.sfx('coin');
     }
@@ -271,14 +291,21 @@ export class GameScene extends Phaser.Scene {
       } else this.bossTalkKind = null; // taunt done → FIGHT
     }
     const steps = advanceFixedStep(this.fixed, delta, () => {
+      // If the hero and a sub-boss fell on the same tick, the boss's dying exchange plays over CONTINUE: hold the
+      // countdown while the player reads it, so it can't expire underneath the dialogue.
+      const heldContinue = this.arcade.screen === 'CONTINUE' && this.bossTalk.active ? this.arcade.continueFrames : null;
       this.arcade = reduceArcade(this.arcade, { type: 'tick' });
+      if (heldContinue !== null && this.arcade.screen === 'CONTINUE') this.arcade = { ...this.arcade, continueFrames: heldContinue };
       if (this.arcade.screen !== 'PLAY') return;
       if (this.storyActive || this.bossTalk.active || this.outroActive) return; // freeze the world while the intro / boss dialogue / chapter-one outro plays
       tick(this.world, input);
       if (this.recording) this.recording.push(encodeInput(input)); // DEV attract-demo capture (19.3)
       this.arcade = reduceArcade(this.arcade, { type: 'score', score: this.world.score });
+      // A trade hit that kills the hero and Kilvish on the same tick is a WIN: if heroDead moved the machine to
+      // CONTINUE, the outro's deferred bossDefeated would be dropped (it only applies from PLAY) and STAGE CLEAR lost.
+      const finalBossDown = this.bossWave >= BOSS_WAVES.length - 1 && this.world.events.some((e) => e.type === 'bossDefeated');
       for (const ev of this.world.events) {
-        if (ev.type === 'heroDead') this.arcade = reduceArcade(this.arcade, { type: 'heroDead' });
+        if (ev.type === 'heroDead') { if (!finalBossDown) this.arcade = reduceArcade(this.arcade, { type: 'heroDead' }); }
         else if (ev.type === 'bossDefeated') {
           // Play this wave's dying exchange (freeze). A sub-boss defeat spawns the next wave on dismiss;
           // the final boss (Kilvish) holds STAGE CLEAR until dismiss (core already set stage.bossDefeated).
@@ -293,6 +320,13 @@ export class GameScene extends Phaser.Scene {
         else this.routeEvent(ev);
       }
     });
+    // Backstop: the story/dialogue/outro overlays belong to PLAY (and CONTINUE). If the machine has moved on by
+    // any path, take them down so they can never sit on top of GAME OVER or swallow the name-entry ATTACK.
+    if (this.arcade.screen !== 'PLAY' && this.arcade.screen !== 'CONTINUE') {
+      if (this.bossTalk.active) { this.bossTalk.hide(); this.bossTalkKind = null; }
+      if (this.outroActive) { this.outroActive = false; this.outro.hide(); }
+      if (this.storyActive) { this.storyActive = false; this.story.hide(); }
+    }
     this.updateHiScoreEntry({ up, down, confirm }, steps);
     this.renderScreens(steps);
   }
@@ -391,7 +425,7 @@ export class GameScene extends Phaser.Scene {
     this.story.step(this.arcade.screenFrame, this.storySlide); // noir intro prompt blink (no-op when inactive)
     this.bossTalk.step(this.arcade.screenFrame);                // boss dialogue prompt blink (no-op when inactive)
     this.outro.step(this.arcade.screenFrame, this.outroSlide);  // chapter-one outro prompt blink (no-op when inactive)
-    const inGame = (scr === 'PLAY' || scr === 'CONTINUE') && !this.storyActive;
+    const inGame = (scr === 'PLAY' || scr === 'CONTINUE') && !this.storyActive && !this.outroActive; // no HUD bleeding through the intro/outro dim
     this.hud.setVisible(inGame);
     if (inGame) {
       const hero = heroOf(this.world);
