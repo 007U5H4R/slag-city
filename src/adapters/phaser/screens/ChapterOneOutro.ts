@@ -69,7 +69,7 @@ export class ChapterOneOutro {
     // slide pips along the bottom
     const g = this.pips; g.clear();
     const n = SLIDES.length, px = CX - (n * 8) / 2;
-    for (let k = 0; k < n; k++) g.fillStyle(k === i ? 0x2fd4d4 : 0x2f6b70, 1).fillRect(px + k * 8, BASE_H - 12, 5, 2);
+    for (let k = 0; k < n; k++) { const on = k === i; g.fillStyle(on ? 0x2fd4d4 : 0x4a9aa0, 1).fillRect(px + k * 8, BASE_H - 12 - (on ? 1 : 0), on ? 6 : 4, on ? 4 : 2); } // active pip is bigger, not just brighter
   }
 
   setSlide(i: number): void { if (this.active) this.layout(Math.max(0, Math.min(SLIDES.length - 1, i))); }

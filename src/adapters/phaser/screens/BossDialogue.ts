@@ -59,7 +59,7 @@ export class BossDialogue {
 
   private render(): void {
     const l = this.lines[this.idx]!;
-    this.name.setText(l.who).setColor(l.who === 'HERO' ? HERO_COLOUR : BOSS_COLOUR);
+    this.name.setText(l.who === 'HERO' ? 'YOU' : l.who).setColor(l.who === 'HERO' ? HERO_COLOUR : BOSS_COLOUR);
     this.line.setText(l.text);
   }
 

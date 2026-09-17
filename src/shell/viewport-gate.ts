@@ -5,9 +5,9 @@ export const shouldGate = (viewportWidth: number): boolean => viewportWidth <= G
 const CARD_HTML = `
   <div class="gate-card" role="status">
     <img class="gate-logo" src="/assets/ui/marquee-small.png" alt="SLAG CITY" width="160" height="48" />
-    <h1>Desktop browser required</h1>
-    <p>Keyboard or gamepad only — this cabinet doesn't run on phones.</p>
-    <p>Visit on a desktop browser to play.</p>
+    <h1>This window is too narrow</h1>
+    <p>The cabinet needs at least 769px of width for keyboard or gamepad play.</p>
+    <p>Widen this window — or open it on a phone, where it plays with touch controls.</p>
   </div>`;
 
 /** Shows the card and hides the cabinet while the viewport is ≤ GATE_MAX_WIDTH. Returns a getter for the current state. */

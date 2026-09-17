@@ -101,6 +101,8 @@ export class GameScene extends Phaser.Scene {
   private outroSlide = 0;
   private holdSkip: HoldSkip = createHoldSkip(); // hold-ATTACK-to-skip timing for the intro/outro (time-based, see hold-skip.ts)
   private pausePanel!: PausePanel;
+  private entryHoldDir: 'up' | 'down' | null = null; private entryHoldMs = 0; private entryRepeatAt = 350; // initials hold-repeat
+  private reducedMotion = false; // prefers-reduced-motion: no screen shake, steady (non-flickering) lasers
   private returning = false; // this browser has finished the intro before → short intro, skippable boss dialogue
   private domScreen = '';    // last value mirrored to <body data-screen> (drives which touch buttons show)
   private portraitQuery: MediaQueryList | null = null; // mobile only — see syncOrientation
@@ -166,6 +168,7 @@ export class GameScene extends Phaser.Scene {
     this.story = new StoryIntro(this);
     this.outro = new ChapterOneOutro(this);
     this.pausePanel = new PausePanel(this);
+    try { this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { /* keep default */ }
     this.bossTalk = new BossDialogue(this);
     this.bossBar = new BossHealthBar(this);
     this.audio = new AudioAdapter(this, getSetting('volume'));
@@ -366,7 +369,13 @@ export class GameScene extends Phaser.Scene {
       if (this.outroActive) { this.outroActive = false; this.outro.hide(); }
       if (this.storyActive) { this.storyActive = false; this.story.hide(); }
     }
-    this.updateHiScoreEntry({ up, down, confirm }, steps);
+    // Initials entry: holding UP/DOWN repeats (after 350 ms, then every 90 ms) — "Z" used to be 25 separate presses.
+    const dir = input.up ? 'up' : input.down ? 'down' : null;
+    if (dir !== null && dir === this.entryHoldDir) this.entryHoldMs += realDt;
+    else { this.entryHoldDir = dir; this.entryHoldMs = 0; this.entryRepeatAt = 350; }
+    const repeat = dir !== null && this.entryHoldMs >= this.entryRepeatAt;
+    if (repeat) this.entryRepeatAt += 90;
+    this.updateHiScoreEntry({ up: up || (repeat && dir === 'up'), down: down || (repeat && dir === 'down'), confirm }, steps);
     this.renderScreens(steps);
   }
 
@@ -401,7 +410,9 @@ export class GameScene extends Phaser.Scene {
   // Cosmetic sim events (score pops, name-cards, weapon-break sparks); death/defeat are handled by the machine above.
   private routeEvent(ev: SimEvent): void {
     if (ev.type === 'score') this.pops.spawn(ev.amount, ev.x, ev.y);
-    else if (ev.type === 'namecard') this.nameCard.show(ENEMY_NAMES[ev.kind] ?? ev.kind.toUpperCase());
+    // Bosses are introduced by name in their dialogue (GRIST / SLAGJAW / KILVISH); the generic boss name-card
+    // ("THE FOREMAN", from the pre-rewrite fiction) slammed a second, different name over that reveal.
+    else if (ev.type === 'namecard') { if (ev.kind !== 'boss') this.nameCard.show(ENEMY_NAMES[ev.kind] ?? ev.kind.toUpperCase()); }
     else if (ev.type === 'weaponBreak') this.sparks.burst(ev.x, ev.y);
     else if (ev.type === 'sfx') this.audio.sfx(ev.id);
   }
@@ -455,7 +466,7 @@ export class GameScene extends Phaser.Scene {
 
     this.parallax.sync(world.camera.x, world.stage.sectionIndex, world.stage.bossDoorReached);
     this.hazards.draw(world);
-    this.lasers.draw(world.camera.x, world.frame);
+    this.lasers.draw(world.camera.x, this.reducedMotion ? 0 : world.frame);
     this.views.sync(world);
     this.pops.step(steps, world.camera.x);
     this.nameCard.step(steps);
@@ -502,7 +513,7 @@ export class GameScene extends Phaser.Scene {
     this.prevScreen = scr;
 
     const s = world.shake;
-    const off = s.frames > 0 ? (s.frames % 2 === 0 ? s.px : -s.px) : 0;
+    const off = s.frames > 0 && !this.reducedMotion ? (s.frames % 2 === 0 ? s.px : -s.px) : 0; // prefers-reduced-motion: no shake
     this.cameras.main.centerOn(BASE_W / 2 + off, BASE_H / 2);
   }
 

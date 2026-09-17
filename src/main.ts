@@ -51,6 +51,7 @@ const currentScale = (): number => {
   return pick.k;
 };
 
+const GATE_PAUSE = 'WINDOW TOO NARROW';
 let game: Phaser.Game | null = null;
 let lastK = currentScale();
 const boot = (): void => {
@@ -71,7 +72,12 @@ const boot = (): void => {
   });
 };
 // Desktop is gated below a keyboard-friendly width; mobile is never gated (it boots straight into touch play).
-const isGated: () => boolean = MOBILE ? () => false : installViewportGate((gated) => { if (!gated) boot(); });
+const isGated: () => boolean = MOBILE ? () => false : installViewportGate((gated) => {
+  if (!gated) boot();
+  // Narrowing the window mid-game hides the cabinet: freeze the fight instead of letting it run unseen.
+  const s = game?.scene.getScene('game') as GameScene | undefined;
+  if (s?.arcade) { if (gated) { if (!s.pauseReason) s.pause(GATE_PAUSE); } else if (s.pauseReason === GATE_PAUSE) s.resume(); }
+});
 if (MOBILE) boot();
 // Read-only test hook for the Playwright smoke (always present; harmless, no data leaves the page).
 function installTestHook(): void {

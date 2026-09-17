@@ -4,7 +4,6 @@
 // the live boss entity's hp/maxHp each frame while a boss is on screen. Matches Hud.ts + scifi-frame.ts.
 import type Phaser from 'phaser';
 import { healthBand } from '@core/arcade/hud';
-import { HUD_COLOURS } from './hud-colours';
 import { BASE_W } from '@shell/scale';
 
 const TEAL_PANEL = 0x06202a, CY = 0x2fd4d4, CY_HI = 0x8ff7f2, MAGENTA = 0xff3ea8;
@@ -39,7 +38,9 @@ export class BossHealthBar {
     // HP trough + fill (bar length is the primary cue, colour secondary)
     g.fillStyle(0x02090c, 0.9); g.fillRect(BAR.x - 1, BAR.y - 1, BAR.w + 2, BAR.h + 2);
     const band = healthBand(m.hp, m.maxHp);
-    const col = band === 'green' ? HUD_COLOURS.healthGreen : band === 'amber' ? HUD_COLOURS.healthAmber : HUD_COLOURS.healthRed;
+    // The boss bar sits 3px under the hero's: give it its own hot palette (molten orange → red, magenta in phase 2)
+    // so two stacked green bars can't be confused. Length stays the primary cue.
+    const col = m.phase2 ? MAGENTA : band === 'red' ? 0xe0503a : band === 'amber' ? 0xff7a2a : 0xffa53a;
     const fill = Math.round(BAR.w * Math.max(0, Math.min(1, m.hp / Math.max(1, m.maxHp))));
     g.fillStyle(col, 1); g.fillRect(BAR.x, BAR.y, fill, BAR.h);
     for (let x = BAR.x + 16; x < BAR.x + fill; x += 16) { g.fillStyle(TEAL_PANEL, 1); g.fillRect(x, BAR.y, 1, BAR.h); } // segment ticks

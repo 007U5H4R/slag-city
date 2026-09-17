@@ -106,7 +106,7 @@ export class StoryIntro {
     g.lineBetween(PORT.x + PORT.w, PORT.y + PORT.h - 12, PORT.x + PORT.w, PORT.y + PORT.h);
     // slide pips under the box
     const n = SLIDES.length, px = TCX - (n * 8) / 2;
-    for (let k = 0; k < n; k++) g.fillStyle(k === i ? CY : 0x2f6b70, 1).fillRect(px + k * 8, BASE_H - 10, 5, 2);
+    for (let k = 0; k < n; k++) { const on = k === i; g.fillStyle(on ? CY : 0x4a9aa0, 1).fillRect(px + k * 8, BASE_H - 10 - (on ? 1 : 0), on ? 6 : 4, on ? 4 : 2); } // active pip is bigger, not just brighter
   }
 
   setSlide(i: number): void { if (this.active) this.layout(Math.max(0, Math.min(SLIDES.length - 1, i))); }
