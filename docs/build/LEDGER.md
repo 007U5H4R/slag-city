@@ -674,6 +674,16 @@ Three owner requests after the narrative rework, each shipped to prod as its own
 - **Mixpanel analytics + funnel** (prod `616a46d`): `src/shell/analytics.ts` wraps `mixpanel-browser`; inits from **`VITE_MIXPANEL_TOKEN`** (no token or Do-Not-Track ⇒ full no-op, safe to ship now). Four funnel events = **Page Loaded** (main boot) → **Game Started** (fresh game) → **Stage Cleared** (Kilvish down, +score) → **Name Recorded** (hi-score saved, +initials/score), super-prop `game=slag-city`. Verified a `track` POST to api-js.mixpanel.com fires with a throwaway token; **token never in repo** (build-time env, dist gitignored). Bundle +~440 KB (SDK). Funnel/metric + env setup documented in **`docs/analytics/mixpanel-funnel.md`** — the report is created in the Mixpanel dashboard (needs owner account; or a service-account key for me to script it).
 - **⛔ OWNER TODO:** set `VITE_MIXPANEL_TOKEN` in Vercel env + build the funnel in Mixpanel (steps in the doc). Manual on-device touch playthrough still worth an owner check.
 
+### Stage 8–10 pass: design critique → code review → security review (2026-09-17)
+- **Design critique (`/impeccable critique`, dual-agent): 31/40 "Good".** Snapshot `.impeccable/critique/2026-09-17T05-14-04Z__slag-city-vercel-app.md`. Owner decisions: keep the modern cyan/Roboto-Mono look and fix the doc (`Design.md` §2.2 revised); GAME OVER first; full sweep. Shipped `cf9b35a`: GAME OVER shows FINAL SCORE + honest INSERT COIN/PRESS START (core: GAME_OVER accepts start/coin), hold-ATTACK-to-skip intro/outro, mobile COIN/START ≥44px + "SPEC" label + contrast, favicon/theme-color, DIM/pip contrast. Deferred: one-time mobile touch legend.
+- **Security review: 0 findings** at the ≥8/10 bar (static client, no backend/auth; no attacker-influenced value reaches an HTML/code/navigation sink; Mixpanel token is build-time env, not in source/history; CI has no untrusted interpolation). Source-only — live headers/bundle not inspected.
+- **Code review (covered only `8110788`, the critique commit): 7 findings, all in the critique fixes, all fixed** and shipped as three separate commits → prod merge `3958306`:
+  - `6148159` hold-to-skip was frame-counted (≈0.25s at 144 Hz) and counted holds that began before the screen opened (Kilvish's last line skipped the outro). Now `src/core/arcade/hold-skip.ts` — ms-based, arms only after a release seen while the screen is open, fires once; `finishIntro()`/`finishOutro()` are the single end paths. +4 tests.
+  - `7c6b442` GAME OVER accepted start/coin from frame 0 (mashing from CONTINUE dismissed the card in 1–2 frames) → `GAME_OVER_MIN_FRAMES = 45`; early coin still banked. Test extended.
+  - `14dc4b3` GameOver colours single-sourced + redraw only on mood change; removed a dead `aria-label` inside the aria-hidden `#touch` overlay.
+  - Finding #7 (the critique commit bundled unrelated changes) can't be undone on pushed history; the fixes were landed one-change-per-commit instead.
+- Gate: `npm run check` 135 tests + build, `npm run e2e` 2/2 (desktop smoke + mobile). **Not done:** `/code-review` over the full session range `8aaef48..HEAD` (mobile + Mixpanel commits unreviewed); GAME OVER card still not eyeballed in-browser.
+
 _Phases D–G expand here as reached._
 
 ## Open threads / parked items
