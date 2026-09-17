@@ -1,6 +1,6 @@
 // test/core/arcade/screen-machine.test.ts
 import { describe, it, expect } from 'vitest';
-import { createArcade, reduceArcade, CONTINUE_FRAMES, GAME_OVER_FRAMES, blinkOn, BLINK_PERIOD, is1CC } from '@core/arcade/screen-machine';
+import { createArcade, reduceArcade, CONTINUE_FRAMES, GAME_OVER_FRAMES, GAME_OVER_MIN_FRAMES, blinkOn, BLINK_PERIOD, is1CC } from '@core/arcade/screen-machine';
 
 const ticks = (a: ReturnType<typeof createArcade>, n: number) => { for (let i = 0; i < n; i++) a = reduceArcade(a, { type: 'tick' }); return a; };
 
@@ -52,6 +52,12 @@ describe('coin-op machine', () => {
     let a = reduceArcade(createArcade(), { type: 'boot' });
     a = reduceArcade(a, { type: 'coin' }); a = reduceArcade(a, { type: 'start' });
     a = reduceArcade(a, { type: 'heroDead' }); a = ticks(a, CONTINUE_FRAMES);
+    expect(a.screen).toBe('GAME_OVER');
+    // Floor: inputs still being mashed from CONTINUE must NOT dismiss the card the instant it appears…
+    expect(reduceArcade(a, { type: 'start' }).screen).toBe('GAME_OVER');
+    const early = reduceArcade(a, { type: 'coin' });
+    expect(early.screen).toBe('GAME_OVER'); expect(early.credits).toBe(1); // …but an early coin is still banked
+    a = ticks(a, GAME_OVER_MIN_FRAMES);
     expect(a.screen).toBe('GAME_OVER');
     // START skips the 3s wait straight to the ranking
     const started = reduceArcade(a, { type: 'start' });
