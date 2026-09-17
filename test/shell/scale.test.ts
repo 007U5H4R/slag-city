@@ -22,3 +22,14 @@ describe('computeIntegerScale', () => {
     expect(computeIntegerScale(800, 2000)).toBe(2);
   });
 });
+
+import { computeMobileScale } from '@shell/scale';
+describe('computeMobileScale', () => {
+  it('renders phones at ~device density, clamped 2..3, regardless of boot orientation', () => {
+    expect(computeMobileScale(812, 375, 3)).toBe(3);   // iPhone landscape: 643 css px × 3 dpr → clamp 3
+    expect(computeMobileScale(375, 812, 3)).toBe(3);   // same phone booted in portrait
+    expect(computeMobileScale(667, 375, 2)).toBe(3);   // 643 × 2 / 384 = 3.3 → 3 (clamped)
+    expect(computeMobileScale(568, 320, 1)).toBe(2);   // low-density: never below 2 (k=1 text was mush)
+    expect(computeMobileScale(812, 375, 0)).toBe(2);   // bogus dpr → treated as 1
+  });
+});

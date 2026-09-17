@@ -43,6 +43,7 @@ body.mobile #screen canvas {
   width: min(100vw, calc(100vh * 384 / 224));   /* fallback: browsers without dynamic viewport units drop the next line */
   width: min(100dvw, calc(100dvh * 384 / 224));
   touch-action: none;
+  image-rendering: auto; /* the mobile framebuffer renders ABOVE display size and is scaled down — smooth, not pixelated */
   height: auto; aspect-ratio: 384 / 224;
   z-index: 0;
 }
@@ -64,8 +65,9 @@ body.mobile #touch button.pressed { background: rgba(47, 212, 212, 0.4); color: 
 /* Left thumb: analog-ish D-pad. */
 body.mobile #dpad {
   pointer-events: auto; touch-action: none; position: fixed;
-  left: calc(18px + env(safe-area-inset-left)); bottom: calc(18px + env(safe-area-inset-bottom));
-  width: 132px; height: 132px; border-radius: 50%;
+  /* hug the corner so as much of the pad as possible sits in the pillarbox band, not on the playfield */
+  left: calc(6px + env(safe-area-inset-left)); bottom: calc(10px + env(safe-area-inset-bottom));
+  width: 124px; height: 124px; border-radius: 50%;
   background: radial-gradient(circle, rgba(18, 26, 28, 0.5), rgba(18, 26, 28, 0.28));
   border: 2px solid rgba(47, 212, 212, 0.45);
 }
@@ -77,9 +79,9 @@ body.mobile #dpad.pressed { border-color: rgba(47, 212, 212, 0.9); }
 .dp-right { right: 8px; top: 50%; transform: translateY(-50%); }
 
 /* Right thumb: ATTACK (primary), JUMP, SPECIAL. */
-body.mobile #b-attack  { right: calc(20px + env(safe-area-inset-right)); bottom: calc(26px + env(safe-area-inset-bottom)); width: 78px; height: 78px; border-color: rgba(255, 80, 58, 0.8); font-size: 14px; }
-body.mobile #b-jump    { right: calc(106px + env(safe-area-inset-right)); bottom: calc(52px + env(safe-area-inset-bottom)); width: 64px; height: 64px; }
-body.mobile #b-special { right: calc(46px + env(safe-area-inset-right)); bottom: calc(112px + env(safe-area-inset-bottom)); width: 56px; height: 56px; border-color: rgba(240, 192, 64, 0.8); }
+body.mobile #b-attack  { right: calc(8px + env(safe-area-inset-right)); bottom: calc(18px + env(safe-area-inset-bottom)); width: 78px; height: 78px; border-color: rgba(255, 80, 58, 0.8); font-size: 14px; }
+body.mobile #b-jump    { right: calc(96px + env(safe-area-inset-right)); bottom: calc(40px + env(safe-area-inset-bottom)); width: 64px; height: 64px; }
+body.mobile #b-special { right: calc(30px + env(safe-area-inset-right)); bottom: calc(106px + env(safe-area-inset-bottom)); width: 56px; height: 56px; border-color: rgba(240, 192, 64, 0.8); }
 
 /* Coin / Start: small pill buttons, top-right. */
 body.mobile #coinrow { display: flex; gap: 8px; position: fixed; top: calc(8px + env(safe-area-inset-top)); right: calc(12px + env(safe-area-inset-right)); pointer-events: none; }
@@ -96,12 +98,15 @@ body.mobile[data-paused="player"] #b-pause::before { content: '▶'; }
 
 /* Portrait: ask for landscape (a brawler needs the width) and hide the controls until they rotate. */
 @media (orientation: portrait) {
-  body.mobile #touch { display: none; }
-  body.mobile #rotate {
+  body.mobile.portrait-ok #rotate { display: none; } /* the player tapped through: play in portrait */
+  body.mobile:not(.portrait-ok) #touch { display: none; }
+  body.mobile:not(.portrait-ok) #rotate {
     display: grid; place-items: center; position: fixed; inset: 0; z-index: 50;
     background: #08070a; color: #d8cbb0; text-align: center; padding: 24px;
   }
 }
+.rotate-logo { display: block; margin: 0 auto 20px; image-rendering: pixelated; }
+.rotate-card small { display: block; margin-top: 14px; font-size: 12px; font-weight: 500; color: #b0a488; }
 .rotate-card { font: 700 18px/1.5 ui-monospace, Menlo, Consolas, monospace; }
 .rotate-icon { display: block; font-size: 44px; margin-bottom: 12px; color: #2fd4d4; animation: rotate-nudge 2s ease-in-out infinite; }
 @keyframes rotate-nudge { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(90deg); } }

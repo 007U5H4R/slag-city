@@ -44,6 +44,9 @@ export function installTouchControls(): void {
     for (const type of ['pointerup', 'pointercancel', 'lostpointercapture'] as const) {
       el.addEventListener(type, (e) => { if (type !== 'lostpointercapture') e.preventDefault(); releasePointer(e.pointerId); });
     }
+    // Keyboard / switch-access activation (a click with no pointer behind it): a short momentary press. Pointer taps
+    // also fire click, but with detail >= 1 — those are already handled above, so they're ignored here.
+    el.addEventListener('click', (e) => { if (e.detail === 0) { set(true); window.setTimeout(() => set(false), 160); } });
   }
 
   // Thumb D-pad: an 8-way analog-ish zone. The active pointer's offset from the pad centre sets the direction

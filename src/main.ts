@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { createGame } from '@adapters/phaser/createGame';
 import { applyScale } from '@adapters/phaser/scale';
-import { computeIntegerScale } from '@shell/scale';
+import { computeIntegerScale, computeMobileScale } from '@shell/scale';
 import { installViewportGate } from '@shell/viewport-gate';
 import { installCabinet } from '@shell/cabinet';
 import { isTouchDevice, installTouchControls } from '@shell/touch-controls';
@@ -31,14 +31,21 @@ if (MOBILE) {
   document.documentElement.classList.add('mobile'); // lets CSS kill browser gestures on <html> too (room.css)
   document.body.classList.add('mobile');
   installTouchControls();
+  // "Rotate to landscape" is a nudge, not a wall: an orientation-locked phone can tap through and play in portrait
+  // (the canvas sits mid-screen and the controls land in the empty space below it).
+  document.getElementById('rotate')?.addEventListener('pointerdown', () => {
+    document.body.classList.add('portrait-ok'); window.dispatchEvent(new CustomEvent('slag:orientation'));
+  });
   // iOS ignores user-scalable=no: block pinch + double-tap zoom, which would shove the fixed controls off-screen.
   for (const type of ['gesturestart', 'gesturechange', 'dblclick'] as const) document.addEventListener(type, (e) => e.preventDefault(), { passive: false });
 }
 
 const chromeH = (): number => cabinet.chromeHeight();
-// On mobile the framebuffer stays at the 384×224 base (k=1) and CSS fits the canvas to the screen (room.css);
+// On mobile the framebuffer renders at ~device density (k=2..3) and CSS fits the canvas to the screen (room.css);
 // the integer-scale cabinet math is desktop-only.
-const currentScale = (): number => MOBILE ? 1 : computeIntegerScale(window.innerWidth, window.innerHeight, chromeH());
+const currentScale = (): number => MOBILE
+  ? computeMobileScale(window.innerWidth, window.innerHeight, window.devicePixelRatio)
+  : computeIntegerScale(window.innerWidth, window.innerHeight, chromeH());
 
 let game: Phaser.Game | null = null;
 let lastK = currentScale();

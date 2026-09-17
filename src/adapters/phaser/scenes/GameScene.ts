@@ -202,6 +202,7 @@ export class GameScene extends Phaser.Scene {
     if (this.registry.get('mobile') === true) {
       this.portraitQuery = window.matchMedia('(orientation: portrait)');
       this.portraitQuery.addEventListener('change', () => this.syncOrientation());
+      window.addEventListener('slag:orientation', () => this.syncOrientation()); // player tapped through the rotate card
       this.syncOrientation();
     }
   }
@@ -241,7 +242,8 @@ export class GameScene extends Phaser.Scene {
 
   private syncOrientation(): void {
     if (!this.portraitQuery) return;
-    if (this.portraitQuery.matches) { if (!this.paused) this.pause('ROTATE DEVICE'); }
+    const blocked = this.portraitQuery.matches && !document.body.classList.contains('portrait-ok');
+    if (blocked) { if (!this.paused) this.pause('ROTATE DEVICE'); }
     else if (this.pauseReason === 'ROTATE DEVICE') this.resume();
   }
 
