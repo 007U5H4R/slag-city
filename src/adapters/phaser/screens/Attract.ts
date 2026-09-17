@@ -4,6 +4,7 @@ import { BASE_W, BASE_H } from '@shell/scale';
 import { blinkOn } from '@core/arcade/screen-machine';
 import { UI_FONT } from '../views/ui-font';
 import { deviceCopy, type DeviceCopy } from '../views/device-copy';
+import { setFitted } from '../views/fit-text';
 
 const CTA_Y = 192; // below the controls panel (which ends ~y=163), clear of the bottom edge
 import type { ArcadeState } from '@core/arcade/screen-machine';
@@ -98,8 +99,7 @@ export class Attract {
     const showPrompt = showTitle || arcade.screen === 'COIN';
     const needCredit = arcade.credits === 0;
     this.ctaPlate.setVisible(showPrompt);
-    this.cta.setVisible(showPrompt)
-      .setText(needCredit ? `${this.copy.coin}   ·   ${this.copy.free}` : this.copy.start)
+    setFitted(this.cta, needCredit ? `${this.copy.coin}   ·   ${this.copy.free}` : this.copy.start, 284).setVisible(showPrompt)
       .setAlpha(blinkOn(arcade.screenFrame) ? 1 : 0.55);
 
     // Crossfade plate: fade in over the first crossfadeFrames of a segment, out over the last.
