@@ -19,9 +19,10 @@ html, body { margin: 0; height: 100%; background: var(--room); color: #d9d2c5; o
 #bezel { padding: 24px; background: linear-gradient(180deg, #2b2320, #171214); border: 2px solid #4a3a22; box-shadow: inset 0 0 0 2px #0a0709, 0 0 40px rgba(255, 140, 40, 0.15); }
 #panel { height: var(--panel-h); width: 100%; background: linear-gradient(180deg, #1e1815, #0f0b0c); border-top: 2px solid #4a3a22; }
 #vignette { background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.55) 100%); }
-#service { position: fixed; inset: 0; background: #000; color: #d9d2c5; display: grid; place-items: center; z-index: 10; }
+#service { position: fixed; inset: 0; background: #000; color: #d9d2c5; display: grid; place-items: center; z-index: 60; } /* above the mobile #touch (10) and #rotate (50) layers so tap-to-retry always lands */
 #service[hidden] { display: none; }
 .service-text { font: 14px/1.6 ui-monospace, Menlo, Consolas, monospace; margin: 0; white-space: pre; }
+html.mobile .service-text { white-space: pre-wrap; font-size: 12px; padding: 0 16px; max-width: 100vw; box-sizing: border-box; }
 
 /* ============================================================================
    Mobile mode (<body class="mobile">): drop the desktop cabinet chrome, fit the
@@ -29,13 +30,19 @@ html, body { margin: 0; height: 100%; background: var(--room); color: #d9d2c5; o
    ============================================================================ */
 #touch, #rotate { display: none; } /* desktop: no overlay at all */
 
+/* Kill browser gestures everywhere in mobile mode, not just on the buttons: a thumb that misses a button and drags
+   over the canvas must not pull-to-refresh (run + credits lost) or pan/zoom the page. */
+html.mobile, html.mobile body { touch-action: none; overscroll-behavior: none; -webkit-touch-callout: none; }
+
 body.mobile #marquee, body.mobile #panel, body.mobile #vignette, body.mobile #notice { display: none; }
 body.mobile #bezel { padding: 0; border: 0; background: none; box-shadow: none; }
 body.mobile #room { background: #000; }
 /* Canvas fills the viewport, letterboxed/pillarboxed to the 384:224 aspect. */
 body.mobile #screen canvas {
   position: fixed; inset: 0; margin: auto;
+  width: min(100vw, calc(100vh * 384 / 224));   /* fallback: browsers without dynamic viewport units drop the next line */
   width: min(100dvw, calc(100dvh * 384 / 224));
+  touch-action: none;
   height: auto; aspect-ratio: 384 / 224;
   z-index: 0;
 }

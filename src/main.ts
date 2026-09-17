@@ -27,7 +27,13 @@ const cabinet = installCabinet();
 // Mobile mode: a touch-primary device plays with the on-screen controls and the chrome-less, screen-filling
 // layout (<body class="mobile">, styled in room.css) instead of the desktop cabinet + "desktop required" gate.
 const MOBILE = isTouchDevice();
-if (MOBILE) { document.body.classList.add('mobile'); installTouchControls(); }
+if (MOBILE) {
+  document.documentElement.classList.add('mobile'); // lets CSS kill browser gestures on <html> too (room.css)
+  document.body.classList.add('mobile');
+  installTouchControls();
+  // iOS ignores user-scalable=no: block pinch + double-tap zoom, which would shove the fixed controls off-screen.
+  for (const type of ['gesturestart', 'gesturechange', 'dblclick'] as const) document.addEventListener(type, (e) => e.preventDefault(), { passive: false });
+}
 
 const chromeH = (): number => cabinet.chromeHeight();
 // On mobile the framebuffer stays at the 384×224 base (k=1) and CSS fits the canvas to the screen (room.css);
@@ -40,6 +46,7 @@ const boot = (): void => {
   if (game) return;
   lastK = currentScale();
   game = createGame(screen, lastK);
+  game.registry.set('mobile', MOBILE); // scenes read this: CRT pass off + pause-in-portrait on mobile
   installAudioUnlock(game);
   if (import.meta.env.DEV) (window as unknown as { game: Phaser.Game }).game = game;
   installTestHook();
