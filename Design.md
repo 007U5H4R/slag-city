@@ -74,18 +74,31 @@ anchor (`law-of-figure-ground`): the HUD is always the unambiguous foreground la
 
 ### 2.2 Typography
 
-No modern web fonts. Two bitmap/pixel fonts, both licensed for commercial use (verify at asset-ticket
-time, log in `assets/LICENSES.md` per `Solution-PRD.md` §6.7):
+**REVISED 2026-09-17 (supersedes the bitmap-only intent below) — owner decision after the Stage-8 design
+critique.** As shipped, SLAG CITY pairs a bespoke bitmap **marquee** with a **modern monospace UI face**
+housed in the cyan `ScifiFrame` system, a deliberate "neo-retro" register (a modern sci-fi HUD over a
+foundry world) rather than a strict 1993-cabinet reproduction. The critique flagged this as a spec↔build
+gap; the owner chose to keep the shipped look and update this spec to match. The two faces are now:
 
-- **Display/marquee face** — a blocky, high-contrast arcade marquee font (era: 1993 cabinet art, not
-  8-bit NES) for the logo, "INSERT COIN", "GAME OVER", boss name-flash, hi-score title.
-- **HUD/body face** — a fixed-width pixel font at a size that survives ×3/×4 integer scaling without
-  sub-pixel blur (design at a whole multiple of the base grid — e.g. an 8×8 or 8×16 cell font). Used for
-  score digits, health/credit labels, hi-score table rows, SERVICE screen diagnostics.
+- **Display/marquee face** — the hand-made molten "SLAG CITY" **logo art** (`assets/ui/marquee*.png`), plus
+  the retro bitmap face (`display16`) still used for a few hard-arcade tokens (e.g. the PAUSED overlay).
+- **UI/body face — `Roboto Mono` (500/700), loaded via Google Fonts** and used for the HUD (SCORE/CREDIT),
+  boss HP plate, story intro, boss dialogue, chapter outro, GAME OVER / STAGE CLEAR, hi-score table + name
+  entry, and menus. Monospaced so numeric columns align; rendered at `setResolution(4)` for crisp glyphs,
+  legibility-weighted with a heavy stroke/shadow where it sits over busy world art. Fallback stack:
+  `ui-monospace, Menlo, Consolas, monospace`.
 
-No `clamp()`/fluid type scale — this isn't responsive typography, it's pixel-grid typography that only
-ever renders at the fixed internal resolution and scales by an integer factor. Sizes are fixed in the
-asset itself (rem-equivalent: N/A).
+Rationale: a true 8×8/8×16 bitmap HUD face was legibility-fragile at the 16-px HUD band and pushed the
+readout toward mush (the owner's original legibility complaint in Round 4); the monospace face + cyan
+frame solved legibility and gave the chrome a coherent identity. Trade-off accepted: the UI reads a touch
+more "modern indie" than "arcade cabinet." *(If a future pass wants the strict-1993 look back, that is a
+redesign of the chrome — treat this section as the current source of truth, not the paragraph below.)*
+
+~~No modern web fonts. Two bitmap/pixel fonts~~ *(original intent, retained for history):* a blocky arcade
+marquee font + a fixed-width pixel HUD font at an 8×8/8×16 cell. Superseded by the revision above.
+
+No `clamp()`/fluid type scale — this isn't responsive typography, it's fixed-resolution UI type that only
+ever renders at the internal resolution and scales with the canvas. Sizes are fixed in code (rem: N/A).
 
 ### 2.3 Spacing & grid
 

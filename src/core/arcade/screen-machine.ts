@@ -23,11 +23,15 @@ export function reduceArcade(a: ArcadeState, ev: ArcadeEvent): ArcadeState {
       const credits = insertCoin(a.credits);
       if (a.screen === 'ATTRACT' || a.screen === 'COIN') return to({ ...a, credits, creditFlash: 2 }, 'COIN');
       if (a.screen === 'CONTINUE') return to(a, 'PLAY', { credits: consume(credits), usedThisGame: a.usedThisGame + 1, creditFlash: 2, continueFrames: 0 });
+      // GAME OVER is the re-coin sales pitch: bank the credit and jump to the ranking; entryDone then lands on
+      // COIN with the credit ready for a fresh game (skips the 3s auto-advance wait).
+      if (a.screen === 'GAME_OVER') return to({ ...a, credits, creditFlash: 2 }, 'HISCORE_ENTRY');
       return { ...a, credits, creditFlash: 2 };
     }
     case 'start':
       if ((a.screen === 'COIN' || a.screen === 'ATTRACT') && canStart(a.credits)) return to(a, 'PLAY', { credits: consume(a.credits), usedThisGame: 1, finalScore: 0, stageReached: 1 });
       if (a.screen === 'CONTINUE' && canStart(a.credits)) return to(a, 'PLAY', { credits: consume(a.credits), usedThisGame: a.usedThisGame + 1, continueFrames: 0 });
+      if (a.screen === 'GAME_OVER') return to(a, 'HISCORE_ENTRY'); // PRESS START skips the wait straight to the ranking
       return a;
     case 'heroDead': return a.screen === 'PLAY' ? to(a, 'CONTINUE', { continueFrames: CONTINUE_FRAMES }) : a;
     case 'bossDefeated': return a.screen === 'PLAY' ? to(a, 'GAME_OVER') : a;

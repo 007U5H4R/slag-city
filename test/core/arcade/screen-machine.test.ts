@@ -48,6 +48,20 @@ describe('coin-op machine', () => {
     a = reduceArcade(a, { type: 'bossDefeated' });
     expect(a.screen).toBe('GAME_OVER'); expect(is1CC(a.usedThisGame)).toBe(true);
   });
+  it('at GAME OVER, START jumps to the ranking early and a COIN banks a credit for a fresh game', () => {
+    let a = reduceArcade(createArcade(), { type: 'boot' });
+    a = reduceArcade(a, { type: 'coin' }); a = reduceArcade(a, { type: 'start' });
+    a = reduceArcade(a, { type: 'heroDead' }); a = ticks(a, CONTINUE_FRAMES);
+    expect(a.screen).toBe('GAME_OVER');
+    // START skips the 3s wait straight to the ranking
+    const started = reduceArcade(a, { type: 'start' });
+    expect(started.screen).toBe('HISCORE_ENTRY');
+    // COIN at GAME OVER banks a credit and also advances to the ranking; entryDone then lands on COIN, game-ready
+    let coined = reduceArcade(a, { type: 'coin' });
+    expect(coined.screen).toBe('HISCORE_ENTRY'); expect(coined.credits).toBe(1);
+    coined = reduceArcade(coined, { type: 'entryDone' });
+    expect(coined.screen).toBe('COIN'); expect(coined.credits).toBe(1);
+  });
   it('blink is a hard 50% duty cycle at ~1.5 Hz', () => {
     expect(BLINK_PERIOD).toBe(40);
     expect(blinkOn(0)).toBe(true); expect(blinkOn(19)).toBe(true); expect(blinkOn(20)).toBe(false); expect(blinkOn(39)).toBe(false); expect(blinkOn(40)).toBe(true);
