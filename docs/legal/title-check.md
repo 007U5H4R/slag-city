@@ -1,7 +1,14 @@
 # Title & Trademark Check — SLAG CITY
 
-**Status: ⛔ OWNER GATE OPEN — working title retained, formal clearance NOT done.**
-Date: 2026-09-15 (orchestrator, owner AFK-delegated).
+**Status: 🟡 PRELIMINARY WEB RESEARCH DONE (no obvious conflict) — formal USPTO/EUIPO clearance still the OWNER's legal call.**
+Date: 2026-09-15 (orchestrator); preliminary web research added 2026-09-17.
+
+## Preliminary web research (2026-09-17) — informal, NOT a legal clearance
+Two web searches were run (US web index; not the trademark registries themselves):
+- Query `"Slag City" video game trademark` → **no video game named "Slag City"** found. The only game hit is **"Slag"** (a 1980 TRS-80 war game by Adventure International) — different name, dead product, no games-market presence.
+- Query `"Slag City" brand product company` → hits are all **outside games/entertainment**: *City Slag LLC* (perlite, Sharon PA), *Granite City Slag* (road/industrial aggregate), *SLAG* apparel brand (clothing = Nice class 25). None are in **Nice class 9 (software/games)** or **41 (entertainment services)**.
+- **Read:** the exact phrase "Slag City" appears unused for a game/entertainment product → **no obvious conflict**; the name looks available. This is a positive signal, **not** a clearance.
+- **Still required before any commercial release (owner's legal call):** an exact-phrase + close-variant search on **tmsearch.uspto.gov** and **EUIPO eSearch** in classes 9 & 41, recording live/dead status, class, and owner. I do not have verified access to those registries, so this remains gated.
 
 ## Working title
 **SLAG CITY** — the working title used throughout the repo (`index.html <title>`, marquee text,

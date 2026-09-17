@@ -648,6 +648,16 @@ All committed, CDP-verified locally + prod smoke green on https://slag-city.verc
 
 - **Review round 4 — Wave 2g (boss health bar)** (feat `7978f0c` → prod `7bb6b25`, 2026-09-17): boss fights had no visible HP. New adapter view `src/adapters/phaser/views/BossHealthBar.ts` — a sci-fi teal plate under the HUD showing the current boss's NAME (from `BOSS_SCRIPTS[bossWave].name`) + an HP bar (green→amber→red via `healthBand`), magenta frame in phase 2. GameScene renders it while a live boss entity is on screen during PLAY/CONTINUE (`this.world.entities.find(kind==='boss' && state!=='dead'/'dying')`), hidden otherwise. No core change. `npm run check` GREEN (129), CDP-verified across GRIST/SLAGJAW/KILVISH, zero console errors (`docs/verification/r4w2g-boss-healthbar.png`). Zero credit. This closes the last clear boss-fight UX gap.
 
+- **Review round 4 — Wave 2i (Kilvish redesign, big & scary)** (feat `1dda195` → prod `5c1fdeb`, 2026-09-17): owner supplied `docs/art/candidates/boss/boss-ref-2.png` (horned brass demon-warlord — furnace-core belly, serrated saw-blade forearm, gauntlet fist) + "make it big and scary". Uploaded to HF (`media_upload`+PUT+`media_confirm` → media `b9c525a1`); 8 action sheets off it → normalized at **targetH 150** (vs 118 enforcers, so he towers) → reskin `boss.{png,json}` + `boss-p2`. Only the boss (variant 0) atlas; GRIST/SLAGJAW/gang untouched. Balance **280.9** (8 cr). CDP-verified (`docs/verification/r4w2i-kilvish-brass.png`), 129 green, zero errors.
+
+### Phase B — "finish the gated backlog" (owner-chosen 2026-09-17)
+- **OG / link-preview:** ✅ already complete — `index.html` has full OG + Twitter tags → `https://slag-city.vercel.app/og.png` (live HTTP 200). No placeholder left.
+- **Audio licensing:** ✅ moot — the game uses procedural Web-Audio synth (ticket 22), no third-party packs → no licence gate.
+- **Gang recolor atlases:** ✅ done — all enemies + bosses are now distinct robot/brass sprites (Wave 2c–i).
+- **CI:** local gate GREEN — `npm run check` (129) + `npm run e2e` (Playwright smoke: boots/coin/start/hero/zero-console-errors) both pass. **GitHub Actions itself is billing-blocked on the owner's account** (Settings → Billing) — not fixable here; local gate is the real check.
+- **Trademark/title:** 🟡 preliminary web research done (`docs/legal/title-check.md`) — no video game or entertainment brand named "Slag City" (only industrial-slag companies + a clothing brand, all other Nice classes) → no obvious conflict. Formal USPTO/EUIPO exact-phrase search in classes 9/41 still the **owner's legal call** before commercial release.
+- **⛔ Still owner/manual (cannot do here):** 14.4 timed-run balance playtest (owner + stopwatch); ticket-04.2 master palette + hero re-quantise (deliberately parked — risky, touches the tuned hero, low reward now that art is high-quality); GitHub Actions billing.
+
 _Phases D–G expand here as reached._
 
 ## Open threads / parked items
