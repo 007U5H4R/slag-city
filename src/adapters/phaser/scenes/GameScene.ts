@@ -97,6 +97,7 @@ export class GameScene extends Phaser.Scene {
   private outroActive = false;
   private outroSlide = 0;
   private holdSkip: HoldSkip = createHoldSkip(); // hold-ATTACK-to-skip timing for the intro/outro (time-based, see hold-skip.ts)
+  private lastUpdateAt = 0; // performance.now() of the previous update — Phaser's `delta` is smoothed/capped, NOT wall-clock
   private audio!: AudioAdapter;
   private prevScreen = '';
   // Hi-scores (ticket 19.4): the live table, loaded from the kv at boot and re-saved on a qualifying entry.
@@ -224,7 +225,12 @@ export class GameScene extends Phaser.Scene {
     // Hold ATTACK to skip the long reading walls (intro + chapter-one outro). Boss taunts stay tap-to-advance
     // (short, and finishing one has side effects). Timed in real ms (refresh-rate independent) and only a hold
     // that BEGINS while the screen is open counts — see @core/arcade/hold-skip.
-    const skip = stepHoldSkip(this.holdSkip, this.storyActive || this.outroActive, input.attack, delta);
+    // Wall-clock dt: Phaser's `delta` is smoothed and capped near 16.7 ms, so on a slow device (25 fps) a real
+    // 1.2 s hold only summed to ~350 ms and never skipped. performance.now() is the honest clock.
+    const nowMs = performance.now();
+    const realDt = this.lastUpdateAt ? nowMs - this.lastUpdateAt : 0;
+    this.lastUpdateAt = nowMs;
+    const skip = stepHoldSkip(this.holdSkip, this.storyActive || this.outroActive, input.attack, realDt);
     this.holdSkip = skip.state;
     if (skip.fire) { if (this.storyActive) this.finishIntro(); else if (this.outroActive) this.finishOutro(); }
     // Noir intro: ATTACK advances a slide; past the last one the sim is released and gameplay begins.

@@ -5,7 +5,7 @@
 //   before it arms, so the press that opened the screen (or dismissed the previous dialogue) can't skip it.
 // - Fires exactly once, on the step that crosses the threshold.
 export const SKIP_HOLD_MS = 600;
-const MAX_STEP_MS = 50; // clamp a long frame (tab restore, hitch) so one spike can't satisfy the whole hold
+const MAX_STEP_MS = 100; // clamp a long frame (tab restore, hitch) so one spike can't satisfy the hold; 100 keeps a 10 fps device honest
 
 export interface HoldSkip { armed: boolean; heldMs: number }
 export const createHoldSkip = (): HoldSkip => ({ armed: false, heldMs: 0 });
