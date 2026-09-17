@@ -79,7 +79,7 @@ export const BOSS_SCRIPTS: BossScript[] = [
   {
     name: 'GRIST',
     pre: [
-      { who: 'GRIST', text: 'Kilvish sends his scrap to die first.' },
+      { who: 'GRIST', text: 'Kilvish spends his soldiers\nbefore he spends himself.' },
       { who: 'HERO', text: 'Then I start with you.' },
     ],
     defeat: [{ who: 'GRIST', text: 'Sys...tem... fail—' }],
@@ -89,24 +89,29 @@ export const BOSS_SCRIPTS: BossScript[] = [
     pre: [
       { who: 'SLAGJAW', text: 'Flesh. Warm. Inefficient.' },
       { who: 'HERO', text: 'Where is Kilvish?' },
-      { who: 'SLAGJAW', text: 'Behind me.\nWhere all cowards hide.' },
+      { who: 'SLAGJAW', text: 'Behind me. Where the\ncondemned always hide.' },
     ],
     defeat: [
-      { who: 'SLAGJAW', text: 'He will... grind you...' },
-      { who: 'HERO', text: 'Let him try.' },
+      { who: 'SLAGJAW', text: 'You still think Kilvish\nchose your world...' },
+      { who: 'HERO', text: 'He gave the order.' },
+      { who: 'SLAGJAW', text: 'He followed one.\nYou chase the sword...\nnot the hand.' },
     ],
   },
   {
     name: 'KILVISH',
     pre: [
-      { who: 'KILVISH', text: 'Another insect that refuses to die.' },
-      { who: 'HERO', text: 'You took my family, Kilvish.' },
-      { who: 'KILVISH', text: 'I took your whole species.\nThey were... inefficient.' },
-      { who: 'HERO', text: 'This hammer says otherwise.' },
+      { who: 'KILVISH', text: 'Another insect\nthat refuses to die.' },
+      { who: 'HERO', text: 'You burned my world.\nMy wife. My children.' },
+      { who: 'KILVISH', text: 'Yours was one of hundreds.\nI have lost count.' },
+      { who: 'HERO', text: 'This hammer ends it here.' },
     ],
     defeat: [
-      { who: 'KILVISH', text: 'Impossible... flesh does not... win—' },
-      { who: 'HERO', text: 'For my wife. My children.\nFor all of them.' },
+      { who: 'KILVISH', text: 'Then kill me.\nI am... tired.' },
+      { who: 'HERO', text: 'You? Afraid?' },
+      { who: 'KILVISH', text: 'I was a father once —\nuntil they made me this.' },
+      { who: 'KILVISH', text: 'I burned your world\nbecause he ordered it.' },
+      { who: 'HERO', text: 'Who ordered it?' },
+      { who: 'KILVISH', text: 'You wanted the monster.\nNow you have his attention.' },
     ],
   },
 ];

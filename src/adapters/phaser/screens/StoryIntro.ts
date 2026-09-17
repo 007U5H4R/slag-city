@@ -1,10 +1,11 @@
 // src/adapters/phaser/screens/StoryIntro.ts
-// Story intro shown once when a fresh game begins, before the sim starts. Emotional revenge arc: robotic
-// aliens ("the machines" / "the steel legion") exterminated Earth and the hero's family; he is one of the
-// last survivors, turning his forge hammer on the machines. Purely adapter-side: GameScene freezes the
-// world on the first PLAY frame, plays these slides, and releases the sim when the last slide is dismissed.
-// Advanced by the ATTACK button, one slide at a time. Contra-style hero portrait pinned to the left, the
-// sci-fi dialogue box on the right.
+// Story intro shown once when a fresh game begins, before the sim starts. "The Last Signal" prologue: a
+// seventeen-minute machine invasion (the Veydrons) exterminated Earth under the warlord Kilvish; the hero
+// reaches home too late, finds only rubble and a warm family pendant, and hears a dying drone whisper the
+// word that unravels everything — HARVEST. This was never an invasion. He hunts the machine that gave the
+// order. Purely adapter-side: GameScene freezes the world on the first PLAY frame, plays these slides, and
+// releases the sim when the last slide is dismissed. Advanced by the ATTACK button, one slide at a time.
+// Contra-style hero portrait pinned to the left, the sci-fi dialogue box on the right.
 import type Phaser from 'phaser';
 import { BASE_W, BASE_H } from '@shell/scale';
 import { UI_FONT } from '../views/ui-font';
@@ -22,13 +23,14 @@ const CYB = BOX.y + BOX.h / 2;                            // box vertical centre
 // Each slide: an optional big title + body lines (hand-wrapped so the narrow right column never clips).
 interface Slide { title?: string; body: string[] }
 const SLIDES: Slide[] = [
-  { title: 'SLAG CITY', body: ['The machines fell', 'from the sky.'] },
-  { body: ['They called it', 'first contact.', '', 'It was extermination.'] },
-  { body: ['KILVISH,', 'their steel overlord,', 'burned the world', 'to slag.', '', 'Your wife. Your children.', 'Gone in one night.'] },
-  { body: ['You crawled from', 'the rubble — one of', 'the last souls alive.'] },
-  { body: ['His enforcers guard', 'the road to his throne.', '', 'Break them all', 'to reach him.'] },
-  { body: ['They left you', 'your two hands', 'and a red-hot hammer.', '', 'That was', 'their last mistake.'] },
-  { title: 'FIND KILVISH', body: ['Make them all burn.'] },
+  { title: 'SLAG CITY', body: ['The invasion lasted', 'seventeen minutes.', '', 'That was all', 'it took.'] },
+  { body: ['The sky split open.', 'Cities turned to fire.', 'Every signal', 'on Earth went dark.'] },
+  { body: ['They were not alive.', 'They were machines.', 'Thousands of them.', 'Cold. Precise.', '', 'Earth called them', 'the VEYDRONS.'] },
+  { body: ['Their warlord, KILVISH,', 'broadcast one line', 'to a dying world:', '', '"Your world has been', 'selected. Resistance', 'only delays', 'the inevitable."'] },
+  { body: ['You reached home', 'too late.', '', 'Only rubble — and a', 'family pendant, still', 'warm in the ash.'] },
+  { body: ['A broken drone', 'whispered a word', 'you will never forget.', '', 'Not "conquest."', 'Not "war."', '', 'HARVEST.'] },
+  { body: ['This was never', 'an invasion.', '', 'It was a supply chain —', 'and Earth was', 'only one link.'] },
+  { title: 'FIND KILVISH', body: ['Chase the machine', 'that gave the order.', '', 'Make it answer.'] },
 ];
 
 export class StoryIntro {

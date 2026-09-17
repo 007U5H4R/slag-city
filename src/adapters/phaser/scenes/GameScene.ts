@@ -37,6 +37,7 @@ import { HiScoreTable } from '../screens/HiScoreTable';
 import { HiScoreEntry } from '../screens/HiScoreEntry';
 import { Controls } from '../screens/Controls';
 import { StoryIntro } from '../screens/StoryIntro';
+import { ChapterOneOutro } from '../screens/ChapterOneOutro';
 import { BossDialogue, BOSS_SCRIPTS } from '../screens/BossDialogue';
 import { BossHealthBar } from '../views/BossHealthBar';
 import { encodeInput } from '@core/input-codec';
@@ -87,6 +88,10 @@ export class GameScene extends Phaser.Scene {
   // Noir story intro (adapter-only): shown once before a fresh game's sim starts; ATTACK advances one slide.
   private storyActive = false;
   private storySlide = 0;
+  // END OF CHAPTER ONE epilogue (adapter-only): plays once after Kilvish's defeat exchange, before STAGE CLEAR.
+  private outro!: ChapterOneOutro;
+  private outroActive = false;
+  private outroSlide = 0;
   private audio!: AudioAdapter;
   private prevScreen = '';
   // Hi-scores (ticket 19.4): the live table, loaded from the kv at boot and re-saved on a qualifying entry.
@@ -144,6 +149,7 @@ export class GameScene extends Phaser.Scene {
     this.hiEntry = new HiScoreEntry(this);
     this.controls = new Controls(this);
     this.story = new StoryIntro(this);
+    this.outro = new ChapterOneOutro(this);
     this.bossTalk = new BossDialogue(this);
     this.bossBar = new BossHealthBar(this);
     this.audio = new AudioAdapter(this, getSetting('volume'));
@@ -198,7 +204,7 @@ export class GameScene extends Phaser.Scene {
       this.arcade = reduceArcade(this.arcade, { type: 'start' });
       if (this.arcade.screen === 'PLAY' && before !== 'PLAY') {
         if (before === 'CONTINUE') reviveHero(this.world);
-        else { this.worldSeed = Date.now() >>> 0; this.world = newGameWorld(this.worldSeed); this.storyActive = true; this.storySlide = 0; this.story.show(0); this.bossTalk.hide(); this.bossTalkKind = null; this.bossWave = 0; this.bossActive = false; this.pendingNextWave = false; this.pendingBossDefeat = false; } // fresh game → play the noir intro first, re-arm the boss gauntlet
+        else { this.worldSeed = Date.now() >>> 0; this.world = newGameWorld(this.worldSeed); this.storyActive = true; this.storySlide = 0; this.story.show(0); this.bossTalk.hide(); this.bossTalkKind = null; this.bossWave = 0; this.bossActive = false; this.pendingNextWave = false; this.pendingBossDefeat = false; this.outro.hide(); this.outroActive = false; this.outroSlide = 0; } // fresh game → play the noir intro first, re-arm the boss gauntlet + clear the chapter-one outro
         this.sfx('start');
       }
     }
@@ -208,6 +214,16 @@ export class GameScene extends Phaser.Scene {
       this.storySlide += 1;
       if (this.storySlide >= this.story.count) { this.storyActive = false; this.story.hide(); }
       else { this.story.setSlide(this.storySlide); this.sfx('coin'); }
+    }
+    // END OF CHAPTER ONE epilogue: ATTACK advances a card; past the last one, fire the deferred STAGE CLEAR.
+    // (Placed before the boss-dialogue block so the same ATTACK press that ends Kilvish's defeat exchange —
+    // which is what arms the outro — does not also advance it; the next press does.)
+    if (this.outroActive && confirm) {
+      this.outroSlide += 1;
+      if (this.outroSlide >= this.outro.count) {
+        this.outroActive = false; this.outro.hide();
+        this.arcade = reduceArcade(this.arcade, { type: 'bossDefeated' });
+      } else { this.outro.setSlide(this.outroSlide); this.sfx('coin'); }
     }
     // Boss gauntlet (enforcers → Kilvish): freeze the fight for a pre-fight taunt the first frame the boss appears.
     if (!this.storyActive && this.arcade.screen === 'PLAY' && !this.bossActive
@@ -226,15 +242,16 @@ export class GameScene extends Phaser.Scene {
           spawnBoss(this.world, this.world.camera.x + 300, 176, BOSS_WAVES[this.bossWave]);
           this.bossTalkKind = 'prefight'; this.bossTalk.start(BOSS_SCRIPTS[this.bossWave]!.pre); this.sfx('coin');
         } else if (this.pendingBossDefeat) {
-          this.pendingBossDefeat = false; this.arcade = reduceArcade(this.arcade, { type: 'bossDefeated' });
-          this.bossTalkKind = null; this.bossActive = false;
+          // Kilvish is down — roll into the chapter-one epilogue, which fires STAGE CLEAR when dismissed.
+          this.pendingBossDefeat = false; this.bossTalkKind = null; this.bossActive = false;
+          this.outroActive = true; this.outroSlide = 0; this.outro.show(0); this.sfx('coin');
         }
       } else this.bossTalkKind = null; // taunt done → FIGHT
     }
     const steps = advanceFixedStep(this.fixed, delta, () => {
       this.arcade = reduceArcade(this.arcade, { type: 'tick' });
       if (this.arcade.screen !== 'PLAY') return;
-      if (this.storyActive || this.bossTalk.active) return; // freeze the world while the intro / boss dialogue plays
+      if (this.storyActive || this.bossTalk.active || this.outroActive) return; // freeze the world while the intro / boss dialogue / chapter-one outro plays
       tick(this.world, input);
       if (this.recording) this.recording.push(encodeInput(input)); // DEV attract-demo capture (19.3)
       this.arcade = reduceArcade(this.arcade, { type: 'score', score: this.world.score });
@@ -349,6 +366,7 @@ export class GameScene extends Phaser.Scene {
 
     this.story.step(this.arcade.screenFrame, this.storySlide); // noir intro prompt blink (no-op when inactive)
     this.bossTalk.step(this.arcade.screenFrame);                // boss dialogue prompt blink (no-op when inactive)
+    this.outro.step(this.arcade.screenFrame, this.outroSlide);  // chapter-one outro prompt blink (no-op when inactive)
     const inGame = (scr === 'PLAY' || scr === 'CONTINUE') && !this.storyActive;
     this.hud.setVisible(inGame);
     if (inGame) {
