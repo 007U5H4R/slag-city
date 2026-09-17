@@ -14,6 +14,7 @@ import { GamepadSource } from '../input/gamepad';
 import { TouchSource } from '../input/touch';
 import { composeInput } from '../input/compose';
 import { track, EVENTS } from '@shell/analytics';
+import { createHoldSkip, stepHoldSkip, type HoldSkip } from '@core/arcade/hold-skip';
 import { EntityViews } from '../views/EntityView';
 import { ensureItemTextures } from '../views/item-textures';
 import { DebugOverlay } from '../views/DebugOverlay';
@@ -95,7 +96,7 @@ export class GameScene extends Phaser.Scene {
   private outro!: ChapterOneOutro;
   private outroActive = false;
   private outroSlide = 0;
-  private skipHeld = 0; // frames ATTACK has been held during the intro/outro; past SKIP_HOLD_FRAMES, skip it
+  private holdSkip: HoldSkip = createHoldSkip(); // hold-ATTACK-to-skip timing for the intro/outro (time-based, see hold-skip.ts)
   private audio!: AudioAdapter;
   private prevScreen = '';
   // Hi-scores (ticket 19.4): the live table, loaded from the kv at boot and re-saved on a qualifying entry.
@@ -188,6 +189,13 @@ export class GameScene extends Phaser.Scene {
     setSetting('crt', on);
   }
 
+  // The ONE place each reading screen ends — reached by tapping past the last slide or by hold-to-skip.
+  private finishIntro(): void { this.storyActive = false; this.story.hide(); } // releases the frozen sim
+  private finishOutro(): void {
+    this.outroActive = false; this.outro.hide();
+    this.arcade = reduceArcade(this.arcade, { type: 'bossDefeated' }); // the deferred STAGE CLEAR
+  }
+
   pause(reason: string): void { this.paused = true; this.pauseReason = reason; this.pauseText.setText(reason).setVisible(true); this.audio?.mute(true); }
   resume(): void { this.paused = false; this.pauseReason = null; this.pauseText.setVisible(false); resetFixedStep(this.fixed); this.audio?.mute(false); }
 
@@ -214,17 +222,15 @@ export class GameScene extends Phaser.Scene {
     }
     if (coin && this.arcade.screen === 'PLAY' && this.world.stage.heroDead) reviveHero(this.world); // coin-continue
     // Hold ATTACK to skip the long reading walls (intro + chapter-one outro). Boss taunts stay tap-to-advance
-    // (short, and finishing one has side effects). Fires once when the hold crosses the threshold.
-    const SKIP_HOLD_FRAMES = 35;
-    this.skipHeld = (this.storyActive || this.outroActive) && input.attack ? this.skipHeld + 1 : 0;
-    if (this.skipHeld === SKIP_HOLD_FRAMES) {
-      if (this.storyActive) { this.storyActive = false; this.story.hide(); }
-      else if (this.outroActive) { this.outroActive = false; this.outro.hide(); this.arcade = reduceArcade(this.arcade, { type: 'bossDefeated' }); }
-    }
+    // (short, and finishing one has side effects). Timed in real ms (refresh-rate independent) and only a hold
+    // that BEGINS while the screen is open counts — see @core/arcade/hold-skip.
+    const skip = stepHoldSkip(this.holdSkip, this.storyActive || this.outroActive, input.attack, delta);
+    this.holdSkip = skip.state;
+    if (skip.fire) { if (this.storyActive) this.finishIntro(); else if (this.outroActive) this.finishOutro(); }
     // Noir intro: ATTACK advances a slide; past the last one the sim is released and gameplay begins.
     if (this.storyActive && confirm) {
       this.storySlide += 1;
-      if (this.storySlide >= this.story.count) { this.storyActive = false; this.story.hide(); }
+      if (this.storySlide >= this.story.count) this.finishIntro();
       else { this.story.setSlide(this.storySlide); this.sfx('coin'); }
     }
     // END OF CHAPTER ONE epilogue: ATTACK advances a card; past the last one, fire the deferred STAGE CLEAR.
@@ -232,10 +238,8 @@ export class GameScene extends Phaser.Scene {
     // which is what arms the outro — does not also advance it; the next press does.)
     if (this.outroActive && confirm) {
       this.outroSlide += 1;
-      if (this.outroSlide >= this.outro.count) {
-        this.outroActive = false; this.outro.hide();
-        this.arcade = reduceArcade(this.arcade, { type: 'bossDefeated' });
-      } else { this.outro.setSlide(this.outroSlide); this.sfx('coin'); }
+      if (this.outroSlide >= this.outro.count) this.finishOutro();
+      else { this.outro.setSlide(this.outroSlide); this.sfx('coin'); }
     }
     // Boss gauntlet (enforcers → Kilvish): freeze the fight for a pre-fight taunt the first frame the boss appears.
     if (!this.storyActive && this.arcade.screen === 'PLAY' && !this.bossActive
