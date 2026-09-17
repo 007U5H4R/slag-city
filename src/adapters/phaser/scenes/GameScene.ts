@@ -38,6 +38,7 @@ import { HiScoreEntry } from '../screens/HiScoreEntry';
 import { Controls } from '../screens/Controls';
 import { StoryIntro } from '../screens/StoryIntro';
 import { BossDialogue, BOSS_SCRIPTS } from '../screens/BossDialogue';
+import { BossHealthBar } from '../views/BossHealthBar';
 import { encodeInput } from '@core/input-codec';
 import { hashState } from '@core/sim/hash';
 import { ATTRACT } from '@core/arcade/attract';
@@ -77,6 +78,7 @@ export class GameScene extends Phaser.Scene {
   private controls!: Controls;
   private story!: StoryIntro;
   private bossTalk!: BossDialogue;
+  private bossBar!: BossHealthBar;
   private bossTalkKind: 'prefight' | 'defeat' | null = null;
   private bossWave = 0;                  // which gauntlet wave (0,1 = enforcers; last = Kilvish)
   private bossActive = false;            // an encounter is underway (fires the wave-0 taunt once)
@@ -143,6 +145,7 @@ export class GameScene extends Phaser.Scene {
     this.controls = new Controls(this);
     this.story = new StoryIntro(this);
     this.bossTalk = new BossDialogue(this);
+    this.bossBar = new BossHealthBar(this);
     this.audio = new AudioAdapter(this, getSetting('volume'));
     void loadTable().then((t) => { this.table = t; });
     // Volume: '-'/'=' step 0.1, persisted (Design §; matches the ticket-22 AudioAdapter contract).
@@ -352,6 +355,10 @@ export class GameScene extends Phaser.Scene {
       const hero = heroOf(this.world);
       this.hud.render({ hp: hero.hp, maxHp: hero.maxHp, score: this.world.score, credits: this.arcade.credits, weapon: hero.weapon ? { kind: hero.weapon.kind, heat: hero.weapon.heat, max: WEAPON_HEAT[hero.weapon.kind] } : null, creditFlash: this.arcade.creditFlash });
     }
+    // Boss health bar: shown while a live boss is on screen during play; name from the current gauntlet wave.
+    const boss = inGame ? this.world.entities.find((e) => e.kind === 'boss' && e.state !== 'dead' && e.state !== 'dying') : undefined;
+    this.bossBar.setVisible(!!boss);
+    if (boss) this.bossBar.render({ name: BOSS_SCRIPTS[Math.min(this.bossWave, BOSS_SCRIPTS.length - 1)]!.name, hp: boss.hp, maxHp: boss.maxHp, phase2: !!boss.tint });
 
     if (scr === 'CONTINUE') this.continueScreen.show(); else this.continueScreen.hide();
     this.continueScreen.step(this.arcade, steps);
