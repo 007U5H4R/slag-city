@@ -1,5 +1,6 @@
 :root { --room: #08070a; --marquee-h: 0px; --panel-h: 0px; }
 html, body { margin: 0; height: 100%; background: var(--room); color: #d9d2c5; overflow: hidden; }
+#room[hidden] { display: none; } /* the author display:grid below would otherwise defeat [hidden] */
 #room { position: fixed; inset: 0; display: grid; place-items: center; background: var(--room); }
 #cabinet { display: grid; grid-template-rows: var(--marquee-h) auto var(--panel-h); justify-items: center; }
 #bezel { position: relative; line-height: 0; }
@@ -13,6 +14,9 @@ html, body { margin: 0; height: 100%; background: var(--room); color: #d9d2c5; o
 .gate-card h1 { font-size: 20px; margin: 16px 0 8px; }
 .gate-card p { margin: 8px 0; }
 .gate-logo { max-width: 100%; height: auto; image-rendering: pixelated; }
+/* Adaptive cabinet (chooseCabinet): collapse the marquee + panel ROWS rather than display:none — removing the
+   elements would shift the bezel into the zero-height first grid row and push the whole cabinet off-centre. */
+body.compact #marquee, body.compact #panel { visibility: hidden; height: 0; overflow: hidden; border: 0; }
 #marquee { height: var(--marquee-h); display: grid; place-items: end center; position: relative; }
 #marquee img { max-height: calc(var(--marquee-h) - 16px); width: auto; image-rendering: pixelated; position: relative; z-index: 1; }
 #marquee::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 90% at 50% 100%, rgba(255, 170, 60, 0.35), rgba(255, 120, 30, 0.08) 60%, transparent 80%); }
@@ -43,6 +47,7 @@ body.mobile #screen canvas {
   width: min(100vw, calc(100vh * 384 / 224));   /* fallback: browsers without dynamic viewport units drop the next line */
   width: min(100dvw, calc(100dvh * 384 / 224));
   touch-action: none;
+  image-rendering: auto; /* the mobile framebuffer renders ABOVE display size and is scaled down — smooth, not pixelated */
   height: auto; aspect-ratio: 384 / 224;
   z-index: 0;
 }
@@ -64,8 +69,9 @@ body.mobile #touch button.pressed { background: rgba(47, 212, 212, 0.4); color: 
 /* Left thumb: analog-ish D-pad. */
 body.mobile #dpad {
   pointer-events: auto; touch-action: none; position: fixed;
-  left: calc(18px + env(safe-area-inset-left)); bottom: calc(18px + env(safe-area-inset-bottom));
-  width: 132px; height: 132px; border-radius: 50%;
+  /* hug the corner so as much of the pad as possible sits in the pillarbox band, not on the playfield */
+  left: calc(6px + env(safe-area-inset-left)); bottom: calc(10px + env(safe-area-inset-bottom));
+  width: 124px; height: 124px; border-radius: 50%;
   background: radial-gradient(circle, rgba(18, 26, 28, 0.5), rgba(18, 26, 28, 0.28));
   border: 2px solid rgba(47, 212, 212, 0.45);
 }
@@ -77,22 +83,35 @@ body.mobile #dpad.pressed { border-color: rgba(47, 212, 212, 0.9); }
 .dp-right { right: 8px; top: 50%; transform: translateY(-50%); }
 
 /* Right thumb: ATTACK (primary), JUMP, SPECIAL. */
-body.mobile #b-attack  { right: calc(20px + env(safe-area-inset-right)); bottom: calc(26px + env(safe-area-inset-bottom)); width: 78px; height: 78px; border-color: rgba(255, 80, 58, 0.8); font-size: 14px; }
-body.mobile #b-jump    { right: calc(106px + env(safe-area-inset-right)); bottom: calc(52px + env(safe-area-inset-bottom)); width: 64px; height: 64px; }
-body.mobile #b-special { right: calc(46px + env(safe-area-inset-right)); bottom: calc(112px + env(safe-area-inset-bottom)); width: 56px; height: 56px; border-color: rgba(240, 192, 64, 0.8); }
+body.mobile #b-attack  { right: calc(8px + env(safe-area-inset-right)); bottom: calc(18px + env(safe-area-inset-bottom)); width: 78px; height: 78px; border-color: rgba(255, 80, 58, 0.8); font-size: 14px; }
+body.mobile #b-jump    { right: calc(96px + env(safe-area-inset-right)); bottom: calc(40px + env(safe-area-inset-bottom)); width: 64px; height: 64px; }
+body.mobile #b-special { right: calc(30px + env(safe-area-inset-right)); bottom: calc(106px + env(safe-area-inset-bottom)); width: 56px; height: 56px; border-color: rgba(240, 192, 64, 0.8); }
 
 /* Coin / Start: small pill buttons, top-right. */
 body.mobile #coinrow { display: flex; gap: 8px; position: fixed; top: calc(8px + env(safe-area-inset-top)); right: calc(12px + env(safe-area-inset-right)); pointer-events: none; }
 body.mobile #coinrow button { position: static; width: auto; min-height: 44px; padding: 10px 18px; border-radius: 8px; font-size: 13px; }
 
+/* COIN/START only where they act (attract, coin, continue, game over) — during play they were dead weight sitting
+   on the HUD's CREDIT readout. GameScene mirrors the arcade screen to <body data-screen>. */
+body.mobile[data-screen="PLAY"] #coinrow, body.mobile[data-screen="HISCORE_ENTRY"] #coinrow { display: none; }
+/* Pause pill: top-left, only during play. Shows ▶ while the player's pause is up. */
+body.mobile #touch #b-pause { display: none; pointer-events: auto; touch-action: none; left: calc(12px + env(safe-area-inset-left)); top: calc(8px + env(safe-area-inset-top)); width: 44px; height: 44px; border-radius: 8px; font-size: 14px; }
+body.mobile[data-screen="PLAY"] #touch #b-pause { display: grid; }
+body.mobile #b-pause::before { content: 'II'; }
+body.mobile[data-paused="player"] #b-pause::before { content: '▶'; }
+
 /* Portrait: ask for landscape (a brawler needs the width) and hide the controls until they rotate. */
 @media (orientation: portrait) {
-  body.mobile #touch { display: none; }
-  body.mobile #rotate {
+  body.mobile.portrait-ok #rotate { display: none; } /* the player tapped through: play in portrait */
+  body.mobile:not(.portrait-ok) #touch { display: none; }
+  body.mobile:not(.portrait-ok) #rotate {
     display: grid; place-items: center; position: fixed; inset: 0; z-index: 50;
     background: #08070a; color: #d8cbb0; text-align: center; padding: 24px;
   }
 }
+.rotate-logo { display: block; margin: 0 auto 20px; image-rendering: pixelated; }
+.rotate-card small { display: block; margin-top: 14px; font-size: 12px; font-weight: 500; color: #b0a488; }
 .rotate-card { font: 700 18px/1.5 ui-monospace, Menlo, Consolas, monospace; }
 .rotate-icon { display: block; font-size: 44px; margin-bottom: 12px; color: #2fd4d4; animation: rotate-nudge 2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .rotate-icon { animation: none; } body.mobile #touch button { transition: none; } }
 @keyframes rotate-nudge { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(90deg); } }

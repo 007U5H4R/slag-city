@@ -6,6 +6,7 @@ import type { ArcadeState } from '@core/arcade/screen-machine';
 import { HUD_COLOURS } from '../views/hud-colours';
 import { UI_FONT } from '../views/ui-font';
 import { ScifiFrame } from '../views/scifi-frame';
+import { deviceCopy, type DeviceCopy } from '../views/device-copy';
 
 const GOLD = '#f0c040', TEXT = '#cdbfa6';
 
@@ -17,6 +18,7 @@ export class Continue {
   private title: Phaser.GameObjects.Text;
   private count: Phaser.GameObjects.Text;
   private prompt: Phaser.GameObjects.Text;
+  private copy: DeviceCopy;
   private active = false;
 
   constructor(scene: Phaser.Scene) {
@@ -29,7 +31,8 @@ export class Continue {
       .setOrigin(0.5).setDepth(3003).setResolution(4).setVisible(false);
     this.count = scene.add.text(cx, cy - 2, '10', { fontFamily: UI_FONT, fontSize: '30px', fontStyle: '700', color: GOLD })
       .setOrigin(0.5).setDepth(3003).setResolution(4).setVisible(false);
-    this.prompt = scene.add.text(cx, cy + 30, 'INSERT COIN TO CONTINUE', { fontFamily: UI_FONT, fontSize: '9px', fontStyle: '500', color: TEXT })
+    this.copy = deviceCopy(scene);
+    this.prompt = scene.add.text(cx, cy + 30, '', { fontFamily: UI_FONT, fontSize: '9px', fontStyle: '500', color: TEXT })
       .setOrigin(0.5).setDepth(3003).setResolution(4).setVisible(false);
   }
 
@@ -45,6 +48,8 @@ export class Continue {
     this.dim.setVisible(true); this.frame.show(false); this.title.setVisible(true);
     const secs = Math.max(0, Math.ceil(arcade.continueFrames / 60));
     this.count.setText(String(secs)).setVisible(true);
-    this.prompt.setVisible(blinkOn(arcade.screenFrame));
+    // With a credit banked START continues; otherwise a (free) coin does. Pulse, never vanish: this is a 10-second decision.
+    this.prompt.setText(arcade.credits > 0 ? `${this.copy.start.replace(' — START', '')} TO CONTINUE` : `${this.copy.coin} TO CONTINUE  ·  FREE`)
+      .setVisible(true).setAlpha(blinkOn(arcade.screenFrame) ? 1 : 0.55);
   }
 }

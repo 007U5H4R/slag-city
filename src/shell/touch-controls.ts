@@ -44,6 +44,9 @@ export function installTouchControls(): void {
     for (const type of ['pointerup', 'pointercancel', 'lostpointercapture'] as const) {
       el.addEventListener(type, (e) => { if (type !== 'lostpointercapture') e.preventDefault(); releasePointer(e.pointerId); });
     }
+    // Keyboard / switch-access activation (a click with no pointer behind it): a short momentary press. Pointer taps
+    // also fire click, but with detail >= 1 — those are already handled above, so they're ignored here.
+    el.addEventListener('click', (e) => { if (e.detail === 0) { set(true); window.setTimeout(() => set(false), 160); } });
   }
 
   // Thumb D-pad: an 8-way analog-ish zone. The active pointer's offset from the pad centre sets the direction
@@ -71,6 +74,9 @@ export function installTouchControls(): void {
       pad.addEventListener(type, (e) => { if (e.pointerId === activeId) releasePointer(e.pointerId); });
     }
   }
+
+  // Pause pill: not part of the InputFrame — it asks the scene to toggle the player's pause.
+  document.getElementById('b-pause')?.addEventListener('pointerdown', (e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent('slag:pause')); });
 
   // Backstops: if capture failed and the finger lifted over something else, the control never saw its pointerup.
   window.addEventListener('pointerup', (e) => releasePointer(e.pointerId));

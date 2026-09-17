@@ -2,6 +2,10 @@
 import type Phaser from 'phaser';
 import { BASE_W, BASE_H } from '@shell/scale';
 import { blinkOn } from '@core/arcade/screen-machine';
+import { UI_FONT } from '../views/ui-font';
+import { deviceCopy, type DeviceCopy } from '../views/device-copy';
+
+const CTA_Y = 192; // below the controls panel (which ends ~y=163), clear of the bottom edge
 import type { ArcadeState } from '@core/arcade/screen-machine';
 import { attractSegmentAt, ATTRACT } from '@core/arcade/attract';
 import type { AttractSegment } from '@core/arcade/attract';
@@ -21,8 +25,9 @@ interface ReplayFile { seed: number; inputs: number[]; hash: string }
 export class Attract {
   private title: Phaser.GameObjects.BitmapText;
   private marquee?: Phaser.GameObjects.Image;
-  private insertCoin: Phaser.GameObjects.BitmapText;
-  private pressStart: Phaser.GameObjects.BitmapText;
+  private cta: Phaser.GameObjects.Text;
+  private ctaPlate: Phaser.GameObjects.Graphics;
+  private copy: DeviceCopy;
   private plate: Phaser.GameObjects.Rectangle;
   private active = false;
 
@@ -35,13 +40,20 @@ export class Attract {
 
   constructor(scene: Phaser.Scene) {
     if (scene.textures.exists('marquee-logo')) {
-      this.marquee = scene.add.image(BASE_W / 2, BASE_H / 3, 'marquee-logo').setOrigin(0.5).setDepth(3000).setVisible(false);
-      const s = (BASE_W * 0.6) / this.marquee.width;
+      this.marquee = scene.add.image(BASE_W / 2, 56, 'marquee-logo').setOrigin(0.5).setDepth(3000).setVisible(false);
+      const s = (BASE_W * 0.7) / this.marquee.width;
       this.marquee.setScale(s);
     }
-    this.title = scene.add.bitmapText(BASE_W / 2, BASE_H / 3, 'display16', 'SLAG CITY').setOrigin(0.5).setDepth(3000).setVisible(false);
-    this.insertCoin = scene.add.bitmapText(BASE_W / 2, BASE_H - 40, 'hud8', 'INSERT COIN').setOrigin(0.5).setDepth(3001).setVisible(false);
-    this.pressStart = scene.add.bitmapText(BASE_W / 2, BASE_H - 40, 'hud8', 'PRESS START').setOrigin(0.5).setDepth(3001).setVisible(false);
+    this.title = scene.add.bitmapText(BASE_W / 2, 56, 'display16', 'SLAG CITY').setOrigin(0.5).setDepth(3000).setVisible(false);
+    // The call to action — the product's one conversion step. It sits BELOW the controls panel on its own dark
+    // plate (it used to be an 8px bitmap line half-covered by that panel), names the actual key / touch button,
+    // says the coin is free, and pulses instead of blinking off so the only instruction is never invisible.
+    this.copy = deviceCopy(scene);
+    this.ctaPlate = scene.add.graphics().setDepth(3001).setVisible(false);
+    this.ctaPlate.fillStyle(0x02090c, 0.82).fillRect(BASE_W / 2 - 150, CTA_Y - 11, 300, 22);
+    this.ctaPlate.fillStyle(0x2fd4d4, 0.9).fillRect(BASE_W / 2 - 150, CTA_Y + 10, 300, 1);
+    this.cta = scene.add.text(BASE_W / 2, CTA_Y, '', { fontFamily: UI_FONT, fontSize: '12px', fontStyle: '700', color: '#ffd24a' })
+      .setOrigin(0.5, 0.5).setDepth(3002).setResolution(4).setVisible(false);
     this.plate = scene.add.rectangle(BASE_W / 2, BASE_H / 2, BASE_W, BASE_H, 0x000000, 0).setDepth(3300).setVisible(false);
     const r = scene.cache.json.get('attract-demo') as ReplayFile | undefined;
     if (r && Array.isArray(r.inputs) && typeof r.seed === 'number') this.replay = r;
@@ -54,7 +66,7 @@ export class Attract {
     this.active = false;
     this.frame = 0; this.demoCursor = 0; this.prevSegment = null; this.demoWorld = null; this.segment = 'title';
     this.marquee?.setVisible(false); this.title.setVisible(false);
-    this.insertCoin.setVisible(false); this.pressStart.setVisible(false); this.plate.setVisible(false);
+    this.cta.setVisible(false); this.ctaPlate.setVisible(false); this.plate.setVisible(false);
   }
 
   step(arcade: ArcadeState, n: number): void {
@@ -84,10 +96,11 @@ export class Attract {
 
     // Coin prompt: over the title, and behind PRESS START whenever a coin is banked (COIN screen).
     const showPrompt = showTitle || arcade.screen === 'COIN';
-    const on = blinkOn(arcade.screenFrame);
     const needCredit = arcade.credits === 0;
-    this.insertCoin.setVisible(showPrompt && on && needCredit);
-    this.pressStart.setVisible(showPrompt && on && !needCredit);
+    this.ctaPlate.setVisible(showPrompt);
+    this.cta.setVisible(showPrompt)
+      .setText(needCredit ? `${this.copy.coin}   ·   ${this.copy.free}` : this.copy.start)
+      .setAlpha(blinkOn(arcade.screenFrame) ? 1 : 0.55);
 
     // Crossfade plate: fade in over the first crossfadeFrames of a segment, out over the last.
     this.plate.setVisible(true).setFillStyle(0x000000, this.plateAlpha(seg));

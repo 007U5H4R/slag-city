@@ -684,6 +684,12 @@ Three owner requests after the narrative rework, each shipped to prod as its own
   - Finding #7 (the critique commit bundled unrelated changes) can't be undone on pushed history; the fixes were landed one-change-per-commit instead.
 - Gate: `npm run check` 135 tests + build, `npm run e2e` 2/2 (desktop smoke + mobile). **Not done:** `/code-review` over the full session range `8aaef48..HEAD` (mobile + Mixpanel commits unreviewed); GAME OVER card still not eyeballed in-browser.
 
+### Full-range code review + critique run 2 (2026-09-17, later)
+- **Hold-to-skip never fired in a real browser** (found while capturing critique screenshots): Phaser's `delta` is smoothed/capped ≈16.7 ms, so at ~26 fps a 1.2 s hold summed to ~350 ms. Unit tests inject dt and couldn't see it. Fixed with `performance.now()` (`9b2e75d`), browser-verified. **Lesson: time anything user-perceptible with a wall clock, and verify input timing in a browser, not only in unit tests.**
+- **`/code-review` over `8aaef48..HEAD`: 10 findings, all fixed → prod merge `f50b363`.** `05a16bb` boss trigger re-fired on Kilvish's dying body under the outro (GRIST taunt under the ending) + same-tick hero/boss death + overlay backstop; `cae3289` mobile hardening (`(pointer: coarse)` detection, CRT off on mobile, touch-action/overscroll on html/body/canvas, window-level release backstops, tap-to-retry SERVICE, vw/vh fallback, pause in portrait); `9844a96` Mixpanel lazy-loaded core build (main bundle 1,736 → 1,276 KB + 125 KB lazy chunk), event queue, warn-once, tests pinning the EU host; `25c7433` dialogue-row test now asserts on real data. Live-verified: new chunk served, `api-eu.mixpanel.com` 200 status:1. **Not verified:** `(pointer: coarse)` on a real touchscreen laptop (Playwright's touch emulation always reports coarse).
+- `8037af7` README added (marquee logo).
+- **Critique run 2 (whole product, dual-agent): 22/40 "Acceptable"** vs run 1's 31/40 — a different, harsher reviewer with mobile + first-visitor conversion in scope, not a regression from the fixes; LLM-judged scores are not comparable run-to-run. Snapshot `.impeccable/critique/2026-09-17T06-24-44Z__slag-city-vercel-app.md`. Open P1s: attract CTA cropped by the Controls panel and never says "press 5 / free"; no pause/exit/in-game help; mobile renders at k=1 with keyboard legend and controls over the playfield. P2s: cabinet costs a scale step on laptops; seams/stale copy/contrast (BossDialogue prompt 4.18:1, pips, no reduced-motion).
+
 _Phases D–G expand here as reached._
 
 ## Open threads / parked items

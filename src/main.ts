@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { createGame } from '@adapters/phaser/createGame';
 import { applyScale } from '@adapters/phaser/scale';
-import { computeIntegerScale } from '@shell/scale';
+import { chooseCabinet, computeMobileScale } from '@shell/scale';
 import { installViewportGate } from '@shell/viewport-gate';
 import { installCabinet } from '@shell/cabinet';
 import { isTouchDevice, installTouchControls } from '@shell/touch-controls';
@@ -31,15 +31,27 @@ if (MOBILE) {
   document.documentElement.classList.add('mobile'); // lets CSS kill browser gestures on <html> too (room.css)
   document.body.classList.add('mobile');
   installTouchControls();
+  // "Rotate to landscape" is a nudge, not a wall: an orientation-locked phone can tap through and play in portrait
+  // (the canvas sits mid-screen and the controls land in the empty space below it).
+  document.getElementById('rotate')?.addEventListener('pointerdown', () => {
+    document.body.classList.add('portrait-ok'); window.dispatchEvent(new CustomEvent('slag:orientation'));
+  });
   // iOS ignores user-scalable=no: block pinch + double-tap zoom, which would shove the fixed controls off-screen.
   for (const type of ['gesturestart', 'gesturechange', 'dblclick'] as const) document.addEventListener(type, (e) => e.preventDefault(), { passive: false });
 }
 
 const chromeH = (): number => cabinet.chromeHeight();
-// On mobile the framebuffer stays at the 384×224 base (k=1) and CSS fits the canvas to the screen (room.css);
+// On mobile the framebuffer renders at ~device density (k=2..3) and CSS fits the canvas to the screen (room.css);
 // the integer-scale cabinet math is desktop-only.
-const currentScale = (): number => MOBILE ? 1 : computeIntegerScale(window.innerWidth, window.innerHeight, chromeH());
+const currentScale = (): number => {
+  if (MOBILE) return computeMobileScale(window.innerWidth, window.innerHeight, window.devicePixelRatio);
+  // Desktop: keep the full cabinet only when it costs nothing; otherwise drop marquee + panel for a bigger picture.
+  const pick = chooseCabinet(window.innerWidth, window.innerHeight, chromeH(), cabinet.compactChromeHeight());
+  cabinet.setCompact(pick.compact);
+  return pick.k;
+};
 
+const GATE_PAUSE = 'WINDOW TOO NARROW';
 let game: Phaser.Game | null = null;
 let lastK = currentScale();
 const boot = (): void => {
@@ -60,7 +72,12 @@ const boot = (): void => {
   });
 };
 // Desktop is gated below a keyboard-friendly width; mobile is never gated (it boots straight into touch play).
-const isGated: () => boolean = MOBILE ? () => false : installViewportGate((gated) => { if (!gated) boot(); });
+const isGated: () => boolean = MOBILE ? () => false : installViewportGate((gated) => {
+  if (!gated) boot();
+  // Narrowing the window mid-game hides the cabinet: freeze the fight instead of letting it run unseen.
+  const s = game?.scene.getScene('game') as GameScene | undefined;
+  if (s?.arcade) { if (gated) { if (!s.pauseReason) s.pause(GATE_PAUSE); } else if (s.pauseReason === GATE_PAUSE) s.resume(); }
+});
 if (MOBILE) boot();
 // Read-only test hook for the Playwright smoke (always present; harmless, no data leaves the page).
 function installTestHook(): void {

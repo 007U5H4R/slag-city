@@ -7,6 +7,7 @@ import type Phaser from 'phaser';
 import { UI_FONT } from '../views/ui-font';
 import { ScifiFrame } from '../views/scifi-frame';
 import { blinkOn } from '@core/arcade/screen-machine';
+import { deviceCopy } from '../views/device-copy';
 
 // `who` is the on-screen speaker name; 'HERO' is the protagonist (gold), any other name is a boss (red).
 export interface Line { who: string; text: string }
@@ -22,16 +23,18 @@ export class BossDialogue {
   private lines: Line[] = [];
   private idx = 0;
   active = false;
+  private attackWord: string;
 
   constructor(scene: Phaser.Scene) {
     const D = 3100;
+    this.attackWord = deviceCopy(scene).attack;
     this.frame = new ScifiFrame(scene, D);
     this.frame.draw(BOX.x, BOX.y, BOX.w, BOX.h);
     this.name = scene.add.text(BOX.x + 12, BOX.y + 6, '', { fontFamily: UI_FONT, fontSize: '10px', fontStyle: '700', color: '#fff' })
       .setDepth(D + 2).setResolution(4).setVisible(false);
     this.line = scene.add.text(BOX.x + 12, BOX.y + 22, '', { fontFamily: UI_FONT, fontSize: '10px', fontStyle: '400', color: LINE_COLOUR, lineSpacing: 3 })
       .setDepth(D + 2).setResolution(4).setVisible(false);
-    this.prompt = scene.add.text(BOX.x + BOX.w - 12, BOX.y + BOX.h - 10, '', { fontFamily: UI_FONT, fontSize: '8px', fontStyle: '700', color: '#8a7f6a' })
+    this.prompt = scene.add.text(BOX.x + BOX.w - 12, BOX.y + BOX.h - 10, '', { fontFamily: UI_FONT, fontSize: '8px', fontStyle: '700', color: '#b0a488' })
       .setOrigin(1, 0.5).setDepth(D + 2).setResolution(4).setVisible(false);
   }
 
@@ -56,13 +59,13 @@ export class BossDialogue {
 
   private render(): void {
     const l = this.lines[this.idx]!;
-    this.name.setText(l.who).setColor(l.who === 'HERO' ? HERO_COLOUR : BOSS_COLOUR);
+    this.name.setText(l.who === 'HERO' ? 'YOU' : l.who).setColor(l.who === 'HERO' ? HERO_COLOUR : BOSS_COLOUR);
     this.line.setText(l.text);
   }
 
-  step(frame: number): void {
+  step(frame: number, skippable = false): void {
     if (!this.active) return;
-    this.prompt.setText(blinkOn(frame) ? 'ATTACK ▸' : '');
+    this.prompt.setText(skippable ? `${this.attackWord} ▸  ·  HOLD TO SKIP` : `${this.attackWord} ▸`).setAlpha(blinkOn(frame) ? 1 : 0.5); // pulse, never vanish
   }
 
   hide(): void {

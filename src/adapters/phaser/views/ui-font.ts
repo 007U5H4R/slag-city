@@ -10,5 +10,6 @@ export function preloadUiFont(): void {
     const f = (document as unknown as { fonts?: { load?: (s: string) => Promise<unknown> } }).fonts;
     void f?.load?.("700 16px 'Roboto Mono'");
     void f?.load?.("500 16px 'Roboto Mono'");
+    void f?.load?.("400 16px 'Roboto Mono'"); // story + dialogue body text
   } catch { /* fonts API absent — Text falls back to monospace, still legible */ }
 }

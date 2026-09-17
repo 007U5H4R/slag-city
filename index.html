@@ -9,25 +9,28 @@
   <meta name="theme-color" content="#08070a" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0709'/%3E%3Crect x='2' y='2' width='28' height='28' rx='5' fill='none' stroke='%234a3a22' stroke-width='2'/%3E%3Ctext x='16' y='23' font-family='Arial Black, Arial, sans-serif' font-size='21' font-weight='900' text-anchor='middle' fill='%23ff7a2a'%3ES%3C/text%3E%3C/svg%3E" />
   <title>SLAG CITY</title>
-  <meta name="description" content="SLAG CITY — an original 1993-style arcade beat-'em-up. Insert coin." />
+  <meta name="description" content="SLAG CITY — an original arcade beat-'em-up you can play in your browser. Insert coin — it's free." />
   <!-- Modern UI font (HUD score/credits, scoreboard, entry, menus). Monospaced so numeric columns align. -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet" />
-  <!-- Link preview (Open Graph + Twitter Card). og.png is 1200x630. NOTE (ticket 24, owner-gated deploy):
-       replace the DEPLOY_ORIGIN placeholder with the real https origin at deploy time — OG/Twitter require
-       ABSOLUTE https URLs; verify via LinkedIn Post Inspector + opengraph.xyz once the domain is live. -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <!-- Link preview (Open Graph + Twitter Card). og.png is 1200x630; OG/Twitter need ABSOLUTE https URLs. -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="SLAG CITY" />
   <meta property="og:title" content="SLAG CITY" />
-  <meta property="og:description" content="An original 1993-style arcade beat-'em-up. Insert coin." />
+  <meta property="og:description" content="An original arcade beat-'em-up you can play in your browser. Insert coin — it's free." />
   <meta property="og:image" content="https://slag-city.vercel.app/og.png" />
+  <meta property="og:url" content="https://slag-city.vercel.app/" />
+  <meta property="og:image:alt" content="SLAG CITY — molten chrome logo over a foundry" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="SLAG CITY" />
-  <meta name="twitter:description" content="An original 1993-style arcade beat-'em-up. Insert coin." />
+  <meta name="twitter:description" content="An original arcade beat-'em-up you can play in your browser. Insert coin — it's free." />
   <meta name="twitter:image" content="https://slag-city.vercel.app/og.png" />
+  <meta name="twitter:image:alt" content="SLAG CITY — molten chrome logo over a foundry" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
   <link rel="stylesheet" href="/src/styles/room.css" />
 </head>
 <body>
@@ -42,23 +45,24 @@
   </div>
   <!-- Mobile touch controls (hidden unless <body class="mobile">). A thumb D-pad, action buttons, and
        coin/start feed the shared InputFrame in src/shell/touch-controls.ts. -->
-  <div id="touch" aria-hidden="true">
+  <div id="touch" role="group" aria-label="Touch controls">
+    <button id="b-pause" type="button" aria-label="Pause"></button>
     <div id="coinrow">
-      <button id="b-coin" type="button" data-touch="coin">COIN</button>
-      <button id="b-start" type="button" data-touch="start">START</button>
+      <button id="b-coin" type="button" data-touch="coin" aria-label="Insert coin (free)">COIN</button>
+      <button id="b-start" type="button" data-touch="start" aria-label="Start">START</button>
     </div>
-    <div id="dpad" data-touch="dpad">
+    <div id="dpad" data-touch="dpad" aria-hidden="true">
       <span class="dp-hint dp-up">▲</span><span class="dp-hint dp-down">▼</span>
       <span class="dp-hint dp-left">◀</span><span class="dp-hint dp-right">▶</span>
     </div>
     <div id="btns">
-      <button id="b-special" type="button" data-touch="special">SPEC</button>
-      <button id="b-jump" type="button" data-touch="jump">JUMP</button>
-      <button id="b-attack" type="button" data-touch="attack">ATK</button>
+      <button id="b-special" type="button" data-touch="special" aria-label="Special attack">SPEC</button>
+      <button id="b-jump" type="button" data-touch="jump" aria-label="Jump">JUMP</button>
+      <button id="b-attack" type="button" data-touch="attack" aria-label="Attack / confirm">ATK</button>
     </div>
   </div>
   <!-- Portrait nudge (mobile only): a beat-'em-up wants width, so encourage landscape. -->
-  <div id="rotate" aria-hidden="true"><div class="rotate-card"><span class="rotate-icon">↻</span>Rotate to landscape</div></div>
+  <div id="rotate" role="status"><div class="rotate-card"><img class="rotate-logo" src="/assets/ui/marquee-small.png" alt="SLAG CITY" width="160" height="48" /><span class="rotate-icon" aria-hidden="true">↻</span>Rotate to landscape<small>or tap to play anyway</small></div></div>
   <div id="gate" hidden></div>
   <div id="service" hidden></div>
   <script type="module" src="/src/main.ts"></script>

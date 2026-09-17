@@ -10,6 +10,7 @@ import { BASE_W, BASE_H } from '@shell/scale';
 import { UI_FONT } from '../views/ui-font';
 import { ScifiFrame } from '../views/scifi-frame';
 import { blinkOn } from '@core/arcade/screen-machine';
+import { deviceCopy } from '../views/device-copy';
 
 const BRASS = '#d7a94a', TEXT = '#d8cbb0', DIM = '#b0a488', RED = '#ff3b6b';
 
@@ -35,10 +36,12 @@ export class ChapterOneOutro {
   private body: Phaser.GameObjects.Text;
   private prompt: Phaser.GameObjects.Text;
   private active = false;
+  private attackWord: string;
   readonly count = SLIDES.length;
 
   constructor(scene: Phaser.Scene) {
     const D = 3200;
+    this.attackWord = deviceCopy(scene).attack;
     this.dim = scene.add.rectangle(BASE_W / 2, BASE_H / 2, BASE_W, BASE_H, 0x03060a, 0.92)
       .setDepth(D).setVisible(false);
     this.frame = new ScifiFrame(scene, D);
@@ -66,7 +69,7 @@ export class ChapterOneOutro {
     // slide pips along the bottom
     const g = this.pips; g.clear();
     const n = SLIDES.length, px = CX - (n * 8) / 2;
-    for (let k = 0; k < n; k++) g.fillStyle(k === i ? 0x2fd4d4 : 0x2f6b70, 1).fillRect(px + k * 8, BASE_H - 12, 5, 2);
+    for (let k = 0; k < n; k++) { const on = k === i; g.fillStyle(on ? 0x2fd4d4 : 0x4a9aa0, 1).fillRect(px + k * 8, BASE_H - 12 - (on ? 1 : 0), on ? 6 : 4, on ? 4 : 2); } // active pip is bigger, not just brighter
   }
 
   setSlide(i: number): void { if (this.active) this.layout(Math.max(0, Math.min(SLIDES.length - 1, i))); }
@@ -81,7 +84,7 @@ export class ChapterOneOutro {
   step(frame: number, slide: number): void {
     if (!this.active) return;
     const last = slide >= SLIDES.length - 1;
-    this.prompt.setText(blinkOn(frame) ? (last ? 'PRESS ATTACK' : 'PRESS ATTACK ▸    ·    HOLD TO SKIP') : '');
+    this.prompt.setText(last ? this.attackWord : `${this.attackWord} ▸    ·    HOLD TO SKIP`).setAlpha(blinkOn(frame) ? 1 : 0.5); // pulse, never vanish
   }
 
   hide(): void {

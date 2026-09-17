@@ -11,12 +11,13 @@ import { BASE_W, BASE_H } from '@shell/scale';
 import { UI_FONT } from '../views/ui-font';
 import { ScifiFrame } from '../views/scifi-frame';
 import { blinkOn } from '@core/arcade/screen-machine';
+import { deviceCopy } from '../views/device-copy';
 
 const BRASS = '#d7a94a', TEXT = '#d8cbb0', DIM = '#b0a488', CY = 0x2fd4d4, CY_HI = 0x8ff7f2;
 
 // Layout: hero portrait panel on the left, dialogue box on the right.
 const PORT = { x: 14, y: 30, w: 104, h: 164 };            // portrait frame
-const BOX = { x: 126, y: 16, w: 234, h: 192 };            // dialogue box (ScifiFrame)
+const BOX = { x: 126, y: 16, w: 234, h: 178 };            // ends at y=194: the prompt (y=204) and pips (y=214) sit BELOW it, not on its border            // dialogue box (ScifiFrame)
 const TCX = BOX.x + BOX.w / 2;                            // text column centre
 const CYB = BOX.y + BOX.h / 2;                            // box vertical centre
 
@@ -43,10 +44,12 @@ export class StoryIntro {
   private body: Phaser.GameObjects.Text;
   private prompt: Phaser.GameObjects.Text;
   private active = false;
+  private attackWord: string;
   readonly count = SLIDES.length;
 
   constructor(scene: Phaser.Scene) {
     const D = 3200;
+    this.attackWord = deviceCopy(scene).attack;
     // deep-noir full-screen dim (darker than the frame's own dim, which we suppress)
     this.dim = scene.add.rectangle(BASE_W / 2, BASE_H / 2, BASE_W, BASE_H, 0x03060a, 0.9)
       .setDepth(D).setVisible(false);
@@ -103,7 +106,7 @@ export class StoryIntro {
     g.lineBetween(PORT.x + PORT.w, PORT.y + PORT.h - 12, PORT.x + PORT.w, PORT.y + PORT.h);
     // slide pips under the box
     const n = SLIDES.length, px = TCX - (n * 8) / 2;
-    for (let k = 0; k < n; k++) g.fillStyle(k === i ? CY : 0x2f6b70, 1).fillRect(px + k * 8, BASE_H - 12, 5, 2);
+    for (let k = 0; k < n; k++) { const on = k === i; g.fillStyle(on ? CY : 0x4a9aa0, 1).fillRect(px + k * 8, BASE_H - 10 - (on ? 1 : 0), on ? 6 : 4, on ? 4 : 2); } // active pip is bigger, not just brighter
   }
 
   setSlide(i: number): void { if (this.active) this.layout(Math.max(0, Math.min(SLIDES.length - 1, i))); }
@@ -120,7 +123,8 @@ export class StoryIntro {
   step(frame: number, slide: number): void {
     if (!this.active) return;
     const last = slide >= SLIDES.length - 1;
-    this.prompt.setText(blinkOn(frame) ? (last ? 'PRESS ATTACK TO BEGIN' : 'PRESS ATTACK ▸    ·    HOLD TO SKIP') : '');
+    // Pulse, never vanish: this is the only instruction on screen.
+    this.prompt.setText(last ? `${this.attackWord} TO BEGIN` : `${this.attackWord} ▸    ·    HOLD TO SKIP`).setAlpha(blinkOn(frame) ? 1 : 0.5);
   }
 
   hide(): void {
