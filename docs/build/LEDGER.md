@@ -658,6 +658,14 @@ All committed, CDP-verified locally + prod smoke green on https://slag-city.verc
 - **Trademark/title:** 🟡 preliminary web research done (`docs/legal/title-check.md`) — no video game or entertainment brand named "Slag City" (only industrial-slag companies + a clothing brand, all other Nice classes) → no obvious conflict. Formal USPTO/EUIPO exact-phrase search in classes 9/41 still the **owner's legal call** before commercial release.
 - **⛔ Still owner/manual (cannot do here):** 14.4 timed-run balance playtest (owner + stopwatch); ticket-04.2 master palette + hero re-quantise (deliberately parked — risky, touches the tuned hero, low reward now that art is high-quality); GitHub Actions billing.
 
+### Narrative rework — "The Last Signal" arc + chapter-one hook (owner request 2026-09-17)
+Owner supplied a richer, twist-driven story ("THE LAST SIGNAL") and chose scope **"Narrative + chapter-one hook"** (not the full multi-stage campaign — the engine is a single-stage loop; a campaign would need a new Solution-PRD). Delivered, **adapter-only (no `src/core`)** so determinism goldens are untouched:
+- **StoryIntro** rewritten (7→8 slides): 17-minute Veydron invasion, Kilvish's broadcast, the warm family pendant, the drone whisper "HARVEST" → "this was never an invasion, it's a supply chain."
+- **BossDialogue** rewritten: GRIST/SLAGJAW are expendable generals; SLAGJAW plants "you chase the sword, not the hand"; Kilvish's defeat carries the full twist (he was a father, converted and made to obey — "you wanted the monster; now you have his attention").
+- **NEW `ChapterOneOutro.ts`** — full-screen card sequence played after Kilvish's defeat exchange, before STAGE CLEAR: VAELOR answers, HARVEST CYCLE INITIATED, END OF CHAPTER ONE. GameScene freezes the world during it (like the intro) and fires the deferred `bossDefeated`/STAGE CLEAR when the last card is dismissed. Same-frame double-advance guarded (outro block runs before the boss-dialogue block).
+- **Verified:** `npm run check` (129 tests + typecheck + lint + build) + `npm run e2e` (Playwright smoke) green. Boss/outro flow logic-verified, not yet manually played to Kilvish in-browser (owner playthrough will confirm the visual beats).
+- **Shipped:** commit `d725cbd` (stage-1) → merge `85d6212` (main) → pushed → Vercel prod build. **Balance unchanged (280.9)** — no Higgsfield spend (pure text/logic).
+
 _Phases D–G expand here as reached._
 
 ## Open threads / parked items
