@@ -21,12 +21,14 @@
     "check": "npm run typecheck && npm run lint && npm run test && npm run build"
   },
   "dependencies": {
+    "mixpanel-browser": "^2.83.0",
     "phaser": "^3.90.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
     "@napi-rs/canvas": "^1.0.8",
     "@playwright/test": "^1.63.0",
+    "@types/mixpanel-browser": "^2.60.0",
     "@types/node": "^26.4.1",
     "eslint": "^9.39.5",
     "eslint-formatter-compact": "^9.0.1",

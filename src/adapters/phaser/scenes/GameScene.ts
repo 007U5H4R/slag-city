@@ -13,6 +13,7 @@ import { KeyboardSource } from '../input/keyboard';
 import { GamepadSource } from '../input/gamepad';
 import { TouchSource } from '../input/touch';
 import { composeInput } from '../input/compose';
+import { track, EVENTS } from '@shell/analytics';
 import { EntityViews } from '../views/EntityView';
 import { ensureItemTextures } from '../views/item-textures';
 import { DebugOverlay } from '../views/DebugOverlay';
@@ -206,7 +207,7 @@ export class GameScene extends Phaser.Scene {
       this.arcade = reduceArcade(this.arcade, { type: 'start' });
       if (this.arcade.screen === 'PLAY' && before !== 'PLAY') {
         if (before === 'CONTINUE') reviveHero(this.world);
-        else { this.worldSeed = Date.now() >>> 0; this.world = newGameWorld(this.worldSeed); this.storyActive = true; this.storySlide = 0; this.story.show(0); this.bossTalk.hide(); this.bossTalkKind = null; this.bossWave = 0; this.bossActive = false; this.pendingNextWave = false; this.pendingBossDefeat = false; this.outro.hide(); this.outroActive = false; this.outroSlide = 0; } // fresh game → play the noir intro first, re-arm the boss gauntlet + clear the chapter-one outro
+        else { this.worldSeed = Date.now() >>> 0; this.world = newGameWorld(this.worldSeed); this.storyActive = true; this.storySlide = 0; this.story.show(0); this.bossTalk.hide(); this.bossTalkKind = null; this.bossWave = 0; this.bossActive = false; this.pendingNextWave = false; this.pendingBossDefeat = false; this.outro.hide(); this.outroActive = false; this.outroSlide = 0; track(EVENTS.GAME_STARTED); } // fresh game → play the noir intro first, re-arm the boss gauntlet + clear the chapter-one outro; funnel: "played"
         this.sfx('start');
       }
     }
@@ -266,6 +267,7 @@ export class GameScene extends Phaser.Scene {
           const isFinal = this.bossWave >= BOSS_WAVES.length - 1;
           this.bossTalkKind = 'defeat';
           if (isFinal) this.pendingBossDefeat = true; else this.pendingNextWave = true;
+          if (isFinal) track(EVENTS.STAGE_CLEARED, { score: this.world.score }); // funnel: "cleared the stage" (Kilvish down)
           this.bossTalk.start(BOSS_SCRIPTS[wave]!.defeat);
           if (import.meta.env.DEV) console.log(`[GameScene] ${BOSS_SCRIPTS[wave]!.name} defeated (wave ${this.bossWave}${isFinal ? ', final — STAGE CLEAR' : ''})`);
         }
@@ -294,6 +296,7 @@ export class GameScene extends Phaser.Scene {
         const { table, index } = insertScore(this.table, row);
         this.table = table; this.entryHighlight = index;
         void saveTable(table);
+        track(EVENTS.NAME_RECORDED, { initials: row.initials, score: row.score }); // funnel: "recorded their name"
         this.sfx('hiscore_confirm');
         this.entryPhase = 'table'; this.entryTableTimer = ATTRACT.tableFrames;
       }
