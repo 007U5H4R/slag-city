@@ -94,7 +94,8 @@ export const BOSS_SCRIPTS: BossScript[] = [
     defeat: [
       { who: 'SLAGJAW', text: 'You still think Kilvish\nchose your world...' },
       { who: 'HERO', text: 'He gave the order.' },
-      { who: 'SLAGJAW', text: 'He followed one.\nYou chase the sword...\nnot the hand.' },
+      { who: 'SLAGJAW', text: 'He followed one.' },
+      { who: 'SLAGJAW', text: 'You chase the sword...\nnot the hand.' },
     ],
   },
   {
