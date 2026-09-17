@@ -32,7 +32,9 @@ export function initAnalytics(): void {
   const token = import.meta.env.VITE_MIXPANEL_TOKEN;
   if (!token || doNotTrack()) return;
   try {
-    mixpanel.init(token, { persistence: 'localStorage', track_pageview: false, ignore_dnt: false });
+    // The Slag City project lives in Mixpanel's EU data region, so events MUST go to the EU ingestion host —
+    // the default US host silently drops them for an EU project.
+    mixpanel.init(token, { api_host: 'https://api-eu.mixpanel.com', persistence: 'localStorage', track_pageview: false, ignore_dnt: false });
     mixpanel.register({ game: 'slag-city' }); // super-property on every event, so reports can scope to this game
     enabled = true;
   } catch { enabled = false; }

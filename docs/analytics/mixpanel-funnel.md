@@ -1,5 +1,7 @@
 # Mixpanel — SLAG CITY analytics & funnel
 
+> **Status (2026-09-17):** Project **Slag-City** (id `4064493`) is on Mixpanel's **EU** data region, so the code sends to `https://api-eu.mixpanel.com` (US host silently drops EU-project events). The **"SLAG CITY — Player Funnel"** funnel (all 4 steps, Uniques, 1-day window) is already built and lives on the **SLAG CITY** board. Remaining owner step: set `VITE_MIXPANEL_TOKEN` in Vercel (below). A couple of `setup-seed-001` seed events exist from setup — ignore them or exclude that `distinct_id`; real traffic washes them out.
+
 ## What's instrumented (code)
 `src/shell/analytics.ts` sends four events; they are the funnel steps. Each fires exactly once at its moment:
 
