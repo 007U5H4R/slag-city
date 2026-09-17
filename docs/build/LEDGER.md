@@ -666,6 +666,14 @@ Owner supplied a richer, twist-driven story ("THE LAST SIGNAL") and chose scope 
 - **Verified:** `npm run check` (129 tests + typecheck + lint + build) + `npm run e2e` (Playwright smoke) green. Boss/outro flow logic-verified, not yet manually played to Kilvish in-browser (owner playthrough will confirm the visual beats).
 - **Shipped:** commit `d725cbd` (stage-1) → merge `85d6212` (main) → pushed → Vercel prod build. **Balance unchanged (280.9)** — no Higgsfield spend (pure text/logic).
 
+### Mobile + Laser + Mixpanel (owner requests 2026-09-17, continued)
+Three owner requests after the narrative rework, each shipped to prod as its own commit/merge:
+- **Dialogue overflow fix + guard** (`8194299`): SLAGJAW's 3-row defeat line spilled the box → split into two ≤2-row beats; added `test/adapters/boss-dialogue-rows.test.ts` (source-level invariant, in `npm run check`) so a future 3-row line fails the gate. 130 tests.
+- **Mobile compatibility** (prod `fde60cb`): the game was hard-gated to desktop. Now touch-primary devices skip the gate and boot into a chrome-less, screen-filling layout (`<body class="mobile">`, 384×224 canvas CSS-fit aspect-locked). On-screen controls = `src/shell/touch-controls.ts` DOM overlay (left analog D-pad 8-way, right ATTACK/JUMP/SP, COIN/START) → shared `InputFrame` → new `TouchSource` (`adapters/phaser/input/touch.ts`) into `composeInput`. Portrait shows a "rotate to landscape" nudge. Mobile viewport metas added. **Adapter/shell only, core untouched.** New Playwright `test/e2e/mobile.spec.ts` (landscape+touch) proves coin+start via buttons reach PLAY, zero console errors. Visual evidence `docs/verification/mobile-{landscape,portrait}.png`.
+- **Laser to foreground** (prod `8478eaa`): owner wanted the hero to pass BEHIND the laser. `LaserCurtain` depth −20 → **300** (above entities at pos.y≤~224, below HUD) + restored modest translucent brightness. Adapter-only.
+- **Mixpanel analytics + funnel** (prod `616a46d`): `src/shell/analytics.ts` wraps `mixpanel-browser`; inits from **`VITE_MIXPANEL_TOKEN`** (no token or Do-Not-Track ⇒ full no-op, safe to ship now). Four funnel events = **Page Loaded** (main boot) → **Game Started** (fresh game) → **Stage Cleared** (Kilvish down, +score) → **Name Recorded** (hi-score saved, +initials/score), super-prop `game=slag-city`. Verified a `track` POST to api-js.mixpanel.com fires with a throwaway token; **token never in repo** (build-time env, dist gitignored). Bundle +~440 KB (SDK). Funnel/metric + env setup documented in **`docs/analytics/mixpanel-funnel.md`** — the report is created in the Mixpanel dashboard (needs owner account; or a service-account key for me to script it).
+- **⛔ OWNER TODO:** set `VITE_MIXPANEL_TOKEN` in Vercel env + build the funnel in Mixpanel (steps in the doc). Manual on-device touch playthrough still worth an owner check.
+
 _Phases D–G expand here as reached._
 
 ## Open threads / parked items
