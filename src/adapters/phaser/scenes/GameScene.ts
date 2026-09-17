@@ -358,7 +358,7 @@ export class GameScene extends Phaser.Scene {
     // Boss health bar: shown while a live boss is on screen during play; name from the current gauntlet wave.
     const boss = inGame ? this.world.entities.find((e) => e.kind === 'boss' && e.state !== 'dead' && e.state !== 'dying') : undefined;
     this.bossBar.setVisible(!!boss);
-    if (boss) this.bossBar.render({ name: BOSS_SCRIPTS[Math.min(this.bossWave, BOSS_SCRIPTS.length - 1)]!.name, hp: boss.hp, maxHp: boss.maxHp, phase2: !!boss.tint });
+    if (boss) this.bossBar.render({ hp: boss.hp, maxHp: boss.maxHp, phase2: !!boss.tint });
 
     if (scr === 'CONTINUE') this.continueScreen.show(); else this.continueScreen.hide();
     this.continueScreen.step(this.arcade, steps);
