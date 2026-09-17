@@ -11,6 +11,7 @@ import { spawnBoss, BOSS_WAVES } from '@core/entities/boss';
 import { createFixedStep, advanceFixedStep, resetFixedStep } from '@core/sim/loop';
 import { KeyboardSource } from '../input/keyboard';
 import { GamepadSource } from '../input/gamepad';
+import { TouchSource } from '../input/touch';
 import { composeInput } from '../input/compose';
 import { EntityViews } from '../views/EntityView';
 import { ensureItemTextures } from '../views/item-textures';
@@ -58,6 +59,7 @@ export class GameScene extends Phaser.Scene {
   private fixed = createFixedStep();
   private keyboard!: KeyboardSource;
   private gamepad!: GamepadSource;
+  private touch = new TouchSource();
   views!: EntityViews;
   private parallax!: Parallax;
   private hazards!: HazardView;
@@ -189,7 +191,7 @@ export class GameScene extends Phaser.Scene {
 
   override update(_time: number, delta: number): void {
     if (this.paused) return;
-    const input = composeInput([this.keyboard, this.gamepad]);
+    const input = composeInput([this.keyboard, this.gamepad, this.touch]);
     const coin = input.coin && !this.prevInput.coin;
     const start = input.start && !this.prevInput.start;
     // Edge-triggered initials-entry controls (HISCORE_ENTRY): up/down cycle the active letter, attack confirms.

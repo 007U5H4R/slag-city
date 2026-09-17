@@ -4,6 +4,7 @@ import { applyScale } from '@adapters/phaser/scale';
 import { computeIntegerScale } from '@shell/scale';
 import { installViewportGate } from '@shell/viewport-gate';
 import { installCabinet } from '@shell/cabinet';
+import { isTouchDevice, installTouchControls } from '@shell/touch-controls';
 import { installAudioUnlock } from '@adapters/phaser/audio/unlock';
 import { openHiScores } from '@shell/hiscore-store';
 import { preloadUiFont } from '@adapters/phaser/views/ui-font';
@@ -18,28 +19,37 @@ preloadUiFont(); // fetch the modern UI font (Roboto Mono) so Text renders in it
 
 const cabinet = installCabinet();
 
+// Mobile mode: a touch-primary device plays with the on-screen controls and the chrome-less, screen-filling
+// layout (<body class="mobile">, styled in room.css) instead of the desktop cabinet + "desktop required" gate.
+const MOBILE = isTouchDevice();
+if (MOBILE) { document.body.classList.add('mobile'); installTouchControls(); }
+
 const chromeH = (): number => cabinet.chromeHeight();
-const currentScale = (): number => computeIntegerScale(window.innerWidth, window.innerHeight, chromeH());
+// On mobile the framebuffer stays at the 384×224 base (k=1) and CSS fits the canvas to the screen (room.css);
+// the integer-scale cabinet math is desktop-only.
+const currentScale = (): number => MOBILE ? 1 : computeIntegerScale(window.innerWidth, window.innerHeight, chromeH());
 
 let game: Phaser.Game | null = null;
 let lastK = currentScale();
-const isGated = installViewportGate((gated) => {
-  if (!gated && !game) {
-    lastK = currentScale();
-    game = createGame(screen, lastK);
-    installAudioUnlock(game);
-    if (import.meta.env.DEV) (window as unknown as { game: Phaser.Game }).game = game;
-    installTestHook();
-    game.events.once(Phaser.Core.Events.READY, () => {
-      if (game && game.renderer.type === Phaser.CANVAS) {
-        const n = document.createElement('div');
-        n.id = 'notice';
-        n.textContent = 'WebGL unavailable — running on the Canvas renderer, CRT pass off.';
-        document.body.appendChild(n);
-      }
-    });
-  }
-});
+const boot = (): void => {
+  if (game) return;
+  lastK = currentScale();
+  game = createGame(screen, lastK);
+  installAudioUnlock(game);
+  if (import.meta.env.DEV) (window as unknown as { game: Phaser.Game }).game = game;
+  installTestHook();
+  game.events.once(Phaser.Core.Events.READY, () => {
+    if (game && game.renderer.type === Phaser.CANVAS) {
+      const n = document.createElement('div');
+      n.id = 'notice';
+      n.textContent = 'WebGL unavailable — running on the Canvas renderer, CRT pass off.';
+      document.body.appendChild(n);
+    }
+  });
+};
+// Desktop is gated below a keyboard-friendly width; mobile is never gated (it boots straight into touch play).
+const isGated: () => boolean = MOBILE ? () => false : installViewportGate((gated) => { if (!gated) boot(); });
+if (MOBILE) boot();
 // Read-only test hook for the Playwright smoke (always present; harmless, no data leaves the page).
 function installTestHook(): void {
   const scene = (): GameScene | undefined => game?.scene.getScene('game') as GameScene | undefined;
