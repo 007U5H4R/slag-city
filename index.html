@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>SLAG CITY</title>
   <meta name="description" content="SLAG CITY — an original 1993-style arcade beat-'em-up. Insert coin." />
   <!-- Modern UI font (HUD score/credits, scoreboard, entry, menus). Monospaced so numeric columns align. -->
@@ -35,6 +38,25 @@
       </div>
     </div>
   </div>
+  <!-- Mobile touch controls (hidden unless <body class="mobile">). A thumb D-pad, action buttons, and
+       coin/start feed the shared InputFrame in src/shell/touch-controls.ts. -->
+  <div id="touch" aria-hidden="true">
+    <div id="coinrow">
+      <button id="b-coin" type="button" data-touch="coin">COIN</button>
+      <button id="b-start" type="button" data-touch="start">START</button>
+    </div>
+    <div id="dpad" data-touch="dpad" aria-label="move">
+      <span class="dp-hint dp-up">▲</span><span class="dp-hint dp-down">▼</span>
+      <span class="dp-hint dp-left">◀</span><span class="dp-hint dp-right">▶</span>
+    </div>
+    <div id="btns">
+      <button id="b-special" type="button" data-touch="special">SP</button>
+      <button id="b-jump" type="button" data-touch="jump">JUMP</button>
+      <button id="b-attack" type="button" data-touch="attack">ATK</button>
+    </div>
+  </div>
+  <!-- Portrait nudge (mobile only): a beat-'em-up wants width, so encourage landscape. -->
+  <div id="rotate" aria-hidden="true"><div class="rotate-card"><span class="rotate-icon">↻</span>Rotate to landscape</div></div>
   <div id="gate" hidden></div>
   <div id="service" hidden></div>
   <script type="module" src="/src/main.ts"></script>
