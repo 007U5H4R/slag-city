@@ -13,6 +13,9 @@ html, body { margin: 0; height: 100%; background: var(--room); color: #d9d2c5; o
 .gate-card h1 { font-size: 20px; margin: 16px 0 8px; }
 .gate-card p { margin: 8px 0; }
 .gate-logo { max-width: 100%; height: auto; image-rendering: pixelated; }
+/* Adaptive cabinet (chooseCabinet): collapse the marquee + panel ROWS rather than display:none — removing the
+   elements would shift the bezel into the zero-height first grid row and push the whole cabinet off-centre. */
+body.compact #marquee, body.compact #panel { visibility: hidden; height: 0; overflow: hidden; border: 0; }
 #marquee { height: var(--marquee-h); display: grid; place-items: end center; position: relative; }
 #marquee img { max-height: calc(var(--marquee-h) - 16px); width: auto; image-rendering: pixelated; position: relative; z-index: 1; }
 #marquee::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 90% at 50% 100%, rgba(255, 170, 60, 0.35), rgba(255, 120, 30, 0.08) 60%, transparent 80%); }

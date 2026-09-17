@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { createGame } from '@adapters/phaser/createGame';
 import { applyScale } from '@adapters/phaser/scale';
-import { computeIntegerScale, computeMobileScale } from '@shell/scale';
+import { chooseCabinet, computeMobileScale } from '@shell/scale';
 import { installViewportGate } from '@shell/viewport-gate';
 import { installCabinet } from '@shell/cabinet';
 import { isTouchDevice, installTouchControls } from '@shell/touch-controls';
@@ -43,9 +43,13 @@ if (MOBILE) {
 const chromeH = (): number => cabinet.chromeHeight();
 // On mobile the framebuffer renders at ~device density (k=2..3) and CSS fits the canvas to the screen (room.css);
 // the integer-scale cabinet math is desktop-only.
-const currentScale = (): number => MOBILE
-  ? computeMobileScale(window.innerWidth, window.innerHeight, window.devicePixelRatio)
-  : computeIntegerScale(window.innerWidth, window.innerHeight, chromeH());
+const currentScale = (): number => {
+  if (MOBILE) return computeMobileScale(window.innerWidth, window.innerHeight, window.devicePixelRatio);
+  // Desktop: keep the full cabinet only when it costs nothing; otherwise drop marquee + panel for a bigger picture.
+  const pick = chooseCabinet(window.innerWidth, window.innerHeight, chromeH(), cabinet.compactChromeHeight());
+  cabinet.setCompact(pick.compact);
+  return pick.k;
+};
 
 let game: Phaser.Game | null = null;
 let lastK = currentScale();

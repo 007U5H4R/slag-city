@@ -33,3 +33,20 @@ describe('computeMobileScale', () => {
     expect(computeMobileScale(812, 375, 0)).toBe(2);   // bogus dpr → treated as 1
   });
 });
+
+import { chooseCabinet } from '@shell/scale';
+describe('chooseCabinet', () => {
+  const FULL = 224, COMPACT = 48;
+  it('drops the marquee + panel when that gains a whole scale step (typical laptops)', () => {
+    expect(chooseCabinet(1440, 780, FULL, COMPACT)).toEqual({ k: 3, compact: true });  // was ×2 with the full cabinet
+    expect(chooseCabinet(1366, 650, FULL, COMPACT)).toEqual({ k: 2, compact: true });  // was ×1
+  });
+  it('keeps the full cabinet when it costs nothing', () => {
+    expect(chooseCabinet(1600, 900, FULL, COMPACT)).toEqual({ k: 3, compact: false });  // ×3 either way
+    expect(chooseCabinet(1920, 1130, FULL, COMPACT)).toEqual({ k: 4, compact: false }); // ×4 either way
+    expect(chooseCabinet(1920, 1000, FULL, COMPACT)).toEqual({ k: 4, compact: true });  // …but here compact gains ×3→×4
+  });
+  it('is width-limited before it is height-limited on narrow windows', () => {
+    expect(chooseCabinet(800, 1200, FULL, COMPACT)).toEqual({ k: 2, compact: false });
+  });
+});
