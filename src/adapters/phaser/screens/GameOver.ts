@@ -11,6 +11,7 @@ import { blinkOn } from '@core/arcade/screen-machine';
 import { UI_FONT } from '../views/ui-font';
 import { ScifiFrame } from '../views/scifi-frame';
 import { deviceCopy, type DeviceCopy } from '../views/device-copy';
+import { setFitted } from '../views/fit-text';
 
 const GOLD = '#f0c040', RED = '#e0503a', TEXT = '#e8dcc0', DIM = '#b8ac95';
 const BOX = { w: 320, h: 108 };
@@ -70,6 +71,6 @@ export class GameOver {
     const prompt = this.stageClear
       ? `CONGRATULATIONS   ·   ${startWord}`
       : (arcade.credits > 0 ? `${startWord} FOR THE RANKING` : `${this.copy.coin}  ·  PLAY AGAIN FREE`);
-    this.prompt.setText(prompt).setVisible(true).setAlpha(blinkOn(arcade.screenFrame) ? 1 : 0.55);
+    setFitted(this.prompt, prompt, BOX.w - 32).setVisible(true).setAlpha(blinkOn(arcade.screenFrame) ? 1 : 0.55);
   }
 }
