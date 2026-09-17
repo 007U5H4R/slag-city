@@ -5,6 +5,7 @@ import { computeIntegerScale } from '@shell/scale';
 import { installViewportGate } from '@shell/viewport-gate';
 import { installCabinet } from '@shell/cabinet';
 import { isTouchDevice, installTouchControls } from '@shell/touch-controls';
+import { initAnalytics, track, EVENTS } from '@shell/analytics';
 import { installAudioUnlock } from '@adapters/phaser/audio/unlock';
 import { openHiScores } from '@shell/hiscore-store';
 import { preloadUiFont } from '@adapters/phaser/views/ui-font';
@@ -16,6 +17,10 @@ if (!screen) throw new Error('#screen missing from index.html');
 // Warm the hi-score kv once at boot (IndexedDB, silent memory fallback); GameScene reads the table from it.
 void openHiScores();
 preloadUiFont(); // fetch the modern UI font (Roboto Mono) so Text renders in it, not a fallback
+
+// Product analytics (Mixpanel). No-op unless VITE_MIXPANEL_TOKEN is set; funnel step 1 = landed the page.
+initAnalytics();
+track(EVENTS.PAGE_LOADED);
 
 const cabinet = installCabinet();
 
