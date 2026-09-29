@@ -105,6 +105,6 @@ Project docs: [`Design.md`](./Design.md) (visual and interaction spec) · [`docs
 
 ## Credits & license
 
-Built with [Phaser 3](https://phaser.io), [Vite](https://vite.dev) and TypeScript; UI text is set in [Roboto Mono](https://fonts.google.com/specimen/Roboto+Mono). Character and background art was generated with Higgsfield and processed through the repo's atlas pipeline. Story, design and code are original to this project.
+Built with [Phaser 3](https://phaser.io), [Vite](https://vite.dev) and TypeScript; UI text is set in [Roboto Mono](https://fonts.google.com/specimen/Roboto+Mono). Story, design and code are original to this project.
 
 No licence file is included yet — all rights reserved until one is added.
